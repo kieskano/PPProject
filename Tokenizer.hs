@@ -1,6 +1,7 @@
 module Tokenizer where
 
 import ParseBasis
+import Data.Functor
 
 data FAState = S | F Int | Q Int  | E   -- S = Start, F = Final, Q = Normal, E = Error
     deriving (Show, Eq)
@@ -87,7 +88,7 @@ isFinal state = case state of
 tokenize :: String -> [String]
 tokenize ""                             = []
 tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S name      in a : tokenize b
-                | isStartOf number x    = let (a, b) = identifyToken (x:xs) S symbol    in a : tokenize b
+                | isStartOf number x    = let (a, b) = identifyToken (x:xs) S number    in a : tokenize b
                 | isStartOf symbol x    = let (a, b) = identifyToken (x:xs) S symbol    in a : tokenize b
                 | isStartOf comment x   = let (a, b) = identifyToken (x:xs) S comment   in     tokenize b --rm comments
                 | isStartOf whitespace x= let (a, b) = identifyToken (x:xs) S whitespace in    tokenize b --rm whitespace
@@ -96,9 +97,9 @@ tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S na
 --             ||Sentence||CurState|| (Current FSA               ) || (Token, restOfSentence)||
 identifyToken :: String -> FAState -> (FAState -> Char -> FAState) -> (String, String)
 identifyToken "" s dfa      | isFinal s                     = ("", "")
-                            | otherwise                     = error "parse error1 in identifyToken"
+                            | otherwise                     = error "parse error in identifyToken at empty string"
 identifyToken (x:xs) s dfa  | nextState == E && (isFinal s) = ("", x:xs)
-                            | nextState == E                = error "parse error2 in identifyToken"
+                            | nextState == E                = error ("parse error in identifyToken at " ++ (show x) ++ (show s))
                             | otherwise                     = (x:s1, s2)
                             where
                                 nextState   = dfa s x
@@ -106,9 +107,17 @@ identifyToken (x:xs) s dfa  | nextState == E && (isFinal s) = ("", x:xs)
 
 
 
-lexer :: [String] -> [(Alphabet, String)]
+lexer :: [String] -> [Token]
 lexer []                                = []
 lexer (x:xs)    | isOfType name x       = (Name, x)     : lexer xs
                 | isOfType number x     = (Number, x)   : lexer xs
                 | isOfType symbol x     = (Sym, x)      : lexer xs
                 | otherwise             = error ("parse error in lexer on " ++ show x)
+
+
+tokenizeFile :: String -> IO [(Alphabet, String)]
+tokenizeFile file = do
+                    text <- readFile file
+                    let tokens = tokenize text
+                    let tokens' = lexer tokens
+                    return tokens'
