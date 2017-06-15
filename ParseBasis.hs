@@ -25,7 +25,18 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Rep1  [Alphabet]              -- One or more repetitions
 
               -- | <... define your own non-terminals ...>
-              | Blaat
+              | Prog
+              | Stat
+              | Decl
+              | Assign
+              | Expr
+              | OneOp
+              | TwoOp
+              | IntConst
+              | BoolConst
+              | Var
+              | Name
+              | Number
               deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
 -- ===================================================================

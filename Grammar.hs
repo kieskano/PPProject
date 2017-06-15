@@ -1,30 +1,90 @@
+module Grammar where
+
+import ParseBasis
+
 grammar :: Grammar
 grammar nt = case nt of
 
-        Prog        -> [[ (*:) [(*:) [space], Rule, (*:) [space]]  ]]
+        Prog        -> [[ (*:) [Stat] ]]
 
-        Rule        -> [[ Pred, (?:) [Rhs], dot              ]]
+        Stat        -> [[ dash, Decl ],
+                        [ dash, Assign ],
+                        [ dash, while, bar, Expr, bar, c, (*:) [Stat], g ],
+                        [ dash, ifone, bar, Expr, bar, c, (*:) [Stat], g ],
+                        [ dash, iftwo, bar, Expr, bar, c, (*:) [Stat], g, c, (*:) [Stat], g ]]
 
-        Pred        -> [[ LCaseStr, lBracket, Arg, (*:) [comma, (*:) [space], Arg], rBracket]]
+        Decl        -> [[ int, name, equalass, Expr ],
+                        [ int, name ],
+                        [ bool, name, equalass, Expr ],
+                        [ bool, name ]]
 
-        Rhs         -> [[ (*:) [space], colonDash, (*:) [space], Pred, (*:) [comma, (*:) [space], Pred]]]
+        Assign      -> [[ name, equalass, Expr ]]
 
-        Arg         -> [[ LCaseStr                           ],
-                        [ UCaseStr                           ]]
+        Expr        -> [[ Expr TwoOp Expr ],
+                        [ leftBr, Expr, rightBr ],
+                        [ IntConst ],
+                        [ BoolConst ],
+                        [ Var ],
+                        [ OneOp, Expr ]]
 
-        LCaseStr    -> [[ lCaseStr                           ]]
+        IntConst    -> [[ number ]]
 
-        UCaseStr    -> [[ uCaseStr                           ]]
+        BoolConst   -> [[ true ],
+                        [ false ]]
 
-        Query       -> [[ Pred, (*:) [comma, (*:) [space], Pred], dot]]
+        Var         -> [[ name ]]
+
+        OneOp       -> [[ minus ],
+                        [ notb ]]
+
+        TwoOp       -> [[ minus ],
+                        [ plus ],
+                        [ times],
+                        [ divide ],
+                        [ equalcom ],
+                        [ gt ],
+                        [ lt ],
+                        [ ge ],
+                        [ le ],
+                        [ ne ],
+                        [ orb ],
+                        [ andb ],
+                        [ xorb ]]
+
+int         = Terminal "#"
+bool        = Terminal "?"
+
+notb        = Terminal "!"
+minus       = Terminal "-"
+plus        = Terminal "+"
+times       = Terminal "*"
+divide      = Terminal "/"
+equalcom    = Terminal "=="
+gt          = Terminal ">"
+lt          = Terminal "<"
+ge          = Terminal ">="
+le          = Terminal "<="
+ne          = Terminal "!="
+orb         = Terminal "||"
+andb        = Terminal "&&"
+xor         = Terminal "+|"
+
+true        = Terminal "/"
+false       = Terminal "\\"
+
+dash        = Symbol "-"
+bar         = Symbol "|"
+c           = Symbol "<"
+g           = Symbol ">"
+equalass    = Symbol ":-"
+
+leftBr      = Symbol "("
+rightBr     = Symbol ")"
+
+while       = Symbol "?^"
+ifone       = Symbol "?-"
+iftwo       = Symbol "?<"
 
 
-lBracket  = Symbol "("
-rBracket  = Symbol ")"
-dot       = Symbol "."
-comma     = Symbol ","
-colonDash = Symbol ":-"
-space     = Symbol " "
-
-lCaseStr  = SyntCat LCaseStr
-uCaseStr  = SyntCat UCaseStr
+name        = SyntCat Name
+number      = SyntCat Number
