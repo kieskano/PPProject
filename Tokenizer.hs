@@ -1,7 +1,7 @@
 module Tokenizer where
 
 import ParseBasis
-import Data.Functor
+import System.IO.Unsafe
 
 data FAState = S | F Int | Q Int  | E   -- S = Start, F = Final, Q = Normal, E = Error
     deriving (Show, Eq)
@@ -115,9 +115,5 @@ lexer (x:xs)    | isOfType name x       = (Name, x)     : lexer xs
                 | otherwise             = error ("parse error in lexer on " ++ show x)
 
 
-tokenizeFile :: String -> IO [(Alphabet, String)]
-tokenizeFile file = do
-                    text <- readFile file
-                    let tokens = tokenize text
-                    let tokens' = lexer tokens
-                    return tokens'
+getFileString :: String -> String -- VERY UNSAFE
+getFileString file = unsafePerformIO . readFile $ file

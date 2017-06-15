@@ -20,7 +20,7 @@ grammar nt = case nt of
 
         Assign      -> [[ name, equalass, Expr ]]
 
-        Expr        -> [[ Expr TwoOp Expr ],
+        Expr        -> [[ leftBr, Expr, TwoOp, Expr, rightBr ],
                         [ leftBr, Expr, rightBr ],
                         [ IntConst ],
                         [ BoolConst ],
@@ -67,7 +67,7 @@ le          = Terminal "<="
 ne          = Terminal "!="
 orb         = Terminal "||"
 andb        = Terminal "&&"
-xor         = Terminal "+|"
+xorb         = Terminal "+|"
 
 while       = Terminal "?^"
 ifone       = Terminal "?-"
