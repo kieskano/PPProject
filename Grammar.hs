@@ -9,9 +9,15 @@ grammar nt = case nt of
 
         Stat        -> [[ dash, Decl ],
                         [ dash, Assign ],
-                        [ dash, while, bar, Expr, bar, c, (*:) [Stat], g ],
-                        [ dash, ifone, bar, Expr, bar, c, (*:) [Stat], g ],
-                        [ dash, iftwo, bar, Expr, bar, c, (*:) [Stat], g, c, (*:) [Stat], g ]]
+                        [ dash, While ],
+                        [ dash, IfOne ],
+                        [ dash, IfTwo ]]
+
+        While       -> [[ while, bar, Expr, bar, c, (*:) [Stat], g ]]
+
+        IfOne       -> [[ ifone, bar, Expr, bar, c, (*:) [Stat], g ]]
+
+        IfTwo       -> [[ iftwo, bar, Expr, bar, c, (*:) [Stat], g, c, (*:) [Stat], g ]]
 
         Decl        -> [[ int, name, equalass, Expr ],
                         [ int, name ],
@@ -71,11 +77,12 @@ orb         = Terminal "||"
 andb        = Terminal "&&"
 xorb         = Terminal "+|"
 
-while       = Terminal "?^"
-ifone       = Terminal "?-"
-iftwo       = Terminal "?<"
 true        = Terminal "/"
 false       = Terminal "\\"
+
+while       = Symbol "?^"
+ifone       = Symbol "?-"
+iftwo       = Symbol "?<"
 
 dash        = Symbol "-"
 bar         = Symbol "|"

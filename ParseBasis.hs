@@ -28,6 +28,9 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Prog
               | Stat
               | Decl
+              | While
+              | IfOne
+              | IfTwo
               | Assign
               | Expr
               | OneOp
