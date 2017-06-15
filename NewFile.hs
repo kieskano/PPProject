@@ -8,6 +8,8 @@ polynome' x (a:as)       = foldl (+) a (map (*x) as)
 
 -- LIST COMPREHENSION
 
+coins amount = [c:cs | c <- [1,2,5,10,20,50], cs <- coins (amount-c), c <= amount]
+
 
 add35 :: Int -> Int
 add35 0     = 0
@@ -29,10 +31,10 @@ data Tree = Node Int Tree Tree | Leaf
 
 isBalanced :: Tree -> (Bool, Int)
 isBalanced Leaf             = (True, 1)
-isBalanced (Tree x t1 t2)   = (b, l)
+isBalanced (Node x t1 t2)   = (b, l)
     where 
         b = (fst (isBalanced t1)) && (fst (isBalanced t2)) && (d > -2) && (d < 2)
-        d = (snd (isBalanced t1)) - (snd (isBalanced t2)))
+        d = (snd (isBalanced t1)) - (snd (isBalanced t2))
         l = (maximum ((snd (isBalanced t1)) : [snd (isBalanced t2)])) + 1
 
 
@@ -40,25 +42,15 @@ isBalanced (Tree x t1 t2)   = (b, l)
 
 isomorphic :: Tree -> Tree -> Bool
 isomorphic Leaf Leaf                            = True
-isomorphic (Tree x1 t11 t21) (Tree x2 t21 t22)  = (isomorphic t11 t21) && (isomorphic t12 t22) 
+isomorphic (Node x1 t11 t12) (Node x2 t21 t22)  = (isomorphic t11 t21) && (isomorphic t12 t22) 
 isomorphic _ _                                  = False
 
 
 isomorphicPlus :: Tree -> Tree -> (Int -> Int -> Bool) -> Bool
-isomorphic Leaf Leaf r                              = True
-isomorphic (Tree x1 t11 t21) (Tree x2 t21 t22) r    = (isomorphic t11 t21) && (isomorphic t12 t22) && (r x1 x2)
-isomorphic _ _ _                                    = False
+isomorphicPlus Leaf Leaf r                              = True
+isomorphicPlus (Node x1 t11 t12) (Node x2 t21 t22) r    = (isomorphicPlus t11 t21 r) && (isomorphicPlus t12 t22 r) && (r x1 x2)
+isomorphicPlus _ _ _                                    = False
 
-sorted :: Tree -> Bool
-sorted Leaf                         = True
-sorted (Tree x Leaf Leaf)           = True
-sorted (Tree x Leaf t)              = (x < (mintree t)) && (sorted t)
-sorted (Tree x t Leaf)              = (x > (maxtree t)) && (sorted t)
-sorted (Tree x t1 t2)               = (x > (maxtree t1)) && (sorted t1) && (x < (mintreeS t2)) && (sorted t2)
-
-mintree :: Tree -> Int
-mintree Leaf    = 0
-minTree (Tree x t1 t2) 
 
 addListToTree :: [Int] -> Tree -> Tree
 addListToTree [] t      = t
