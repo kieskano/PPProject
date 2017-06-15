@@ -37,6 +37,7 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Var
               | Name
               | Number
+              | Sym
               deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
 -- ===================================================================

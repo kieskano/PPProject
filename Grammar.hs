@@ -69,6 +69,9 @@ orb         = Terminal "||"
 andb        = Terminal "&&"
 xor         = Terminal "+|"
 
+while       = Terminal "?^"
+ifone       = Terminal "?-"
+iftwo       = Terminal "?<"
 true        = Terminal "/"
 false       = Terminal "\\"
 
@@ -76,14 +79,10 @@ dash        = Symbol "-"
 bar         = Symbol "|"
 c           = Symbol "<"
 g           = Symbol ">"
-equalass    = Symbol ":-"
+equalass    = Symbol "="
 
 leftBr      = Symbol "("
 rightBr     = Symbol ")"
-
-while       = Symbol "?^"
-ifone       = Symbol "?-"
-iftwo       = Symbol "?<"
 
 
 name        = SyntCat Name
