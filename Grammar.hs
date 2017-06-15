@@ -20,12 +20,14 @@ grammar nt = case nt of
 
         Assign      -> [[ name, equalass, Expr ]]
 
-        Expr        -> [[ leftBr, Expr, TwoOp, Expr, rightBr ],
+        Expr        -> [[ Val, TwoOp, Expr ],
                         [ leftBr, Expr, rightBr ],
-                        [ IntConst ],
+                        [ OneOp, Expr ],
+                        [ Val ]]
+
+        Val         -> [[ IntConst ],
                         [ BoolConst ],
-                        [ Var ],
-                        [ OneOp, Expr ]]
+                        [ Var ]]
 
         IntConst    -> [[ number ]]
 
