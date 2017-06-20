@@ -1,25 +1,19 @@
-- ? a
-- ?- |a| <
-    - ? b
-    - ?- |b| <
-        - ? c
-        - ?- |c| <
-            - # a = 0
-            - f = 0
-        >
+. ?- |boolif| <
+    . # int = 0
+    . f = 0
+    . ? booliftwo
+    . # int = a
+>
+. # int
+. ? boolwhile = /
+. ?< |booliftwo| <
+    . ? b
+    . ?^ |boolwhile| <
+        . boolwhile = \
+        . # e = 1
+        . g = d - e
     >
-    - ?- |b| <
-        - ? c
-    >
-    - ?< |a && b| <
-        - # d = 1
-    ><
-        - # d = 2
-        - # e = 4
-        - # a = /
-        - ? e
-    >
-    - ?^ |a| <
-        - ? r = /
-    >
+><
+    . ? b
+    . ? boolwhile = \
 >
