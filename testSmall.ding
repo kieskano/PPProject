@@ -2,4 +2,6 @@
 - ? bar
 - ?- | bar | <
     - foo = 3
+    - foo = 4
+    - bar = \
 >

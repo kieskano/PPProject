@@ -35,6 +35,8 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Expr
               | OneOp
               | TwoOp
+              | Brackets
+              | Block
               | Val
               | IntConst
               | BoolConst
