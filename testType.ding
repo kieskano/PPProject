@@ -1,0 +1,96 @@
+$GENERAL$
+
+- # i
+- # j
+- ? k
+- ? l
+
+- # a
+- # b = 0
+- # c = /
+- # d = \
+- a = 1
+- b = 1
+- c = \
+- d = /
+
+- ? e
+- ? f = \
+- ? g = /
+- ? h = 0
+- e = /
+- f = /
+- g = \
+- h = 1
+
+$INTEGER OPERATORS$
+
+- a = i + j
+- a = i - j
+- a = - i
+- a = i * j
+- a = i % j
+
+- # m = i + j
+- m = i + i
+
+- a = i + k
+- a = i - k
+- a = - k
+- a = k * i
+- a = k % i
+
+$COMPARE OPERATORS$
+
+- e = i == j
+- e = k == l
+- e = i > j
+- e = i < j
+- e = i >= j
+- e = i <= j
+- e = i != j
+- e = k != l
+
+- ? n = i == j
+- n = k == k
+
+- e = i == k
+- e = k == i
+- e = i > k
+- e = i < k
+- e = k >= j
+- e = k <= j
+- e = k != j
+- e = i != l
+
+$BOOLEAN OPERATORS$
+
+- e = k && l
+- e = k || l
+- e = k +| l
+- e = ! k
+
+- ? o = k && j
+- o = k && k
+
+- e = k && i
+- e = k || i
+- e = i +| l
+- e = ! i
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
