@@ -1,5 +1,6 @@
 - ? bool
 - ?- |bool| <
+    - # int = 0
     - f = 0
     - # bool
 >
