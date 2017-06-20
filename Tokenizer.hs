@@ -29,6 +29,7 @@ symbol = \s x -> case s of
                             | elem x "!<>=" -> F 1
                             | elem x "|+"   -> F 2
                             | elem x "?"    -> F 3
+                            | elem x "&"    -> Q 0
                             | otherwise     -> E
 
                         F 1 | x == '='      -> F 0
@@ -38,6 +39,9 @@ symbol = \s x -> case s of
                             | otherwise     -> E
 
                         F 3 | elem x "^-<"  -> F 0
+                            | otherwise     -> E
+
+                        Q 4 | x == '&'      -> F 0
                             | otherwise     -> E
 
                         _                   -> E

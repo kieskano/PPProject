@@ -24,3 +24,8 @@ twoOpTypeMap = [("||", (BoolType, BoolType)),
                 ("-", (IntType, IntType)),
                 ("*", (IntType, IntType)),
                 ("%", (IntType, IntType))]
+
+--         || AST || (map Var:Type    , errors  ) 
+checkTypes :: AST -> ([(String, Type)], [String])
+checkTypes (ProgT as)   = concat $ map checkTypes as
+checkTypes (DeclT s1)
