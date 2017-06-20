@@ -27,9 +27,12 @@ grammar nt = case nt of
         Assign      -> [[ name, equalass, Expr ]]
 
         Expr        -> [[ Val, TwoOp, Expr ],
-                        [ leftBr, Expr, rightBr ],
+                        [ Brackets, TwoOp, Expr ],
+                        [ Brackets ],
                         [ OneOp, Expr ],
                         [ Val ]]
+
+        Brackets    -> [[ leftBr, Expr, rightBr ]]
 
         Val         -> [[ IntConst ],
                         [ BoolConst ],
