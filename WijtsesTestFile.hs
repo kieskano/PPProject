@@ -1,4 +1,4 @@
-import Parser (parseDinkie)
+import Compiler (parseDinkie)
 import CorrectAST (correctProg)
 import Sprockell
 import AST
