@@ -7,11 +7,11 @@ grammar nt = case nt of
 
         Prog        -> [[ (*:) [Stat] ]]
 
-        Stat        -> [[ dash, Decl ],
-                        [ dash, Assign ],
-                        [ dash, While ],
-                        [ dash, IfOne ],
-                        [ dash, IfTwo ]]
+        Stat        -> [[ dot, Decl ],
+                        [ dot, Assign ],
+                        [ dot, While ],
+                        [ dot, IfOne ],
+                        [ dot, IfTwo ]]
 
         While       -> [[ while, bar, Expr, bar, c, Block, g ]]
 
@@ -89,7 +89,7 @@ while       = Symbol "?^"
 ifone       = Symbol "?-"
 iftwo       = Symbol "?<"
 
-dash        = Symbol "-"
+dot         = Symbol "."
 bar         = Symbol "|"
 c           = Symbol "<"
 g           = Symbol ">"
