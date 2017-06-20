@@ -70,13 +70,22 @@ $BOOLEAN OPERATORS$
 . e = k +| l
 . e = ! k
 
-. ? o = k && j
+. ? o = k && l
 . o = k && k
 
 . e = k && i
 . e = k || i
 . e = i +| l
 . e = ! i
+
+$IFWHILE$
+
+. ?- |i| <>
+. ?- |k| <>
+. ?< |i| <><>
+. ?< |k| <><>
+. ?^ |i| <>
+. ?^ |k| <>
 
 
 
