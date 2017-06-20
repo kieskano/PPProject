@@ -2,6 +2,7 @@ module CorrectAST where
 
 import AST
 import Data.List
+import Debug.Trace
 
 -- ======================================================================================= --
 -- ========================== Operator ordering definition =============================== --
@@ -59,7 +60,7 @@ correctExpr ast = listToExpr exprList operators'
                 where
                     exprList = exprToList ast
                     operators = filter isTwoOperator exprList
-                    operators' = sortBy twoOpOrdCompare operators
+                    operators' = sortBy twoOpOrdCompare $ reverse operators
 
 exprToList :: AST -> [ASTElem]
 exprToList (IntConstT x)    = [IntConstTE x]
@@ -70,15 +71,20 @@ exprToList (OneOpT s a)     = [OneOpTE s] ++ (exprToList a)
 exprToList (TwoOpT a1 s a2) = (exprToList a1) ++ [TwoOpTE s] ++ (exprToList a2)
 
 listToExpr :: [ASTElem] -> [ASTElem] -> AST
-listToExpr [OneOpTE s, x] ys     = OneOpT s (listToExpr [x] ys)
-listToExpr [IntConstTE x] ys     = IntConstT x
-listToExpr [BoolConstTE x] ys    = BoolConstT x
-listToExpr [VarTE x] ys          = VarT x
-listToExpr [BracketsTE x] ys     = x
-listToExpr xs ((TwoOpTE op):ys) | elem (TwoOpTE op) xs  = TwoOpT (listToExpr rxs ys) op (listToExpr lxs ys)
-                                | otherwise             = listToExpr xs ys
+listToExpr [OneOpTE s, x] ys    = OneOpT s (listToExpr [x] ys)
+listToExpr [IntConstTE x] ys    = IntConstT x
+listToExpr [BoolConstTE x] ys   = BoolConstT x
+listToExpr [VarTE x] ys         = VarT x
+listToExpr [BracketsTE x] ys    = x
+listToExpr xs ((TwoOpTE op):ys) = trace string (TwoOpT (listToExpr rxs rxsOps) op (listToExpr lxs lxsOps))
                                 where
-                                    (rxs, lxs) = splitListOn (TwoOpTE op) xs
+                                    (rxs, lxs) = let (a, b) = splitListOn (TwoOpTE op) $ reverse xs in (reverse b, reverse a)
+                                    rxsOps = sortBy twoOpOrdCompare $ reverse $ filter isTwoOperator rxs
+                                    lxsOps = sortBy twoOpOrdCompare $ reverse $ filter isTwoOperator lxs
+                                    string = "\nRXS: " ++ (show rxs) ++
+                                            "\nLXS: " ++ (show lxs) ++
+                                            "\nRXSOPS: " ++ (show rxsOps) ++
+                                            "\nLXSOPS: " ++ (show lxsOps)
 
 isTwoOperator :: ASTElem -> Bool
 isTwoOperator (TwoOpTE _)    = True

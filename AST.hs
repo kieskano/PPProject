@@ -35,10 +35,10 @@ parsetoast (PNode Stat [PNode While [e, PNode Block s]])                    = Wh
 parsetoast (PNode Stat [PNode IfOne [e, PNode Block s]])                    = IfOneT (parsetoast e) (map parsetoast s)
 parsetoast (PNode Stat [PNode IfTwo [e, PNode Block st, PNode Block se]])   = IfTwoT (parsetoast e) (map parsetoast st) (map parsetoast se)
 -- Expressions
+parsetoast (PNode Expr [PNode Brackets [v], PNode TwoOp [t], e])            = TwoOpT (parsetoast (PNode Expr [PNode Brackets [v]])) (getTokenString (t)) (parsetoast(e))
 parsetoast (PNode Expr [v, PNode TwoOp [t], e])                             = TwoOpT (parsetoast v) (getTokenString (t)) (parsetoast e)
 parsetoast (PNode Expr [PNode Expr e])                                      = parsetoast (PNode Expr e)
 parsetoast (PNode Expr [PNode OneOp [o], PNode Expr e])                     = OneOpT (getTokenString o) (parsetoast (PNode Expr e))
-parsetoast (PNode Expr [PNode Brackets [e1], PNode TwoOp [t], e2])          = TwoOpT (parsetoast (PNode Expr [PNode Brackets [e1]])) (getTokenString (t)) (parsetoast(e2))
 parsetoast (PNode Expr [PNode Brackets [e]])                                = BracketsT (parsetoast(e))
 parsetoast (PNode Expr [PNode Val [PNode IntConst [i]]])                    = IntConstT (getTokenString i)
 parsetoast (PNode Expr [PNode Val [PNode BoolConst [b]]])                   = BoolConstT (getTokenString b)
