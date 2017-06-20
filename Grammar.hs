@@ -13,11 +13,13 @@ grammar nt = case nt of
                         [ dash, IfOne ],
                         [ dash, IfTwo ]]
 
-        While       -> [[ while, bar, Expr, bar, c, (*:) [Stat], g ]]
+        While       -> [[ while, bar, Expr, bar, c, Block, g ]]
 
-        IfOne       -> [[ ifone, bar, Expr, bar, c, (*:) [Stat], g ]]
+        IfOne       -> [[ ifone, bar, Expr, bar, c, Block, g ]]
 
-        IfTwo       -> [[ iftwo, bar, Expr, bar, c, (*:) [Stat], g, c, (*:) [Stat], g ]]
+        IfTwo       -> [[ iftwo, bar, Expr, bar, c, Block, g, c, Block, g ]]
+
+        Block       -> [[ (*:) [Stat] ]]
 
         Decl        -> [[ int, name, equalass, Expr ],
                         [ int, name ],
