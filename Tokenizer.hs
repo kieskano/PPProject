@@ -41,7 +41,7 @@ symbol = \s x -> case s of
                         F 3 | elem x "^-<"  -> F 0
                             | otherwise     -> E
 
-                        Q 4 | x == '&'      -> F 0
+                        Q 0 | x == '&'      -> F 0
                             | otherwise     -> E
 
                         _                   -> E
