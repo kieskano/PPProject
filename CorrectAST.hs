@@ -76,15 +76,11 @@ listToExpr [IntConstTE x] ys    = IntConstT x
 listToExpr [BoolConstTE x] ys   = BoolConstT x
 listToExpr [VarTE x] ys         = VarT x
 listToExpr [BracketsTE x] ys    = x
-listToExpr xs ((TwoOpTE op):ys) = trace string (TwoOpT (listToExpr rxs rxsOps) op (listToExpr lxs lxsOps))
+listToExpr xs ((TwoOpTE op):ys) = TwoOpT (listToExpr rxs rxsOps) op (listToExpr lxs lxsOps)
                                 where
                                     (rxs, lxs) = let (a, b) = splitListOn (TwoOpTE op) $ reverse xs in (reverse b, reverse a)
                                     rxsOps = sortBy twoOpOrdCompare $ reverse $ filter isTwoOperator rxs
                                     lxsOps = sortBy twoOpOrdCompare $ reverse $ filter isTwoOperator lxs
-                                    string = "\nRXS: " ++ (show rxs) ++
-                                            "\nLXS: " ++ (show lxs) ++
-                                            "\nRXSOPS: " ++ (show rxsOps) ++
-                                            "\nLXSOPS: " ++ (show lxsOps)
 
 isTwoOperator :: ASTElem -> Bool
 isTwoOperator (TwoOpTE _)    = True
