@@ -81,6 +81,7 @@ listToExpr xs ((TwoOpTE op):ys) = TwoOpT (listToExpr rxs rxsOps) op (listToExpr 
                                     (rxs, lxs) = let (a, b) = splitListOn (TwoOpTE op) $ reverse xs in (reverse b, reverse a)
                                     rxsOps = sortBy twoOpOrdCompare $ reverse $ filter isTwoOperator rxs
                                     lxsOps = sortBy twoOpOrdCompare $ reverse $ filter isTwoOperator lxs
+listToExpr ((OneOpTE s):r) []   = OneOpT s (listToExpr r [])
 
 isTwoOperator :: ASTElem -> Bool
 isTwoOperator (TwoOpTE _)    = True

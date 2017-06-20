@@ -32,6 +32,7 @@ grammar nt = case nt of
                         [ Brackets, TwoOp, Expr ],
                         [ Brackets ],
                         [ OneOp, Expr ],
+                        --[ OneOp, Expr, TwoOp, Expr],
                         [ Val ]]
 
         Brackets    -> [[ leftBr, Expr, rightBr ]]
