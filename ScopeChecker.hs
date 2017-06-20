@@ -5,7 +5,7 @@ import Debug.Trace
 
 
 checkScope :: AST -> [String]
-checkScope ast =  snd (checkScope' ast [])
+checkScope ast = (snd (checkScope' ast []))
 
 
 
@@ -21,10 +21,17 @@ checkScope' (AssignT v ast) x           = (fst ca, (snd cu) ++ (snd ca))
                                             where
                                                 cu = checkUse v x
                                                 ca = checkScope' ast x
-checkScope' (WhileT a as) x             = checkScope'' as (x ++ [[]])
-checkScope' (IfOneT a as) x             = checkScope'' as (x ++ [[]])
-checkScope' (IfTwoT a as1  as2) x       = (x, (snd cs1) ++ (snd cs2))
+checkScope' (WhileT a as) x             = (x, (snd ca) ++ (snd cs))
                                             where
+                                                ca = checkScope' a x
+                                                cs = checkScope'' as (x ++ [[]])
+checkScope' (IfOneT a as) x             = (x, (snd ca) ++ (snd cs))
+                                            where
+                                                ca = checkScope' a x
+                                                cs = checkScope'' as (x ++ [[]])
+checkScope' (IfTwoT a as1  as2) x       = (x, (snd ca) ++ (snd cs1) ++ (snd cs2))
+                                            where
+                                                ca = checkScope' a x
                                                 cs1 = checkScope'' as1 (x ++ [[]])
                                                 cs2 = checkScope'' as2 (x ++ [[]])
 checkScope' EmptyT  x                   = (x, [])
@@ -44,19 +51,19 @@ checkScope' (TwoOpT ast1 o ast2) x      = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) x           = (x, snd ca)
                                             where
                                                 ca = checkScope' ast x
-checkScope' a x                         = error ((show a) ++ " " ++ (show x))
+--checkScope' a x                         = error ((show a) ++ " " ++ (show x))
 
 
 
 checkScope'' :: [AST] -> [[String]] -> ([[String]], [String])
 checkScope'' [] x                        = (init x, [])
-checkScope'' (a:as) x                    = let (v, w) = checkScope'' as y in (v, w ++ e)
+checkScope'' (a:as) x                    = let (v, w) = checkScope'' as y in (v, e ++ w)
                                             where
                                                 (y, e) = checkScope' a x
 
 checkDeclaration :: String -> [[String]] -> (Bool, [String])
 checkDeclaration s []   = (True, [])
-checkDeclaration s x    | not (elem s lx) && fst cix      = (True, [])
+checkDeclaration s x    | not (elem s lx) && fst cix            = (True, [])
                         | otherwise = (False, ["Cannot redeclare " ++ s ++ " at position V in" ++ (showScopes x)])
                             where
                                 lx = last x
@@ -64,8 +71,8 @@ checkDeclaration s x    | not (elem s lx) && fst cix      = (True, [])
                                 cix = checkDeclaration s ix
 
 checkUse :: String -> [[String]] -> (Bool, [String])
-checkUse s []           = (False, ["error"])
-checkUse s x            | elem ("dec " ++ s) lx || fst cix      = (True, [])
+checkUse s []           = (False, ["Cannot use undeclared variable " ++ s ++ " at position V in" ++ (showScopes [])])
+checkUse s x            | elem s lx || fst cix      = (True, [])
                         | otherwise = (False, ["Cannot use undeclared variable " ++ s ++ " at position V in" ++ (showScopes x)])
                             where
                                 lx = last x

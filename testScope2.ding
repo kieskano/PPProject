@@ -1,6 +1,19 @@
-- ? bool
-- ?- |bool| <
+- ?- |boolif| <
     - # int = 0
     - f = 0
-    - # bool
+    - ? booliftwo
+    - # int = a
+>
+- # int
+- ? boolwhile = /
+- ?< |booliftwo| <
+    - ? b
+    - ?^ |boolwhile| <
+        - boolwhile = \
+        - # e = 1
+        - g = d - e
+    >
+><
+    - ? b
+    - ? boolwhile = \
 >
