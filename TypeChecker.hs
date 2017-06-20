@@ -162,14 +162,14 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                             opArgType = getVal s twoOpArgTypeMap
                                             err1 = "Can not apply operation '" ++ s
                                                 ++ "' on agrument of type '" ++ (show e1Type)
-                                                ++ "' and argument of type '" ++ (show e1Type) ++ "'"
+                                                ++ "' and argument of type '" ++ (show e2Type) ++ "'"
                                             err2 = "Could not match expected type '"
-                                                ++ (show e1Type) ++ "' with actual type '"
-                                                ++ (show $ fst opArgType) ++ "' as first argument of operator '"
+                                                ++ (show $ fst opArgType) ++ "' with actual type '"
+                                                ++ (show e1Type) ++ "' as first argument of operator '"
                                                 ++ s ++ "'"
                                             err3 = "Could not match expected type '"
-                                                ++ (show e2Type) ++ "' with actual type '"
-                                                ++ (show $ snd opArgType) ++ "' as second argument of operator '"
+                                                ++ (show $ snd opArgType) ++ "' with actual type '"
+                                                ++ (show e2Type) ++ "' as second argument of operator '"
                                                 ++ s ++ "'"
 
 
