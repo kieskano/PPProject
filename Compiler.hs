@@ -16,9 +16,9 @@ parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 test1 = showRoseTree (toRoseTree (parseDinkie "testSmall.ding"))
 test = showRoseTree (asttorose (parsetoast (parseDinkie "testScope2.ding")))
 test2 = checkScope (parsetoast (parseDinkie "testScope2.ding"))
-test3 = compileDinkie "testScope3.ding"
+test3 = compileDinkie "testScope.ding"
 
-compileDinkie :: Show a -> String -> [a]
+compileDinkie :: String -> [String]
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
                     | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
                     | otherwise                 = []
@@ -26,5 +26,5 @@ compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scop
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
                         ast' = correctProg ast
-                        scopeErrors = snd $ checkScope ast'
+                        scopeErrors = checkScope ast'
                         typeErrors = snd $ checkTypes [] ast'
