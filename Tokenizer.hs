@@ -25,7 +25,7 @@ name = \s x -> case s of
 
 symbol :: FAState -> Char -> FAState
 symbol = \s x -> case s of
-                        S   | elem x "-*/#\\()" -> F 0
+                        S   | elem x "-*/#\\()%" -> F 0
                             | elem x "!<>=" -> F 1
                             | elem x "|+"   -> F 2
                             | elem x "?"    -> F 3

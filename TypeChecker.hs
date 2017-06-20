@@ -73,7 +73,7 @@ checkTypes varMap (DeclT s1 s2 expr)    | eType == varType  = ((s2, varType):var
                                             varType = getVal s1 typeMap
                                             errors' = map (++ " in expression '" ++ exprString ++ "'") errors
                                             exprString = exprToString expr
-                                            err = "Could not match expeced type '" ++ (show varType)
+                                            err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "the declaration of '" ++ s2 ++ "' with expression '"
                                                 ++ exprString ++ "'"
@@ -84,7 +84,7 @@ checkTypes varMap (AssignT s1 expr)     | eType == varType  = (varMap, errors')
                                             varType = getVal s1 varMap
                                             errors' = map (++ " in expression '" ++ exprString ++ "'") errors
                                             exprString = exprToString expr
-                                            err = "Could not match expeced type '" ++ (show varType)
+                                            err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "the assignment of '" ++ s1 ++ "' with expression '"
                                                 ++ exprString ++ "'"
@@ -94,7 +94,7 @@ checkTypes varMap (WhileT expr as)      | eType == BoolType = let (x, y) = check
                                             (eType, errors) = checkExprType varMap expr
                                             errors' = map (++ " in expression '" ++ exprString ++ "'") errors
                                             exprString = exprToString expr
-                                            err = "Could not match expeced type '" ++ (show BoolType)
+                                            err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "'?^' statement with expression '" ++ exprString ++ "'"
 checkTypes varMap (IfOneT expr as)      | eType == BoolType = let (x, y) = checkTypesBlock varMap as in (x, errors' ++ y)
@@ -103,7 +103,7 @@ checkTypes varMap (IfOneT expr as)      | eType == BoolType = let (x, y) = check
                                             (eType, errors) = checkExprType varMap expr
                                             errors' = map (++ " in expression '" ++ exprString ++ "'") errors
                                             exprString = exprToString expr
-                                            err = "Could not match expeced type '" ++ (show BoolType)
+                                            err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "'?-' statement with expression '" ++ exprString ++ "'"
 checkTypes varMap (IfTwoT expr as1 as2) | eType == BoolType = let (x, y) = checkTypesBlock varMap (as1 ++ as2) in (x, errors' ++ y)
@@ -112,7 +112,7 @@ checkTypes varMap (IfTwoT expr as1 as2) | eType == BoolType = let (x, y) = check
                                             (eType, errors) = checkExprType varMap expr
                                             errors' = map (++ " in expression '" ++ exprString ++ "'") errors
                                             exprString = exprToString expr
-                                            err = "Could not match expeced type '" ++ (show BoolType)
+                                            err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "'?<' statement with expression '" ++ exprString ++ "'"
 
@@ -164,11 +164,11 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                                 ++ "' on agrument of type '" ++ (show e1Type)
                                                 ++ "' and argument of type '" ++ (show e1Type) ++ "'"
                                             err2 = "Could not match expected type '"
-                                                ++ (show e1Type) ++ "' with expected type '"
+                                                ++ (show e1Type) ++ "' with actual type '"
                                                 ++ (show $ fst opArgType) ++ "' as first argument of operator '"
                                                 ++ s ++ "'"
                                             err3 = "Could not match expected type '"
-                                                ++ (show e2Type) ++ "' with expected type '"
+                                                ++ (show e2Type) ++ "' with actual type '"
                                                 ++ (show $ snd opArgType) ++ "' as second argument of operator '"
                                                 ++ s ++ "'"
 
