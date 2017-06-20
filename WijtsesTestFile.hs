@@ -1,11 +1,10 @@
 import Compiler (parseDinkie)
 import CorrectAST (correctProg)
-import Sprockell
 import AST
 import TypeChecker (checkTypes)
 import FPPrac.Trees
 
-compileDinkie :: String -> [[Instruction]]
+compileDinkie :: String -> [String]
 compileDinkie file  | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
                     | otherwise                 = []
                     where
