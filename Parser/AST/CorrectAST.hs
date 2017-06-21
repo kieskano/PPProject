@@ -11,6 +11,7 @@ import Debug.Trace
 data ASTElem    = IntConstTE String
                 | BoolConstTE String
                 | VarTE String
+                | ThreadIDTE
                 | OneOpTE String
                 | TwoOpTE String
                 | BracketsTE AST -- Gone after expression correction
@@ -46,12 +47,15 @@ twoOpOrdCompare (TwoOpTE s1) (TwoOpTE s2)   | op1Ord < twoOpOrd = LT
 
 correctProg :: AST -> AST
 correctProg (ProgT asts)            = ProgT (map correctProg asts)
-correctProg (DeclT s1 s2 EmptyT)    = DeclT s1 s2 EmptyT
-correctProg (DeclT s1 s2 ast)       = DeclT s1 s2 (correctExpr ast)
+correctProg (GlobalDeclT s1 s2 EmptyT)  = GlobalDeclT s1 s2 EmptyT
+correctProg (GlobalDeclT s1 s2 ast)     = GlobalDeclT s1 s2 (correctExpr ast)
+correctProg (PrivateDeclT s1 s2 EmptyT) = PrivateDeclT s1 s2 EmptyT
+correctProg (PrivateDeclT s1 s2 ast)    = PrivateDeclT s1 s2 (correctExpr ast)
 correctProg (AssignT s1 ast)        = AssignT s1 (correctExpr ast)
 correctProg (WhileT ast asts)       = WhileT (correctExpr ast) (map correctProg asts)
 correctProg (IfOneT ast asts)       = IfOneT (correctExpr ast) (map correctProg asts)
 correctProg (IfTwoT ast asts1 asts2)= IfTwoT (correctExpr ast) (map correctProg asts1) (map correctProg asts2)
+correctProg (ParallelT ast asts)    = ParallelT ast (map correctProg asts)
 correctProg (EmptyT)                = EmptyT
 
 
@@ -66,6 +70,7 @@ exprToList :: AST -> [ASTElem]
 exprToList (IntConstT x)    = [IntConstTE x]
 exprToList (BoolConstT x)   = [BoolConstTE x]
 exprToList (VarT x)         = [VarTE x]
+exprToList (ThreadIDT)      = [ThreadIDTE]
 exprToList (BracketsT a)    = [BracketsTE (correctExpr a)]
 exprToList (OneOpT s a)     = [OneOpTE s] ++ (exprToList a)
 exprToList (TwoOpT a1 s a2) = (exprToList a1) ++ [TwoOpTE s] ++ (exprToList a2)
@@ -75,6 +80,7 @@ listToExpr [OneOpTE s, x] ys    = OneOpT s (listToExpr [x] ys)
 listToExpr [IntConstTE x] ys    = IntConstT x
 listToExpr [BoolConstTE x] ys   = BoolConstT x
 listToExpr [VarTE x] ys         = VarT x
+listToExpr [ThreadIDTE]         = ThreadIDT
 listToExpr [BracketsTE x] ys    = x
 listToExpr xs ((TwoOpTE op):ys) = TwoOpT (listToExpr rxs rxsOps) op (listToExpr lxs lxsOps)
                                 where
