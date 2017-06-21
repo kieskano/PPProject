@@ -1,1 +1,1 @@
-set -iPPProject -iChecker -iParser -iParser/AST
+:set -iPPProject -iChecker -iParser -iParser/AST
