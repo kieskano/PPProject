@@ -31,6 +31,7 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | While
               | IfOne
               | IfTwo
+              | Parallel
               | Assign
               | Expr
               | OneOp
@@ -41,6 +42,7 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | IntConst
               | BoolConst
               | Var
+              | ThreadID
               | Name
               | Number
               | Sym

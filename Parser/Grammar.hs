@@ -43,7 +43,7 @@ grammar nt = case nt of
         Val         -> [[ IntConst ],
                         [ BoolConst ],
                         [ Var ],
-                        [ threadID ]]
+                        [ ThreadID ]]
 
         IntConst    -> [[ number ]]
 
@@ -51,6 +51,8 @@ grammar nt = case nt of
                         [ false ]]
 
         Var         -> [[ name ]]
+
+        ThreaID     -> [[ threadID ]]
 
         OneOp       -> [[ minus ],
                         [ notb ]]
@@ -89,7 +91,6 @@ xorb         = Terminal "+|"
 
 true        = Terminal "/"
 false       = Terminal "\\"
-threadID    = Terminal "@"
 
 global      = Terminal "_"
 
@@ -108,6 +109,7 @@ equalass    = Symbol "="
 leftBr      = Symbol "("
 rightBr     = Symbol ")"
 
+threadID    = Symbol "@"
 
 name        = SyntCat Name
 number      = SyntCat Number
