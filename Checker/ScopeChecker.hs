@@ -5,7 +5,20 @@ import Debug.Trace
 
 
 data ScopeVar = Private String | Global String | Unknown String
-    deriving (Show, Eq)
+instance Show ScopeVar where
+    show (Private s) = s
+    show (Global s) = '_':s
+    show (Unknown s) = s
+instance Eq ScopeVar where
+    (==) (Private s1) (Private s2) = (==) s1 s2
+    (==) (Private s1) (Global s2) = (==) s1 s2
+    (==) (Private s1) (Unknown s2) = (==) s1 s2
+    (==) (Global s1) (Private s2) = (==) s1 s2
+    (==) (Global s1) (Global s2) = (==) s1 s2
+    (==) (Global s1) (Unknown s2) = (==) s1 s2
+    (==) (Unknown s1) (Private s2) = (==) s1 s2
+    (==) (Unknown s1) (Global s2) = (==) s1 s2
+    (==) (Unknown s1) (Unknown s2) = (==) s1 s2
 
 
 checkScope :: AST -> [String]
@@ -55,6 +68,7 @@ checkScope' (BoolConstT b) x            = (x, [])
 checkScope' (VarT v) x                  = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
+checkScope' ThreadIDT x                 = (x, [])
 checkScope' (OneOpT o ast) x            = (x, snd ca)
                                             where
                                                 ca = checkScope' ast x
@@ -65,7 +79,6 @@ checkScope' (TwoOpT ast1 o ast2) x      = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) x           = (x, snd ca)
                                             where
                                                 ca = checkScope' ast x
-checkScope' a x                         = error ((show a) ++ " " ++ (show x))
 
 
 
