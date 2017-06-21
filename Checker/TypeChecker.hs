@@ -65,8 +65,20 @@ getVal s vmap = case (lookup s vmap) of
 --         ||  map Var:Type    || AST || (map Var:Type    , errors  )||
 checkTypes :: [(String, Type)] -> AST -> ([(String, Type)], [String])
 checkTypes varMap (ProgT as)            = checkTypesBlock varMap as
-checkTypes varMap (DeclT s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
-checkTypes varMap (DeclT s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
+checkTypes varMap (GlobalDeclT s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
+checkTypes varMap (GlobalDeclT s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
+                                        | otherwise         = ((s2, varType):varMap, errors')
+                                        where
+                                            (eType, errors) = checkExprType varMap expr
+                                            varType = getVal s1 typeMap
+                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
+                                            exprString = exprToString expr
+                                            err = "Could not match expected type '" ++ (show varType)
+                                                ++ "' with actual type '" ++ (show eType) ++ "' in "
+                                                ++ "the declaration of '" ++ s2 ++ "' with expression '"
+                                                ++ exprString ++ "'"
+checkTypes varMap (PrivateDeclT s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
+checkTypes varMap (PrivateDeclT s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
                                         | otherwise         = ((s2, varType):varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
@@ -115,7 +127,7 @@ checkTypes varMap (IfTwoT expr as1 as2) | eType == BoolType = let (x, y) = check
                                             err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "'?<' statement with expression '" ++ exprString ++ "'"
-
+checkTypes varMap (ParallelT num as)    = checkTypesBlock varMap as
 
 checkTypesBlock :: [(String, Type)] -> [AST] -> ([(String, Type)], [String])
 checkTypesBlock varMap []       = (varMap, [])
@@ -128,6 +140,7 @@ checkExprType :: [(String, Type)] -> AST -> (Type, [String])
 checkExprType varMap (VarT s)           = (getVal s varMap, [])
 checkExprType varMap (IntConstT s)      = (IntType, [])
 checkExprType varMap (BoolConstT s)     = (BoolType, [])
+checkExprType varMap (ThreadIDT)        = (IntType, [])
 checkExprType varMap (OneOpT s e)       | eType == opArgType = (opRetType, errors)
                                         | otherwise          = (opRetType, err:errors)
                                         where
