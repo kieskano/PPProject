@@ -5,7 +5,20 @@ import Debug.Trace
 
 
 data ScopeVar = Private String | Global String | Unknown String
-    deriving (Show, Eq)
+instance Show ScopeVar where
+    show (Private s) = s
+    show (Global s) = '_':s
+    show (Unknown s) = s
+instance Eq ScopeVar where
+    (==) (Private s1) (Private s2) = (==) s1 s2
+    (==) (Private s1) (Global s2) = (==) s1 s2
+    (==) (Private s1) (Unknown s2) = (==) s1 s2
+    (==) (Global s1) (Private s2) = (==) s1 s2
+    (==) (Global s1) (Global s2) = (==) s1 s2
+    (==) (Global s1) (Unknown s2) = (==) s1 s2
+    (==) (Unknown s1) (Private s2) = (==) s1 s2
+    (==) (Unknown s1) (Global s2) = (==) s1 s2
+    (==) (Unknown s1) (Unknown s2) = (==) s1 s2
 
 
 checkScope :: AST -> [String]
@@ -16,16 +29,16 @@ checkScope ast = (snd (checkScope' ast []))
 checkScope' :: AST -> [[ScopeVar]] -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) x                = checkScope'' as (x ++ [[]])
 -- Statements
-checkScope' (GlobalDeclT t v ast) x     = (fst ca, (snd cd) ++ (snd ca))
+checkScope' (GlobalDeclT t v a) x       = (fst ca, (snd cd) ++ (snd ca))
                                             where
                                                 cd = checkDeclaration (Global v) x
                                                 y = (init x) ++ [(last x) ++ [Global v]]
-                                                ca = checkScope' ast y
-checkScope' (PrivateDeclT t v ast) x    = (fst ca, (snd cd) ++ (snd ca))
+                                                ca = checkScope' a y
+checkScope' (PrivateDeclT t v a) x      = (fst ca, (snd cd) ++ (snd ca))
                                             where
                                                 cd = checkDeclaration (Private v) x
                                                 y = (init x) ++ [(last x) ++ [(Private v)]]
-                                                ca = checkScope' ast y
+                                                ca = checkScope' a y
 checkScope' (AssignT v ast) x           = (fst ca, (snd cu) ++ (snd ca))
                                             where
                                                 cu = checkUse (Unknown v) x
@@ -43,9 +56,11 @@ checkScope' (IfTwoT a as1  as2) x       = (x, (snd ca) ++ (snd cs1) ++ (snd cs2)
                                                 ca = checkScope' a x
                                                 cs1 = checkScope'' as1 (x ++ [[]])
                                                 cs2 = checkScope'' as2 (x ++ [[]])
--- checkScope' (ParallelT a as) x          = ()
---                                             where
-                                                -- ca = checkScope'a
+checkScope' (ParallelT a as) x          = (x, (snd ca) ++ (snd cs))
+                                            where
+                                                ca = checkScope' a x
+                                                y = getParallelScope x
+                                                cs = checkScope'' as y
 checkScope' EmptyT  x                   = (x, [])
 -- Expressions
 checkScope' (IntConstT i) x             = (x, [])
@@ -53,6 +68,7 @@ checkScope' (BoolConstT b) x            = (x, [])
 checkScope' (VarT v) x                  = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
+checkScope' ThreadIDT x                 = (x, [])
 checkScope' (OneOpT o ast) x            = (x, snd ca)
                                             where
                                                 ca = checkScope' ast x
@@ -63,7 +79,6 @@ checkScope' (TwoOpT ast1 o ast2) x      = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) x           = (x, snd ca)
                                             where
                                                 ca = checkScope' ast x
-checkScope' a x                         = error ((show a) ++ " " ++ (show x))
 
 
 
@@ -101,7 +116,8 @@ showScopes' []      = ""
 showScopes' [s]     = " " ++ (show s)
 showScopes' (s:ss)  = (" " ++ (show s)) ++ (showScopes' ss)
 
-
+getParallelScope :: [[ScopeVar]] -> [[ScopeVar]]
+getParallelScope x = [[(Global v) | (Global v) <- (concat x)]]
 
 
 

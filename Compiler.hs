@@ -17,7 +17,7 @@ parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 test1 = showRoseTree (toRoseTree (parseDinkie "test/testSmall.ding"))
 test = showRoseTree (asttorose (parsetoast (parseDinkie "test/testScope2.ding")))
 test2 = checkScope (parsetoast (parseDinkie "test/testScope2.ding"))
-test3 = compileDinkie "test/testScope2.ding"
+test3 = compileDinkie "test/testScope.ding"
 test4 = compileDinkie "test/testType.ding"
 
 compileDinkie :: String -> [String]
