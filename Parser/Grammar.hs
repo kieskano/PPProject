@@ -52,7 +52,7 @@ grammar nt = case nt of
 
         Var         -> [[ name ]]
 
-        ThreaID     -> [[ threadID ]]
+        ThreadID     -> [[ threadID ]]
 
         OneOp       -> [[ minus ],
                         [ notb ]]

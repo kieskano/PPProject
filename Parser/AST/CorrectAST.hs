@@ -80,7 +80,7 @@ listToExpr [OneOpTE s, x] ys    = OneOpT s (listToExpr [x] ys)
 listToExpr [IntConstTE x] ys    = IntConstT x
 listToExpr [BoolConstTE x] ys   = BoolConstT x
 listToExpr [VarTE x] ys         = VarT x
-listToExpr [ThreadIDTE]         = ThreadIDT
+listToExpr [ThreadIDTE] ys      = ThreadIDT
 listToExpr [BracketsTE x] ys    = x
 listToExpr xs ((TwoOpTE op):ys) = TwoOpT (listToExpr rxs rxsOps) op (listToExpr lxs lxsOps)
                                 where
