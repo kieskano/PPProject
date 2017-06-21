@@ -17,3 +17,13 @@
     . ? b
     . ? boolwhile = \
 >
+. _# intg
+. -<3>- <
+    . int = 3
+    . intg = 5
+    . ? aaa = /
+    . _? bbb = /
+>
+. aaa = \
+. bbb = /
+. intg = 3
