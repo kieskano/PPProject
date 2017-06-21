@@ -1,6 +1,6 @@
-module Tokenizer where
+module Parser.Tokenizer where
 
-import ParseBasis
+import Parser.ParseBasis
 import System.IO.Unsafe
 
 data FAState = S | F Int | Q Int  | E   -- S = Start, F = Final, Q = Normal, E = Error

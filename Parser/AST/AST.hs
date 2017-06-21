@@ -1,7 +1,7 @@
-module AST where
+module Parser.AST.AST where
 
 import FPPrac.Trees
-import ParseBasis
+import Parser.ParseBasis
 
 -- ======================================================================================= --
 -- ================================= AST definition ====================================== --

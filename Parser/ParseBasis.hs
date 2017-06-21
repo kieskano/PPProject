@@ -5,7 +5,7 @@ Contains basic types for Parsing - you'll have to extend several of the definiti
 =========================================================================== -}
 
 
-module ParseBasis where
+module Parser.ParseBasis where
 
 import GHC.Generics
 import FPPrac.Trees

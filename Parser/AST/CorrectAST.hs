@@ -1,6 +1,6 @@
-module CorrectAST where
+module Parser.AST.CorrectAST where
 
-import AST
+import Parser.AST.AST
 import Data.List
 import Debug.Trace
 

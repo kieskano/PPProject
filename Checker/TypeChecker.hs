@@ -1,6 +1,6 @@
-module TypeChecker where
+module Checker.TypeChecker where
 
-import AST
+import Parser.AST.AST
 
 data Type   = IntType
             | BoolType

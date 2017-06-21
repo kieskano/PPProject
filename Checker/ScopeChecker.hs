@@ -1,6 +1,6 @@
-module ScopeChecker where
+module Checker.ScopeChecker where
 
-import AST
+import Parser.AST.AST
 import Debug.Trace
 
 

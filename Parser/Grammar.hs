@@ -1,6 +1,6 @@
-module Grammar where
+module Parser.Grammar where
 
-import ParseBasis
+import Parser.ParseBasis
 
 grammar :: Grammar
 grammar nt = case nt of

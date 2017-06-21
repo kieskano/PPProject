@@ -1,11 +1,11 @@
-module ParserGen where
+module Parser.ParserGen where
 
 -- ===========================================================================
 -- Parser Generator
 -- ===========================================================================
 
 --import BasicFunctions
-import ParseBasis
+import Parser.ParseBasis
 import Data.List
 
 -- ==========================================================================================================
@@ -64,7 +64,7 @@ parserGen gr (nt:rule) (nt0,ts, allTokens@((k,(cat,str)):remTokens), recCheck)
 
         Symbol str'     | str==str'     -> parserGen gr rule (nt0, ts, remTokens, [])
                         | otherwise     -> [(PError (PNode nt0 ts) (nt:rule) nt str k, [])]
-                        
+
         SyntCat cat'    | cat==cat'     -> parserGen gr rule (nt0, ts++[PLeaf (cat,str)], remTokens, [])
                         | otherwise     -> [(PError (PNode nt0 ts) (nt:rule) nt str k, [])]
 

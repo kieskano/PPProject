@@ -1,14 +1,15 @@
 module Compiler where
 
-import Tokenizer
-import Grammar
-import ParseBasis
-import ParserGen
+import Parser.Tokenizer
+import Parser.Grammar
+import Parser.ParseBasis
+import Parser.ParserGen
 import FPPrac.Trees
-import AST
-import ScopeChecker
-import TypeChecker
-import CorrectAST
+import Parser.AST.AST
+import Checker.ScopeChecker
+import Checker.TypeChecker
+import Parser.AST.CorrectAST
+import Parser.NewFile
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
