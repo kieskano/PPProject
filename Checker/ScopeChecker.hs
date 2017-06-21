@@ -29,8 +29,10 @@ checkScope ast = (snd (checkScope' ast []))
 checkScope' :: AST -> [[ScopeVar]] -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) x                = checkScope'' as (x ++ [[]])
 -- Statements
-checkScope' (GlobalDeclT t v a) x       = (fst ca, (snd cd) ++ (snd ca))
+checkScope' (GlobalDeclT t v a) x       | elem (Unknown "=") (head x) = (x, ["Cannot declare global variable " ++ (show v) ++ " in parallel scope"] ++ (snd cx))
+                                        | otherwise =  (fst ca, (snd cd) ++ (snd ca))
                                             where
+                                                cx = checkScope' a x
                                                 cd = checkDeclaration (Global v) x
                                                 y = (init x) ++ [(last x) ++ [Global v]]
                                                 ca = checkScope' a y
@@ -39,10 +41,10 @@ checkScope' (PrivateDeclT t v a) x      = (fst ca, (snd cd) ++ (snd ca))
                                                 cd = checkDeclaration (Private v) x
                                                 y = (init x) ++ [(last x) ++ [(Private v)]]
                                                 ca = checkScope' a y
-checkScope' (AssignT v ast) x           = (fst ca, (snd cu) ++ (snd ca))
+checkScope' (AssignT v a) x             = (x, (snd cu) ++ (snd ca))
                                             where
                                                 cu = checkUse (Unknown v) x
-                                                ca = checkScope' ast x
+                                                ca = checkScope' a x
 checkScope' (WhileT a as) x             = (x, (snd ca) ++ (snd cs))
                                             where
                                                 ca = checkScope' a x
@@ -56,7 +58,8 @@ checkScope' (IfTwoT a as1  as2) x       = (x, (snd ca) ++ (snd cs1) ++ (snd cs2)
                                                 ca = checkScope' a x
                                                 cs1 = checkScope'' as1 (x ++ [[]])
                                                 cs2 = checkScope'' as2 (x ++ [[]])
-checkScope' (ParallelT a as) x          = (x, (snd ca) ++ (snd cs))
+checkScope' (ParallelT a as) x          | elem (Unknown "=") (head x) = (x, ["Cannot open new parallel scope within a parallel scope"] ++ (snd ca))
+                                        | otherwise = (x, (snd ca) ++ (snd cs))
                                             where
                                                 ca = checkScope' a x
                                                 y = getParallelScope x
@@ -117,7 +120,7 @@ showScopes' [s]     = " " ++ (show s)
 showScopes' (s:ss)  = (" " ++ (show s)) ++ (showScopes' ss)
 
 getParallelScope :: [[ScopeVar]] -> [[ScopeVar]]
-getParallelScope x = [[(Global v) | (Global v) <- (concat x)]]
+getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)], []]
 
 
 
