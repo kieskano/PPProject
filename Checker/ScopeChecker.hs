@@ -4,22 +4,31 @@ import Parser.AST.AST
 import Debug.Trace
 
 
+data ScopeVar = Private String | Global String | Unknown String
+    deriving (Show, Eq)
+
+
 checkScope :: AST -> [String]
 checkScope ast = (snd (checkScope' ast []))
 
 
 
-checkScope' :: AST -> [[String]] -> ([[String]],[String])
+checkScope' :: AST -> [[ScopeVar]] -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) x                = checkScope'' as (x ++ [[]])
 -- Statements
-checkScope' (DeclT t v ast) x           = (fst ca, (snd cd) ++ (snd ca))
+checkScope' (GlobalDeclT t v ast) x     = (fst ca, (snd cd) ++ (snd ca))
                                             where
-                                                cd = checkDeclaration v x
-                                                y = (init x) ++ [(last x) ++ [v]]
+                                                cd = checkDeclaration (Global v) x
+                                                y = (init x) ++ [(last x) ++ [Global v]]
+                                                ca = checkScope' ast y
+checkScope' (PrivateDeclT t v ast) x    = (fst ca, (snd cd) ++ (snd ca))
+                                            where
+                                                cd = checkDeclaration (Private v) x
+                                                y = (init x) ++ [(last x) ++ [(Private v)]]
                                                 ca = checkScope' ast y
 checkScope' (AssignT v ast) x           = (fst ca, (snd cu) ++ (snd ca))
                                             where
-                                                cu = checkUse v x
+                                                cu = checkUse (Unknown v) x
                                                 ca = checkScope' ast x
 checkScope' (WhileT a as) x             = (x, (snd ca) ++ (snd cs))
                                             where
@@ -34,13 +43,16 @@ checkScope' (IfTwoT a as1  as2) x       = (x, (snd ca) ++ (snd cs1) ++ (snd cs2)
                                                 ca = checkScope' a x
                                                 cs1 = checkScope'' as1 (x ++ [[]])
                                                 cs2 = checkScope'' as2 (x ++ [[]])
+-- checkScope' (ParallelT a as) x          = ()
+--                                             where
+                                                -- ca = checkScope'a
 checkScope' EmptyT  x                   = (x, [])
 -- Expressions
 checkScope' (IntConstT i) x             = (x, [])
 checkScope' (BoolConstT b) x            = (x, [])
 checkScope' (VarT v) x                  = (x, snd cu)
                                             where
-                                                cu = checkUse v x
+                                                cu = checkUse (Unknown v) x
 checkScope' (OneOpT o ast) x            = (x, snd ca)
                                             where
                                                 ca = checkScope' ast x
@@ -51,43 +63,43 @@ checkScope' (TwoOpT ast1 o ast2) x      = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) x           = (x, snd ca)
                                             where
                                                 ca = checkScope' ast x
---checkScope' a x                         = error ((show a) ++ " " ++ (show x))
+checkScope' a x                         = error ((show a) ++ " " ++ (show x))
 
 
 
-checkScope'' :: [AST] -> [[String]] -> ([[String]], [String])
+checkScope'' :: [AST] -> [[ScopeVar]] -> ([[ScopeVar]], [String])
 checkScope'' [] x                        = (init x, [])
 checkScope'' (a:as) x                    = let (v, w) = checkScope'' as y in (v, e ++ w)
                                             where
                                                 (y, e) = checkScope' a x
 
-checkDeclaration :: String -> [[String]] -> (Bool, [String])
-checkDeclaration s []   = (True, [])
-checkDeclaration s x    | not (elem s lx) && fst cix            = (True, [])
-                        | otherwise = (False, ["Cannot redeclare " ++ s ++ " at position V in" ++ (showScopes x)])
-                            where
-                                lx = last x
-                                ix = init x
-                                cix = checkDeclaration s ix
+checkDeclaration :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
+checkDeclaration s []           = (True, [])
+checkDeclaration s x            | not (elem s lx) && fst cix            = (True, [])
+                                | otherwise = (False, ["Cannot redeclare " ++ (show s) ++ " at position V in" ++ (showScopes x)])
+                                    where
+                                        lx = last x
+                                        ix = init x
+                                        cix = checkDeclaration s ix
 
-checkUse :: String -> [[String]] -> (Bool, [String])
-checkUse s []           = (False, ["Cannot use undeclared variable " ++ s ++ " at position V in" ++ (showScopes [])])
-checkUse s x            | elem s lx || fst cix      = (True, [])
-                        | otherwise = (False, ["Cannot use undeclared variable " ++ s ++ " at position V in" ++ (showScopes x)])
-                            where
-                                lx = last x
-                                ix = init x
-                                cix = checkUse s ix
+checkUse :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
+checkUse s []                   = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes [])])
+checkUse s x                    | elem s lx || fst cix      = (True, [])
+                                | otherwise = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes x)])
+                                    where
+                                        lx = last x
+                                        ix = init x
+                                        cix = checkUse s ix
 
-showScopes :: [[String]] -> String
+showScopes :: [[ScopeVar]] -> String
 showScopes []       = ""
 showScopes [ss]     = (" <" ++ (showScopes' ss) ++ " V >")
 showScopes (ss:sss) = (" <" ++ (showScopes' ss)) ++ (showScopes sss) ++ " >"
 
-showScopes' :: [String] -> String
+showScopes' :: [ScopeVar] -> String
 showScopes' []      = ""
-showScopes' [s]     = " " ++ s
-showScopes' (s:ss)  = (" " ++ s) ++ (showScopes' ss)
+showScopes' [s]     = " " ++ (show s)
+showScopes' (s:ss)  = (" " ++ (show s)) ++ (showScopes' ss)
 
 
 
