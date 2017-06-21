@@ -13,7 +13,6 @@ isWhiteSpace x = elem x " \n\t\r"
 name :: FAState -> Char -> FAState
 name = \s x -> case s of
                         S   | isALetter x   -> F 0
-                            | x == '_'      -> F 0
                             | otherwise     -> E
 
                         F 0 | isALetter x   -> F 0
@@ -25,11 +24,13 @@ name = \s x -> case s of
 
 symbol :: FAState -> Char -> FAState
 symbol = \s x -> case s of
-                        S   | elem x "-*/#\\()%." -> F 0
-                            | elem x "!<>=" -> F 1
+                        S   | elem x "*/#\\()%._@" -> F 0
+                            | elem x "!<="  -> F 1
                             | elem x "|+"   -> F 2
-                            | elem x "?"    -> F 3
-                            | elem x "&"    -> Q 0
+                            | x == '?'      -> F 3
+                            | x == '-'      -> F 4
+                            | x == '>'      -> F 5
+                            | x == '&'      -> Q 0
                             | otherwise     -> E
 
                         F 1 | x == '='      -> F 0
@@ -39,6 +40,12 @@ symbol = \s x -> case s of
                             | otherwise     -> E
 
                         F 3 | elem x "^-<"  -> F 0
+                            | otherwise     -> E
+
+                        F 4 | x == '<'      -> F 0
+                            | otherwise     -> E
+
+                        F 5 | elem x "-="   -> F 0
                             | otherwise     -> E
 
                         Q 0 | x == '&'      -> F 0

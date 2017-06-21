@@ -8,18 +8,12 @@ grammar nt = case nt of
         Prog        -> [[ (*:) [Stat] ]]
 
         Stat        -> [[ dot, Decl ],
+                        [ dot, global, Decl ],
                         [ dot, Assign ],
                         [ dot, While ],
                         [ dot, IfOne ],
-                        [ dot, IfTwo ]]
-
-        While       -> [[ while, bar, Expr, bar, c, Block, g ]]
-
-        IfOne       -> [[ ifone, bar, Expr, bar, c, Block, g ]]
-
-        IfTwo       -> [[ iftwo, bar, Expr, bar, c, Block, g, c, Block, g ]]
-
-        Block       -> [[ (*:) [Stat] ]]
+                        [ dot, IfTwo ],
+                        [ dot, Parallel ]]
 
         Decl        -> [[ int, name, equalass, Expr ],
                         [ int, name ],
@@ -27,6 +21,16 @@ grammar nt = case nt of
                         [ bool, name ]]
 
         Assign      -> [[ name, equalass, Expr ]]
+
+        While       -> [[ while, bar, Expr, bar, Block ]]
+
+        IfOne       -> [[ ifone, bar, Expr, bar, Block ]]
+
+        IfTwo       -> [[ iftwo, bar, Expr, bar, Block, Block ]]
+
+        Parallel    -> [[ parl, IntConst, parr, Block ]]
+
+        Block       -> [[ c, (*:) [Stat], g ]]
 
         Expr        -> [[ Val, TwoOp, Expr ],
                         [ Brackets, TwoOp, Expr ],
@@ -38,7 +42,8 @@ grammar nt = case nt of
 
         Val         -> [[ IntConst ],
                         [ BoolConst ],
-                        [ Var ]]
+                        [ Var ],
+                        [ threadID ]]
 
         IntConst    -> [[ number ]]
 
@@ -84,10 +89,15 @@ xorb         = Terminal "+|"
 
 true        = Terminal "/"
 false       = Terminal "\\"
+threadID    = Terminal "@"
+
+global      = Terminal "_"
 
 while       = Symbol "?^"
 ifone       = Symbol "?-"
 iftwo       = Symbol "?<"
+parl        = Symbol "-<"
+parr        = Symbol ">-"
 
 dot         = Symbol "."
 bar         = Symbol "|"
