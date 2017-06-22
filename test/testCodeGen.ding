@@ -1,0 +1,6 @@
+. _# aaa
+. ? bbb
+. _# ccc = 1
+. ? ddd = /
+ccc = 1 + 3
+ddd = ddd && /
