@@ -67,7 +67,7 @@ checkScope' (ParallelT a as) x          | elem (Unknown "=") (head x) = (x, ["Ca
 checkScope' (ReadIntT v) x               = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
-checkScope' (WriteIntT aa) x            = (x, snd ca)
+checkScope' (WriteIntT a) x             = (x, snd ca)
                                             where
                                                 ca = checkScope' a x
 checkScope' EmptyT  x                   = (x, [])
