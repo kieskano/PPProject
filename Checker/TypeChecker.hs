@@ -128,13 +128,13 @@ checkTypes varMap (IfTwoT expr as1 as2) | eType == BoolType = let (x, y) = check
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "'?<' statement with expression '" ++ exprString ++ "'"
 checkTypes varMap (ParallelT num as)    = checkTypesBlock varMap as
-checkTypes varMap (ReadIntT var)        | vType == IntType = (varMap, [])
-                                        | otherwise
+checkTypes varMap (ReadIntT var)        | vType == IntType  = (varMap, [])
+                                        | otherwise         = (varMap, [err])
                                         where
                                             vType = getVal var varMap
                                             err = "Could not match expected type '" ++ (show IntType)
-                                                ++ "' with actual type '" ++ vType "' of variable '" ++ var
-                                                ++ "' in '*>' statement"
+                                                ++ "' with actual type '" ++ (show vType) ++ "' of variable '"
+                                                ++ var ++ "' in '*>' statement"
 checkTypes varMap (WriteIntT expr)      | eType == IntType = (varMap, errors')
                                         | otherwise        = (varMap, err:errors')
                                         where
