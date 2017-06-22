@@ -15,7 +15,7 @@ generateCode (GlobalDeclT t v a) (l,g)  = (generateCode a (l,g))++[Pop regA, Wri
 generateCode (PrivateDeclT t v a) (l,g) = (generateCode a (l,g))++[Pop regA, Store regA (DirAddr ol)]
                                             where
                                                 ol = getOffset v l
-generateCode (AssignT v a) (l,g)        | ol != -1      = (generateCode a (l,g))++[Pop regA, Store regA (DirAddr ol)]
+generateCode (AssignT v a) (l,g)        | ol /= -1      = (generateCode a (l,g))++[Pop regA, Store regA (DirAddr ol)]
                                         | otherwise     = (generateCode a (l,g))++[Pop regA, WriteInstr regA (DirAddr og)]
                                             where
                                                 ol = getOffset v l
@@ -29,35 +29,35 @@ generateCode (WriteIntT a) (l,g)        = []
 -- Expressions
 generateCode EmptyT (l,g)               = [Push reg0]
 generateCode (IntConstT i) (l,g)        = [Load (ImmValue (read i)) regA, Push regA]
-generateCode (BoolConst b) (l,g)        = [Load (ImmValue (readBoolToInt b)) regA, Push regA]
-generateCode (VarT v) (l,g)             | ol != -1      = [Load (DirAddr ol) regA, Push regA]
-                                        | otherwise     = [Read (DirAddr og), Receive regA, Push regA]
+generateCode (BoolConstT b) (l,g)       = [Load (ImmValue (readBoolToInt b)) regA, Push regA]
+generateCode (VarT v) (l,g)             | ol /= -1      = [Load (DirAddr ol) regA, Push regA]
+                                        | otherwise     = [ReadInstr (DirAddr og), Receive regA, Push regA]
                                             where
                                                 ol = getOffset v l
                                                 og = getOffset v g
 generateCode ThreadIDT (l,g)            = [Push regSprID]
-generateCode (OneOpT o a) (l,g)         | o == "-"      = (generateCode a (l,g))++[Pop regA, Load (ImmValue -1) regB, Compute Mul regA regB regA, Push regA]
+generateCode (OneOpT o a) (l,g)         | o == "-"      = (generateCode a (l,g))++[Pop regA, Load (ImmValue (-1)) regB, Compute Mul regA regB regA, Push regA]
                                         | o == "!"      = (generateCode a (l,g))++[Pop regA, Load (ImmValue 1) regB, Compute Xor regA regB regA, Push regA]
-generateCode (TwoOpT a1 o a2) (l,g)     | o == "*"      = geneateTwoOpCode a1 a2 Mul (l,g)
-                                        | o == "%"      = geneateTwoOpCode a1 a2 Div (l,g)
-                                        | o == "+"      = geneateTwoOpCode a1 a2 Add (l,g)
-                                        | o == "-"      = geneateTwoOpCode a1 a2 Sub (l,g)
-                                        | o == "=="     = geneateTwoOpCode a1 a2 Equal (l,g)
-                                        | o == ">"      = geneateTwoOpCode a1 a2 Gt (l,g)
-                                        | o == "<"      = geneateTwoOpCode a1 a2 Lt (l,g)
-                                        | o == ">="     = geneateTwoOpCode a1 a2 Gte (l,g)
-                                        | o == "<="     = geneateTwoOpCode a1 a2 Lte (l,g)
-                                        | o == "!="     = geneateTwoOpCode a1 a2 NEq (l,g)
-                                        | o == "||"     = geneateTwoOpCode a1 a2 Or (l,g)
-                                        | o == "&&"     = geneateTwoOpCode a1 a2 And (l,g)
-                                        | o == "+|"     = geneateTwoOpCode a1 a2 Xor (l,g)
-generateCode (Brackets a) (l,g)         = generateCode a (l,g)
+generateCode (TwoOpT a1 o a2) (l,g)     | o == "*"      = generateTwoOpCode a1 a2 Mul (l,g)
+                                        | o == "%"      = generateTwoOpCode a1 a2 Div (l,g)
+                                        | o == "+"      = generateTwoOpCode a1 a2 Add (l,g)
+                                        | o == "-"      = generateTwoOpCode a1 a2 Sub (l,g)
+                                        | o == "=="     = generateTwoOpCode a1 a2 Equal (l,g)
+                                        | o == ">"      = generateTwoOpCode a1 a2 Gt (l,g)
+                                        | o == "<"      = generateTwoOpCode a1 a2 Lt (l,g)
+                                        | o == ">="     = generateTwoOpCode a1 a2 GtE (l,g)
+                                        | o == "<="     = generateTwoOpCode a1 a2 LtE (l,g)
+                                        | o == "!="     = generateTwoOpCode a1 a2 NEq (l,g)
+                                        | o == "||"     = generateTwoOpCode a1 a2 Or (l,g)
+                                        | o == "&&"     = generateTwoOpCode a1 a2 And (l,g)
+                                        | o == "+|"     = generateTwoOpCode a1 a2 Xor (l,g)
+generateCode (BracketsT a) (l,g)         = generateCode a (l,g)
 
 
 
 
 
-generateTwoOpCode :: AST -> AST -> Operator
+generateTwoOpCode :: AST -> AST -> Operator -> (OffsetMap, OffsetMap) -> [Instruction]
 generateTwoOpCode a1 a2 o (l,g)     = (generateCode a1 (l,g))++(generateCode a2 (l,g))++[Pop regA, Pop regB, Compute o regA regB regA, Push regA]
 
 
@@ -67,7 +67,7 @@ generateTwoOpCode a1 a2 o (l,g)     = (generateCode a1 (l,g))++(generateCode a2 
 
 
 generateCode' :: [AST] -> (OffsetMap, OffsetMap) -> [Instruction]
-generateCode' [] vm                 =
+generateCode' [] vm                 = []
 generateCode' (a:as) vm             = (generateCode a vm)++(generateCode' as vm)
 
 

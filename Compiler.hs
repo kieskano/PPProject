@@ -24,10 +24,10 @@ test3 = compileDinkie "test/testScope.ding"
 test4 = compileDinkie "test/testType.ding"
 test5 = compileDinkie "test/testCodeGen.ding"
 
-compileDinkie :: String -> [String]
+compileDinkie :: String -> IO ()
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
                     | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
-                    | otherwise                 = unlines $ (map show code)
+                    | otherwise                 = putStr $ unlines $ (map show code)
                     where
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
