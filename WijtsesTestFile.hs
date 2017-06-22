@@ -3,8 +3,9 @@ import Parser.AST.CorrectAST (correctProg)
 import Parser.AST.AST
 import Checker.TypeChecker (checkTypes)
 import FPPrac.Trees
+import Sprockell
 
-compileDinkie :: String -> [String]
+compileDinkie :: String -> [Instruction]
 compileDinkie file  | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
                     | otherwise                 = []
                     where
