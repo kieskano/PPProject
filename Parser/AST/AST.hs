@@ -19,8 +19,8 @@ data AST    = ProgT [AST]
             | ParallelT AST [AST]
             | ReadIntT String
             | WriteIntT AST
-            | EmptyT
             -- Expressions
+            | EmptyT
             | IntConstT String
             | BoolConstT String
             | VarT String
@@ -73,15 +73,15 @@ asttorose (IfTwoT ast asts1 asts2)  = RoseNode "IfTwoT" (((asttorose ast):(map a
 asttorose (ParallelT ast asts)      = RoseNode "ParallelT" ((asttorose ast):(map asttorose asts))
 asttorose (ReadIntT s)              = RoseNode ("ReadIntT " ++ s) []
 asttorose (WriteIntT ast)           = RoseNode "WriteIntT" [asttorose ast]
-asttorose EmptyT                    = RoseNode "EmptyT" []
-asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
 -- Expressions
+asttorose EmptyT                    = RoseNode "EmptyT" []
 asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []
 asttorose (BoolConstT b)            = RoseNode ("BoolConstT " ++ b) []
 asttorose (VarT s)                  = RoseNode ("VarT " ++ s) []
 asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
 asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
 asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
+asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
 -- asttorose x                         = error ("Error in asttorose on: " ++ show(x))
 
 

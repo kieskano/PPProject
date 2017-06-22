@@ -70,8 +70,8 @@ checkScope' (ReadIntT v) x               = (x, snd cu)
 checkScope' (WriteIntT a) x             = (x, snd ca)
                                             where
                                                 ca = checkScope' a x
-checkScope' EmptyT  x                   = (x, [])
 -- Expressions
+checkScope' EmptyT  x                   = (x, [])
 checkScope' (IntConstT i) x             = (x, [])
 checkScope' (BoolConstT b) x            = (x, [])
 checkScope' (VarT v) x                  = (x, snd cu)

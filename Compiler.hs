@@ -10,6 +10,7 @@ import Checker.ScopeChecker
 import Checker.TypeChecker
 import Parser.AST.CorrectAST
 import Parser.NewFile
+import Sprockell
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
