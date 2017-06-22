@@ -7,7 +7,7 @@ import Sprockell
 
 
 generateCode :: AST -> (OffsetMap, OffsetMap) -> [Instruction]
-generateCode (ProgT as) vm              = generateCode' as vm
+generateCode (ProgT as) vm              = (generateCode' as vm)++[EndProg]
 -- Statements
 generateCode (GlobalDeclT t v a) (l,g)  = (generateCode a (l,g))++[Pop regA, WriteInstr regA (DirAddr og)]
                                             where

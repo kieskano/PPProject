@@ -23,6 +23,7 @@ test2 = checkScope (parsetoast (parseDinkie "test/testScope2.ding"))
 test3 = compileDinkie "test/testScope.ding"
 test4 = compileDinkie "test/testType.ding"
 test5 = compileDinkie "test/testCodeGen.ding"
+test6 = compileDinkie "test/testCodeHan.ding"
 
 compileDinkie :: String -> IO ()
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
