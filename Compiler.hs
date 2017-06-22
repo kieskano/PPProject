@@ -11,6 +11,8 @@ import Checker.TypeChecker
 import Parser.AST.CorrectAST
 import Parser.NewFile
 import Sprockell
+import Generator.Generator
+import Generator.VariableOffset
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
@@ -24,10 +26,12 @@ test4 = compileDinkie "test/testType.ding"
 compileDinkie :: String -> [String]
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
                     | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
-                    | otherwise                 = []
+                    | otherwise                 = unlines $ (map show code)
                     where
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
                         ast' = correctProg ast
                         scopeErrors = checkScope ast'
                         typeErrors = snd $ checkTypes [] ast'
+                        offsets = calculateVarOffset ast'
+                        code = generateCode ast' offsets
