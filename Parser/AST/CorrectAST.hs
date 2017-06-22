@@ -56,6 +56,8 @@ correctProg (WhileT ast asts)       = WhileT (correctExpr ast) (map correctProg 
 correctProg (IfOneT ast asts)       = IfOneT (correctExpr ast) (map correctProg asts)
 correctProg (IfTwoT ast asts1 asts2)= IfTwoT (correctExpr ast) (map correctProg asts1) (map correctProg asts2)
 correctProg (ParallelT ast asts)    = ParallelT ast (map correctProg asts)
+correctProg (ReadIntT s)            = ReadIntT s
+correctProg (WriteIntT ast)         = WriteIntT (correctExpr ast)
 correctProg (EmptyT)                = EmptyT
 
 

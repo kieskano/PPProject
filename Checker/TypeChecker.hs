@@ -16,8 +16,8 @@ instance Show Type where
 
 
 typeMap :: [(String, Type)]
-typeMap =      [("#", IntType),
-                ("?", BoolType)]
+typeMap =          [("#", IntType),
+                    ("?", BoolType)]
 
 oneOpArgTypeMap :: [(String, Type)]
 oneOpArgTypeMap =  [("-", IntType),
@@ -128,6 +128,22 @@ checkTypes varMap (IfTwoT expr as1 as2) | eType == BoolType = let (x, y) = check
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "'?<' statement with expression '" ++ exprString ++ "'"
 checkTypes varMap (ParallelT num as)    = checkTypesBlock varMap as
+checkTypes varMap (ReadIntT var)        | vType == IntType = (varMap, [])
+                                        | otherwise
+                                        where
+                                            vType = getVal var varMap
+                                            err = "Could not match expected type '" ++ (show IntType)
+                                                ++ "' with actual type '" ++ vType "' of variable '" ++ var
+                                                ++ "' in '*>' statement"
+checkTypes varMap (WriteIntT expr)      | eType == IntType = (varMap, errors')
+                                        | otherwise        = (varMap, err:errors')
+                                        where
+                                            (eType, errors) = checkExprType varMap expr
+                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
+                                            exprString = exprToString expr
+                                            err = "Could not match expected type '" ++ (show IntType)
+                                                ++ "' with actual type '" ++ (show eType) ++ "' in "
+                                                ++ "'<*' statement with expression '" ++ exprString ++ "'"
 
 checkTypesBlock :: [(String, Type)] -> [AST] -> ([(String, Type)], [String])
 checkTypesBlock varMap []       = (varMap, [])
