@@ -32,6 +32,8 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | IfOne
               | IfTwo
               | Parallel
+              | ReadInt
+              | WriteInt
               | Assign
               | Expr
               | OneOp

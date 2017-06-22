@@ -24,12 +24,14 @@ name = \s x -> case s of
 
 symbol :: FAState -> Char -> FAState
 symbol = \s x -> case s of
-                        S   | elem x "*/#\\()%._@" -> F 0
-                            | elem x "!<="  -> F 1
+                        S   | elem x "/#\\()%._@" -> F 0
+                            | elem x "!="   -> F 1
                             | elem x "|+"   -> F 2
                             | x == '?'      -> F 3
                             | x == '-'      -> F 4
                             | x == '>'      -> F 5
+                            | x == '*'      -> F 6
+                            | x == '<'      -> F 7
                             | x == '&'      -> Q 0
                             | otherwise     -> E
 
@@ -46,6 +48,12 @@ symbol = \s x -> case s of
                             | otherwise     -> E
 
                         F 5 | elem x "-="   -> F 0
+                            | otherwise     -> E
+
+                        F 6 | x == '>'      -> F 0
+                            | otherwise     -> E
+
+                        F 7 | elem x "*="   -> F 0
                             | otherwise     -> E
 
                         Q 0 | x == '&'      -> F 0

@@ -17,6 +17,8 @@ data AST    = ProgT [AST]
             | IfOneT AST [AST]
             | IfTwoT AST [AST] [AST]
             | ParallelT AST [AST]
+            | ReadIntT String
+            | WriteIntT AST
             | EmptyT
             -- Expressions
             | IntConstT String
@@ -40,6 +42,8 @@ parsetoast (PNode Stat [PNode While [e, PNode Block s]])                    = Wh
 parsetoast (PNode Stat [PNode IfOne [e, PNode Block s]])                    = IfOneT (parsetoast e) (map parsetoast s)
 parsetoast (PNode Stat [PNode IfTwo [e, PNode Block st, PNode Block se]])   = IfTwoT (parsetoast e) (map parsetoast st) (map parsetoast se)
 parsetoast (PNode Stat [PNode Parallel [PNode IntConst [i], PNode Block st]])   = ParallelT (IntConstT (getTokenString i)) (map parsetoast st)
+parsetoast (PNode Stat [PNode ReadInt [PNode Var [v]]])                     = ReadIntT (getTokenString v)
+parsetoast (PNode Stat [PNode WriteInt [e]])                     = WriteIntT (parsetoast e)
 -- Expressions
 parsetoast (PNode Expr [PNode Brackets [v], PNode TwoOp [t], e])            = TwoOpT (parsetoast (PNode Expr [PNode Brackets [v]])) (getTokenString (t)) (parsetoast(e))
 parsetoast (PNode Expr [v, PNode TwoOp [t], e])                             = TwoOpT (parsetoast v) (getTokenString (t)) (parsetoast e)
@@ -67,8 +71,10 @@ asttorose (WhileT ast asts)         = RoseNode "WhileT" ((asttorose ast):(map as
 asttorose (IfOneT ast asts)         = RoseNode "IfOneT" ((asttorose ast):(map asttorose asts))
 asttorose (IfTwoT ast asts1 asts2)  = RoseNode "IfTwoT" (((asttorose ast):(map asttorose asts1)) ++ (map asttorose asts2))
 asttorose (ParallelT ast asts)      = RoseNode "ParallelT" ((asttorose ast):(map asttorose asts))
+asttorose (ReadIntT s)              = RoseNode ("ReadIntT " ++ s) []
+asttorose (WriteIntT ast)           = RoseNode "WriteIntT" [asttorose ast]
 asttorose EmptyT                    = RoseNode "EmptyT" []
-asttorose (BracketsT ast)           = RoseNode "BracketsT" [(asttorose ast)]
+asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
 -- Expressions
 asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []
 asttorose (BoolConstT b)            = RoseNode ("BoolConstT " ++ b) []
