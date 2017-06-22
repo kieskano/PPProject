@@ -1,4 +1,4 @@
-module Generator where
+module Generator.Generator where
 
 
 import Parser.AST.AST

@@ -22,6 +22,7 @@ test = showRoseTree (asttorose (parsetoast (parseDinkie "test/testScope2.ding"))
 test2 = checkScope (parsetoast (parseDinkie "test/testScope2.ding"))
 test3 = compileDinkie "test/testScope.ding"
 test4 = compileDinkie "test/testType.ding"
+test5 = compileDinkie "test/testCodeGen.ding"
 
 compileDinkie :: String -> [String]
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
