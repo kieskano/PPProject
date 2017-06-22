@@ -8,22 +8,22 @@ calculateVarOffset :: AST -> (OffsetMap, OffsetMap)
 calculateVarOffset ast = let (res,_,_) = calculateVarOffset' (([],[]),0,0) ast in res
 
 calculateVarOffset' :: ((OffsetMap, OffsetMap), Int, Int) -> AST -> ((OffsetMap, OffsetMap), Int, Int)
-calculateVarOffset' world (ProgT asts)          = calculateVarOffsetList asts
-calculateVarOffset' world (WhileT ast asts)     = calculateVarOffsetList asts
-calculateVarOffset' world (IfOneT ast asts)     = calculateVarOffsetList asts
-calculateVarOffset' world (IfTwoT ast asts)     = calculateVarOffsetList asts
-calculateVarOffset' world (ParallelT ast asts)  = calculateVarOffsetList asts
+calculateVarOffset' world (ProgT asts)          = calculateVarOffsetList world asts
+calculateVarOffset' world (WhileT ast asts)     = calculateVarOffsetList world asts
+calculateVarOffset' world (IfOneT ast asts)     = calculateVarOffsetList world asts
+calculateVarOffset' world (IfTwoT ast as1 as2)  = calculateVarOffsetList (calculateVarOffsetList world as1) as2
+calculateVarOffset' world (ParallelT ast asts)  = calculateVarOffsetList world asts
 calculateVarOffset' world (GlobalDeclT _ s _)   | offMapsContains s offmaps = world
-                                                | otherwise                 = ((local,(s,curGoff):global),curLOff,curGoff+1)
+                                                | otherwise                 = ((local,(s,curGOff):global),curLOff,curGOff+1)
                                                 where
                                                     (offmaps, curLOff, curGOff) = world
                                                     (local, global) = offmaps
 calculateVarOffset' world (PrivateDeclT _ s _)  | offMapsContains s offmaps = world
-                                                | otherwise                 = (((s,curLoff):local,global),curLOff+1,curGoff)
+                                                | otherwise                 = (((s,curLOff):local,global),curLOff+1,curGOff)
                                                 where
                                                     (offmaps, curLOff, curGOff) = world
                                                     (local, global) = offmaps
-calculateVarOffset' world _                        = world
+calculateVarOffset' world _                     = world
 
 
 
