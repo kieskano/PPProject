@@ -64,6 +64,12 @@ checkScope' (ParallelT a as) x          | elem (Unknown "=") (head x) = (x, ["Ca
                                                 ca = checkScope' a x
                                                 y = getParallelScope x
                                                 cs = checkScope'' as y
+checkScope' (ReadIntT v) x               = (x, snd cu)
+                                            where
+                                                cu = checkUse (Unknown v) x
+checkScope' (WriteIntT aa) x            = (x, snd ca)
+                                            where
+                                                ca = checkScope' a x
 checkScope' EmptyT  x                   = (x, [])
 -- Expressions
 checkScope' (IntConstT i) x             = (x, [])
