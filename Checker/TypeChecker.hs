@@ -157,6 +157,7 @@ checkExprType varMap (VarT s)           = (getVal s varMap, [])
 checkExprType varMap (IntConstT s)      = (IntType, [])
 checkExprType varMap (BoolConstT s)     = (BoolType, [])
 checkExprType varMap (ThreadIDT)        = (IntType, [])
+checkExprType varMap (BracketsT e)      = checkExprType varMap e
 checkExprType varMap (OneOpT s e)       | eType == opArgType = (opRetType, errors)
                                         | otherwise          = (opRetType, err:errors)
                                         where
@@ -202,12 +203,26 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                                 ++ s ++ "'"
 
 
+statToString :: AST -> String
+statToString (GlobalDeclT s1 s2 Empty)  = ". _" ++ s1 ++ ' ':s2
+statToString (GlobalDeclT s1 s2 a)      = ". _" ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
+statToString (PrivateDeclT s1 s2 Empty) = ". " ++ s1 ++ ' ':s2
+statToString (PrivateDeclT s1 s2 a)     = ". " ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
+statToString (AssignT s a)              = ". " ++ s ++ " = " ++ (exprToString a)
+statToString (WhileT a _)               = ". ?^ |" ++ (exprToString a) ++ "| < ... >"
+statToString (IfOneT a _)               = ". ?- |" ++ (exprToString a) ++ "| < ... >"
+statToString (IfTwoT a _ _)             = ". ?< |" ++ (exprToString a) ++ "| < ... > < ... >"
+statToString (ParallelT a _)            = ". -<" ++ (exprToString a) ++ ">- < ... >"
+statToString (ReadIntT s)               = ". *> " ++ s
+statToString (WriteIntT a)              = ". <* " ++ (exprToString a)
+
 exprToString :: AST -> String
 exprToString (IntConstT s)      = s
 exprToString (BoolConstT s)     = s
 exprToString (VarT s)           = s
 exprToString (OneOpT s a)       = s ++ (exprToString a)
-exprToString (TwoOpT a1 s a2)   = "(" ++ (exprToString a1) ++ " " ++ s ++ " " ++ (exprToString a2) ++ ")"
+exprToString (TwoOpT a1 s a2)   = (exprToString a1) ++ " " ++ s ++ " " ++ (exprToString a2)
+exprToString (BracketsT a)      = "(" ++ (exprToString a) ++ ")"
 
 
 
