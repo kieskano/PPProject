@@ -24,8 +24,12 @@ generateCode (WhileT a as) (l,g)        = []
 generateCode (IfOneT a as) (l,g)        = []
 generateCode (IfTwoT a as1 as2) (l,g)   = []
 generateCode (ParallelT a as) (l,g)     = []
-generateCode (ReadIntT v) (l,g)         = []
-generateCode (WriteIntT a) (l,g)        = []
+generateCode (ReadIntT v) (l,g)         | ol /= -1      = [ReadInstr numberIO, Receive regA, Store regAA (DirAddr ol)]
+                                        | otherwise     = [ReadInstr numberIO, Receive regA, Store regAA (DirAddr ol)]
+                                            where
+                                                ol = getOffset v l
+                                                og = getOffset v g
+generateCode (WriteIntT a) (l,g)        = (generateCode a (l,g))++[Pop regA, WriteInstr regA numberIO]
 -- Expressions
 generateCode EmptyT (l,g)               = [Push reg0]
 generateCode (IntConstT i) (l,g)        = [Load (ImmValue (read i)) regA, Push regA]
