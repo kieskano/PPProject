@@ -23,6 +23,7 @@ test5 = compileDinkie "test/testCodeGen.ding"
 test6 = compileDinkie "test/testCodeHan.ding"
 test7 = runDinkie 1 (compileDinkie "test/testCodeHan.ding")
 test8 = progToString testInstrList
+test9 = progToString (compileDinkie "test/testFib.ding")
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
