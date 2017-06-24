@@ -22,9 +22,11 @@ afterPar = [Compute Equal regSprID reg0 regA,
            Jump (Abs 4)]
 --           || ast || ((offMap   , offMap  ), lineNr)||( prog        , nextLineNr)
 generateProgCode :: AST -> Int -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
-generateProgCode (ProgT as) n ((l,g),i)    = preProg++code++[EndProg]
+generateProgCode (ProgT as) n ((l,g),i)    = preProg++code++[Load (ImmValue endLine) regA]++killSlavesCode++[EndProg]
                                             where
+                                                endLine = (length preProg) + (length code) + 1 + (length killSlavesCode)
                                                 code = generateCode' as ((l,g),i+(length preProg))
+                                                killSlavesCode = generateCallSlaves (n-1)
 -- Statements
 generateCode :: AST -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
 generateCode (GlobalDeclT t v a) ((l,g),i) = code++[Pop regA, WriteInstr regA (DirAddr og)]
@@ -113,8 +115,6 @@ generateCallSlaves n = (generateCallSlaves (n-1)) ++ [WriteInstr regA (DirAddr (
 generateJoinSlaves :: Int -> [Instruction]
 generateJoinSlaves 0 = []
 generateJoinSlaves n = [ReadInstr (DirAddr (n-1)), Receive regA, Compute Equal regA reg0 regA, Branch regA (Rel 2), Jump (Rel (-4))]
-
-
 
 generateCode' :: [AST] -> ((OffsetMap, OffsetMap),Int) -> [Instruction]
 generateCode' [] vm                 = []
