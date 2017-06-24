@@ -216,7 +216,7 @@ statToString (AssignT s a)              = ". " ++ s ++ " = " ++ (exprToString a)
 statToString (WhileT a _)               = ". ?^ |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfOneT a _)               = ". ?- |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfTwoT a _ _)             = ". ?< |" ++ (exprToString a) ++ "| < ... > < ... >"
-statToString (ParallelT a _)            = ". -<" ++ (exprToString a) ++ ">- < ... >"
+statToString (ParallelT s _)            = ". -<" ++ s ++ ">- < ... >"
 statToString (ReadIntT s)               = ". *> " ++ s
 statToString (WriteIntT a)              = ". <* " ++ (exprToString a)
 
