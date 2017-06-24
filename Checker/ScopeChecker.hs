@@ -58,10 +58,9 @@ checkScope' (IfTwoT a as1  as2) x       = (x, (snd ca) ++ (snd cs1) ++ (snd cs2)
                                                 ca = checkScope' a x
                                                 cs1 = checkScope'' as1 (x ++ [[]])
                                                 cs2 = checkScope'' as2 (x ++ [[]])
-checkScope' (ParallelT a as) x          | elem (Unknown "=") (head x) = (x, ["Cannot open new parallel scope within a parallel scope"] ++ (snd ca))
-                                        | otherwise = (x, (snd ca) ++ (snd cs))
+checkScope' (ParallelT s as) x          | elem (Unknown "=") (head x) = (x, ["Cannot open new parallel scope within a parallel scope"])
+                                        | otherwise = (x, snd cs)
                                             where
-                                                ca = checkScope' a x
                                                 y = getParallelScope x
                                                 cs = checkScope'' as y
 checkScope' (ReadIntT v) x               = (x, snd cu)
