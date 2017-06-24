@@ -26,6 +26,7 @@ test7 = runDinkie 1 (compileDinkie "test/testCodeHan.ding")
 test8 = progToString testInstrList
 test9 = progToString (compileDinkie "test/testFib.ding")-}
 test10 = runDinkie "test/testThreads.ding"
+test11 = runDinkie "test/testScope.ding"
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
@@ -33,8 +34,7 @@ parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 compileDinkie :: String -> ([Instruction], Int)
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
                     | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
-                    | otherwise                 = trace ("=====> Compile result (threads: " ++ (show threads) ++ ") =\n"
-                                                    ++ (show code)) (code, threads)
+                    | otherwise                 = trace (offsetsToString offsets) (code, threads)
                     where
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
@@ -42,19 +42,33 @@ compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scop
                         scopeErrors = checkScope ast'
                         typeErrors = snd $ checkTypes [] ast'
                         threads = calculateThreadAmount ast'
-                        offsets = trace (show (calculateVarOffset ast' (threads - 1))) (calculateVarOffset ast' (threads - 1))
+                        offsets = calculateVarOffset ast' (threads - 1)
                         code = generateCode ast' (offsets,0)
 
 runDinkie :: String -> IO ()
-runDinkie file  = run (replicate threads prog)
+runDinkie file  = trace (progToString prog) (run (replicate threads prog))
                     where
                         cmp = compileDinkie file
                         threads = snd cmp
                         prog = fst cmp
 
+offsetsToString :: (OffsetMap, OffsetMap) -> String
+offsetsToString (l, g)  = "\nVariables:\n\nLocal:\n" ++ (unlines $ (showLocalOffsetMap l))
+                            ++ "Global:\n" ++ (unlines $ (showGlobalOffsetMap g))
 
-progToString :: [Instruction] -> IO ()
-progToString is = putStr $ unlines $ (showInstrList is 1)
+progToString :: [Instruction] -> String
+progToString is = "\nCompiled code:\n\n" ++ (unlines $ (showInstrList is 0))
+
+progToStringIO :: [Instruction] -> IO ()
+progToStringIO is = putStr $ unlines $ (showInstrList is 0)
+
+showLocalOffsetMap :: OffsetMap -> [String]
+showLocalOffsetMap []               = []
+showLocalOffsetMap ((s,i):os)       = (s ++ "\t\t" ++ (show i)):(showLocalOffsetMap os)
+
+showGlobalOffsetMap :: OffsetMap -> [String]
+showGlobalOffsetMap []             = []
+showGlobalOffsetMap ((s,i):os)     = ("_" ++ s ++ "\t\t" ++ (show i)):(showGlobalOffsetMap os)
 
 showInstrList :: [Instruction] -> Int -> [String]
 showInstrList [] rn         = []
@@ -104,28 +118,6 @@ showAddrImmDI (ImmValue i)  = show i
 showAddrImmDI (DirAddr m) = show m
 showAddrImmDI (IndAddr r) = showReg r regMap
 
-testInstrList :: [Instruction]
-testInstrList = [Compute Add 2 3 2,
-                Jump (Ind 4),
-                Jump (Rel 5),
-                Branch 3 (Ind 5),
-                Branch 3 (Rel 4),
-                Load (DirAddr 3) 2,
-                Load (IndAddr 3) 4,
-                Store 2 (DirAddr 3),
-                Store 3 (IndAddr 4),
-                Push 3,
-                Pop 4,
-                ReadInstr (DirAddr 3),
-                ReadInstr (IndAddr 6),
-                Receive 8,
-                WriteInstr 3 (DirAddr 3),
-                WriteInstr 4 (IndAddr 5),
-                TestAndSet (DirAddr 43),
-                TestAndSet (IndAddr 5),
-                EndProg,
-                Nop,
-                Debug "dinkie"]
 
 
 
@@ -138,15 +130,29 @@ testInstrList = [Compute Add 2 3 2,
 
 
 
-
-
-
-
-
-
-
-
-
+--
+-- testInstrList :: [Instruction]
+-- testInstrList = [Compute Add 2 3 2,
+--                 Jump (Ind 4),
+--                 Jump (Rel 5),
+--                 Branch 3 (Ind 5),
+--                 Branch 3 (Rel 4),
+--                 Load (DirAddr 3) 2,
+--                 Load (IndAddr 3) 4,
+--                 Store 2 (DirAddr 3),
+--                 Store 3 (IndAddr 4),
+--                 Push 3,
+--                 Pop 4,
+--                 ReadInstr (DirAddr 3),
+--                 ReadInstr (IndAddr 6),
+--                 Receive 8,
+--                 WriteInstr 3 (DirAddr 3),
+--                 WriteInstr 4 (IndAddr 5),
+--                 TestAndSet (DirAddr 43),
+--                 TestAndSet (IndAddr 5),
+--                 EndProg,
+--                 Nop,
+--                 Debug "dinkie"]
 
 
 --
