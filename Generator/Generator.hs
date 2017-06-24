@@ -20,9 +20,24 @@ generateCode (AssignT v a) (l,g)        | ol /= -1      = (generateCode a (l,g))
                                             where
                                                 ol = getOffset v l
                                                 og = getOffset v g
-generateCode (WhileT a as) (l,g)        = []
-generateCode (IfOneT a as) (l,g)        = []
-generateCode (IfTwoT a as1 as2) (l,g)   = []
+generateCode (WhileT a as) (l,g)        = bCode ++ [Pop regA, Branch regA (Rel 2), Jump (Rel jumpOver)] ++ wCode ++ [Jump (Rel jumpBack)]
+                                            where
+                                                bCode = generateCode a (l,g)
+                                                wCode = generateCode' as (l,g)
+                                                jumpOver = length wCode + 2
+                                                jumpBack = -1 * ((length bCode) + (length wCode) + 3)
+generateCode (IfOneT a as) (l,g)        = bCode ++ [Pop regA, Branch regA (Rel 2), Jump (Rel jumpOver)] ++ tCode
+                                            where
+                                                bCode = generateCode a (l,g)
+                                                tCode = generateCode' as (l,g)
+                                                jumpOver = length tCode + 1
+generateCode (IfTwoT a as1 as2) (l,g)   = bCode ++ [Pop regA, Branch regA (Rel 2), Jump (Rel jumpOverT)] ++ tCode ++ [Jump (Rel jumpOverE)] ++ eCode
+                                            where
+                                                bCode = generateCode a (l,g)
+                                                tCode = generateCode' as1 (l,g)
+                                                eCode = generateCode' as2 (l,g)
+                                                jumpOverT = length tCode + 2
+                                                jumpOverE = length eCode + 1
 generateCode (ParallelT a as) (l,g)     = []
 generateCode (ReadIntT v) (l,g)         | ol /= -1      = [ReadInstr numberIO, Receive regA, Store regA (DirAddr ol)]
                                         | otherwise     = [ReadInstr numberIO, Receive regA, WriteInstr regA (DirAddr og)]
@@ -62,7 +77,7 @@ generateCode (BracketsT a) (l,g)         = generateCode a (l,g)
 
 
 generateTwoOpCode :: AST -> AST -> Operator -> (OffsetMap, OffsetMap) -> [Instruction]
-generateTwoOpCode a1 a2 o (l,g)     = (generateCode a1 (l,g))++(generateCode a2 (l,g))++[Pop regA, Pop regB, Compute o regA regB regA, Push regA]
+generateTwoOpCode a1 a2 o (l,g)     = (generateCode a1 (l,g))++(generateCode a2 (l,g))++[Pop regB, Pop regA, Compute o regA regB regA, Push regA]
 
 
 

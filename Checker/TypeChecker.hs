@@ -71,62 +71,62 @@ checkTypes varMap (GlobalDeclT s1 s2 expr)    | eType == varType  = ((s2, varTyp
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             varType = getVal s1 typeMap
-                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
-                                            exprString = exprToString expr
+                                            errors' = map (++ " in expression '" ++ statString ++ "'") errors
+                                            statString = exprToString expr
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "the declaration of '" ++ s2 ++ "' with expression '"
-                                                ++ exprString ++ "'"
+                                                ++ statString ++ "'"
 checkTypes varMap (PrivateDeclT s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
 checkTypes varMap (PrivateDeclT s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
                                         | otherwise         = ((s2, varType):varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             varType = getVal s1 typeMap
-                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
-                                            exprString = exprToString expr
+                                            errors' = map (++ " in expression '" ++ statString ++ "'") errors
+                                            statString = exprToString expr
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "the declaration of '" ++ s2 ++ "' with expression '"
-                                                ++ exprString ++ "'"
+                                                ++ statString ++ "'"
 checkTypes varMap (AssignT s1 expr)     | eType == varType  = (varMap, errors')
                                         | otherwise         = (varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             varType = getVal s1 varMap
-                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
-                                            exprString = exprToString expr
+                                            errors' = map (++ " in expression '" ++ statString ++ "'") errors
+                                            statString = exprToString expr
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
                                                 ++ "the assignment of '" ++ s1 ++ "' with expression '"
-                                                ++ exprString ++ "'"
+                                                ++ statString ++ "'"
 checkTypes varMap (WhileT expr as)      | eType == BoolType = let (x, y) = checkTypesBlock varMap as in (x, errors' ++ y)
                                         | otherwise         = let (x, y) = checkTypesBlock varMap as in (x, err:errors' ++ y)
                                         where
                                             (eType, errors) = checkExprType varMap expr
-                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
-                                            exprString = exprToString expr
+                                            errors' = map (++ " in expression '" ++ statString ++ "'") errors
+                                            statString = exprToString expr
                                             err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
-                                                ++ "'?^' statement with expression '" ++ exprString ++ "'"
+                                                ++ "'?^' statement with expression '" ++ statString ++ "'"
 checkTypes varMap (IfOneT expr as)      | eType == BoolType = let (x, y) = checkTypesBlock varMap as in (x, errors' ++ y)
                                         | otherwise         = let (x, y) = checkTypesBlock varMap as in (x, err:errors' ++ y)
                                         where
                                             (eType, errors) = checkExprType varMap expr
-                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
-                                            exprString = exprToString expr
+                                            errors' = map (++ " in expression '" ++ statString ++ "'") errors
+                                            statString = exprToString expr
                                             err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
-                                                ++ "'?-' statement with expression '" ++ exprString ++ "'"
+                                                ++ "'?-' statement with expression '" ++ statString ++ "'"
 checkTypes varMap (IfTwoT expr as1 as2) | eType == BoolType = let (x, y) = checkTypesBlock varMap (as1 ++ as2) in (x, errors' ++ y)
                                         | otherwise         = let (x, y) = checkTypesBlock varMap (as1 ++ as2) in (x, err:errors' ++ y)
                                         where
                                             (eType, errors) = checkExprType varMap expr
-                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
-                                            exprString = exprToString expr
+                                            errors' = map (++ " in expression '" ++ statString ++ "'") errors
+                                            statString = exprToString expr
                                             err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
-                                                ++ "'?<' statement with expression '" ++ exprString ++ "'"
+                                                ++ "'?<' statement with expression '" ++ statString ++ "'"
 checkTypes varMap (ParallelT num as)    = checkTypesBlock varMap as
 checkTypes varMap (ReadIntT var)        | vType == IntType  = (varMap, [])
                                         | otherwise         = (varMap, [err])
@@ -135,15 +135,15 @@ checkTypes varMap (ReadIntT var)        | vType == IntType  = (varMap, [])
                                             err = "Could not match expected type '" ++ (show IntType)
                                                 ++ "' with actual type '" ++ (show vType) ++ "' of variable '"
                                                 ++ var ++ "' in '*>' statement"
-checkTypes varMap (WriteIntT expr)      | eType == IntType = (varMap, errors')
-                                        | otherwise        = (varMap, err:errors')
+checkTypes varMap (WriteIntT expr)      | eType == IntType  = (varMap, errors')
+                                        | otherwise         = (varMap, err:errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
-                                            errors' = map (++ " in expression '" ++ exprString ++ "'") errors
-                                            exprString = exprToString expr
+                                            errors' = map (++ " in expression '" ++ statString ++ "'") errors
+                                            statString = exprToString expr
                                             err = "Could not match expected type '" ++ (show IntType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' in "
-                                                ++ "'<*' statement with expression '" ++ exprString ++ "'"
+                                                ++ "'<*' statement with expression '" ++ statString ++ "'"
 
 checkTypesBlock :: [(String, Type)] -> [AST] -> ([(String, Type)], [String])
 checkTypesBlock varMap []       = (varMap, [])
