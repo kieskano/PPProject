@@ -204,9 +204,9 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
 
 
 statToString :: AST -> String
-statToString (GlobalDeclT s1 s2 Empty)  = ". _" ++ s1 ++ ' ':s2
+statToString (GlobalDeclT s1 s2 EmptyT)  = ". _" ++ s1 ++ ' ':s2
 statToString (GlobalDeclT s1 s2 a)      = ". _" ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
-statToString (PrivateDeclT s1 s2 Empty) = ". " ++ s1 ++ ' ':s2
+statToString (PrivateDeclT s1 s2 EmptyT) = ". " ++ s1 ++ ' ':s2
 statToString (PrivateDeclT s1 s2 a)     = ". " ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
 statToString (AssignT s a)              = ". " ++ s ++ " = " ++ (exprToString a)
 statToString (WhileT a _)               = ". ?^ |" ++ (exprToString a) ++ "| < ... >"
