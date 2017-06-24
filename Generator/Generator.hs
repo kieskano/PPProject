@@ -1,6 +1,5 @@
 module Generator.Generator where
 
-
 import Parser.AST.AST
 import Generator.VariableOffset
 import Sprockell
