@@ -25,7 +25,7 @@ generateCode (IfOneT a as) (l,g)        = []
 generateCode (IfTwoT a as1 as2) (l,g)   = []
 generateCode (ParallelT a as) (l,g)     = []
 generateCode (ReadIntT v) (l,g)         | ol /= -1      = [ReadInstr numberIO, Receive regA, Store regA (DirAddr ol)]
-                                        | otherwise     = [ReadInstr numberIO, Receive regA, Store regA (DirAddr og)]
+                                        | otherwise     = [ReadInstr numberIO, Receive regA, WriteInstr regA (DirAddr og)]
                                             where
                                                 ol = getOffset v l
                                                 og = getOffset v g
