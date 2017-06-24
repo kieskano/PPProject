@@ -53,6 +53,7 @@ parsetoast (PNode Expr [PNode Brackets [e]])                                = Br
 parsetoast (PNode Expr [PNode Val [PNode IntConst [i]]])                    = IntConstT (getTokenString i)
 parsetoast (PNode Expr [PNode Val [PNode BoolConst [b]]])                   = BoolConstT (getTokenString b)
 parsetoast (PNode Expr [PNode Val [PNode Var [v]]])                         = VarT (getTokenString v)
+parsetoast (PNode Expr [PNode Val [PNode ThreadID []]])                     = ThreadIDT
 parsetoast (PNode Val [PNode IntConst [i]])                                 = IntConstT (getTokenString i)
 parsetoast (PNode Val [PNode BoolConst [b]])                                = BoolConstT (getTokenString b)
 parsetoast (PNode Val [PNode Var [v]])                                      = VarT (getTokenString v)

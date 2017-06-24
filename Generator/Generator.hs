@@ -4,12 +4,29 @@ import Parser.AST.AST
 import Generator.VariableOffset
 import Sprockell
 
+preProg = [Branch regSprID (Rel 2),
+           Jump (Rel 8),
+           Load (ImmValue 1) regA,
+           Compute Sub regSprID regA regA,
+           ReadInstr (IndAddr regA),
+           Receive regB,
+           Compute Equal regB reg0 regC,
+           Branch regC (Rel (-3)),
+           Jump (Ind regB)]
+
+afterPar = [Compute Equal regSprID reg0 regA,
+           Branch regA (Rel 5),
+           Load (ImmValue 1) regA,
+           Compute Sub regSprID regA regA,
+           WriteInstr reg0 (IndAddr regA),
+           Jump (Abs 4)]
 --           || ast || ((offMap   , offMap  ), lineNr)||( prog        , nextLineNr)
-generateCode :: AST -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
-generateCode (ProgT as) vm              = code++[EndProg]
+generateProgCode :: AST -> Int -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
+generateProgCode (ProgT as) ((l,g),i)      = preProg++code++[EndProg]
                                             where
-                                                code = generateCode' as vm
+                                                code = generateCode' as ((l,g),i+(length preProg))
 -- Statements
+generateCode :: AST -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
 generateCode (GlobalDeclT t v a) ((l,g),i) = code++[Pop regA, WriteInstr regA (DirAddr og)]
                                             where
                                                 code = generateCode a ((l,g),i)
@@ -41,7 +58,13 @@ generateCode (IfTwoT a as1 as2) ((l,g),i)= bCode ++ [Pop regA, Branch regA (Rel 
                                                 eCode = generateCode' as2 ((l,g),i+(length bCode)+3+(length tCode)+1)
                                                 jumpOverT = length tCode + 2
                                                 jumpOverE = length eCode + 1
-generateCode (ParallelT a as) ((l,g),i) = []
+generateCode (ParallelT a as) ((l,g),i) = [Load (ImmValue jumpLine) regA] ++ callSlavesCode ++ blockCode ++ afterPar ++ joinSlavesCode
+                                            where
+                                                nrOfThreads = read a
+                                                jumpLine = i + 1 + (length callSlavesCode)
+                                                callSlavesCode = generateCallSlaves (nrOfThreads-1)
+                                                joinSlavesCode = generateJoinSlaves (nrOfThreads-1)
+                                                blockCode = generateCode' as ((l,g),jumpLine)
 generateCode (ReadIntT v) ((l,g),i)     | ol /= -1      = [ReadInstr numberIO, Receive regA, Store regA (DirAddr ol)]
                                         | otherwise     = [ReadInstr numberIO, Receive regA, WriteInstr regA (DirAddr og)]
                                             where
@@ -83,8 +106,13 @@ generateTwoOpCode :: AST -> AST -> Operator -> ((OffsetMap, OffsetMap),Int) -> [
 generateTwoOpCode a1 a2 o ((l,g),i)     = (generateCode a1 ((l,g),i))++(generateCode a2 ((l,g),i))++[Pop regB, Pop regA, Compute o regA regB regA, Push regA]
 
 
+generateCallSlaves :: Int -> [Instruction]
+generateCallSlaves 0 = []
+generateCallSlaves n = (generateCallSlaves (n-1)) ++ [WriteInstr regA (DirAddr (n-1))]
 
-
+generateJoinSlaves :: Int -> [Instruction]
+generateJoinSlaves 0 = []
+generateJoinSlaves n = [ReadInstr (DirAddr (n-1)), Receive regA, Compute Equal regA reg0 regA, Branch regA (Rel 2), Jump (Rel (-4))]
 
 
 
