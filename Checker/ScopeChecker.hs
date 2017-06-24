@@ -10,15 +10,7 @@ instance Show ScopeVar where
     show (Global s) = '_':s
     show (Unknown s) = s
 instance Eq ScopeVar where
-    (==) (Private s1) (Private s2) = (==) s1 s2
-    (==) (Private s1) (Global s2) = (==) s1 s2
-    (==) (Private s1) (Unknown s2) = (==) s1 s2
-    (==) (Global s1) (Private s2) = (==) s1 s2
-    (==) (Global s1) (Global s2) = (==) s1 s2
-    (==) (Global s1) (Unknown s2) = (==) s1 s2
-    (==) (Unknown s1) (Private s2) = (==) s1 s2
-    (==) (Unknown s1) (Global s2) = (==) s1 s2
-    (==) (Unknown s1) (Unknown s2) = (==) s1 s2
+    (==) sv1 sv2 = (==) (getVarName sv1) (getVarName sv2)
 
 
 checkScope :: AST -> [String]
@@ -98,7 +90,7 @@ checkScope'' (a:as) x                    = let (v, w) = checkScope'' as y in (v,
 
 checkDeclaration :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
 checkDeclaration s []           = (True, [])
-checkDeclaration s x            | ((not (elem s lx)) && (not (elem (Unknown (getVarName s)) lx)) && (fst cix))  = (True, [])
+checkDeclaration s x            | (not (elem s lx)) && (fst cix)  = (True, [])
                                 | otherwise = (False, ["Cannot redeclare " ++ (show s) ++ " at position V in" ++ (showScopes x)])
                                     where
                                         lx = last x
