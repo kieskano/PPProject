@@ -114,7 +114,7 @@ generateCallSlaves n = (generateCallSlaves (n-1)) ++ [WriteInstr regA (DirAddr (
 
 generateJoinSlaves :: Int -> [Instruction]
 generateJoinSlaves 0 = []
-generateJoinSlaves n = [ReadInstr (DirAddr (n-1)), Receive regA, Compute Equal regA reg0 regA, Branch regA (Rel 2), Jump (Rel (-4))]
+generateJoinSlaves n = generateJoinSlaves (n-1) ++ [ReadInstr (DirAddr (n-1)), Receive regA, Compute Equal regA reg0 regA, Branch regA (Rel 2), Jump (Rel (-4))]
 
 generateCode' :: [AST] -> ((OffsetMap, OffsetMap),Int) -> [Instruction]
 generateCode' [] vm                 = []
