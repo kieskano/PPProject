@@ -22,7 +22,7 @@ afterPar = [Compute Equal regSprID reg0 regA,
            Jump (Abs 4)]
 --           || ast || ((offMap   , offMap  ), lineNr)||( prog        , nextLineNr)
 generateProgCode :: AST -> Int -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
-generateProgCode (ProgT as) ((l,g),i)      = preProg++code++[EndProg]
+generateProgCode (ProgT as) n ((l,g),i)    = preProg++code++[EndProg]
                                             where
                                                 code = generateCode' as ((l,g),i+(length preProg))
 -- Statements
@@ -58,9 +58,9 @@ generateCode (IfTwoT a as1 as2) ((l,g),i)= bCode ++ [Pop regA, Branch regA (Rel 
                                                 eCode = generateCode' as2 ((l,g),i+(length bCode)+3+(length tCode)+1)
                                                 jumpOverT = length tCode + 2
                                                 jumpOverE = length eCode + 1
-generateCode (ParallelT a as) ((l,g),i) = [Load (ImmValue jumpLine) regA] ++ callSlavesCode ++ blockCode ++ afterPar ++ joinSlavesCode
+generateCode (ParallelT s as) ((l,g),i) = [Load (ImmValue jumpLine) regA] ++ callSlavesCode ++ blockCode ++ afterPar ++ joinSlavesCode
                                             where
-                                                nrOfThreads = read a
+                                                nrOfThreads = read s
                                                 jumpLine = i + 1 + (length callSlavesCode)
                                                 callSlavesCode = generateCallSlaves (nrOfThreads-1)
                                                 joinSlavesCode = generateJoinSlaves (nrOfThreads-1)

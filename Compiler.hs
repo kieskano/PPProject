@@ -43,7 +43,7 @@ compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scop
                         typeErrors = snd $ checkTypes [] ast'
                         threads = calculateThreadAmount ast'
                         offsets = calculateVarOffset ast' (threads - 1)
-                        code = generateCode ast' (offsets,0)
+                        code = generateProgCode ast' threads (offsets,0)
 
 runDinkie :: String -> IO ()
 runDinkie file  = trace (progToString prog) (run (replicate threads prog))
