@@ -13,8 +13,9 @@ import Parser.NewFile
 import Sprockell
 import Generator.Generator
 import Generator.VariableOffset
+import Debug.Trace
 
-test1 = showRoseTree (toRoseTree (parseDinkie "test/testSmall.ding"))
+{-test1 = showRoseTree (toRoseTree (parseDinkie "test/testSmall.ding"))
 test = showRoseTree (asttorose (parsetoast (parseDinkie "test/testScope2.ding")))
 test2 = checkScope (parsetoast (parseDinkie "test/testScope2.ding"))
 test3 = compileDinkie "test/testScope.ding"
@@ -23,26 +24,34 @@ test5 = compileDinkie "test/testCodeGen.ding"
 test6 = compileDinkie "test/testCodeHan.ding"
 test7 = runDinkie 1 (compileDinkie "test/testCodeHan.ding")
 test8 = progToString testInstrList
-test9 = progToString (compileDinkie "test/testFib.ding")
+test9 = progToString (compileDinkie "test/testFib.ding")-}
+test10 = runDinkie "test/testThreads.ding"
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 
-compileDinkie :: String -> [Instruction]
+compileDinkie :: String -> ([Instruction], Int)
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
                     | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
-                    | otherwise                 = code
+                    | otherwise                 = trace ("=====> Compile result (threads: " ++ (show threads) ++ ") =\n"
+                                                    ++ (show code)) (code, threads)
                     where
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
                         ast' = correctProg ast
                         scopeErrors = checkScope ast'
                         typeErrors = snd $ checkTypes [] ast'
-                        offsets = calculateVarOffset ast'
+                        threads = calculateThreadAmount ast'
+                        offsets = trace (show (calculateVarOffset ast' (threads - 1))) (calculateVarOffset ast' (threads - 1))
                         code = generateCode ast' offsets
 
-runDinkie :: Int -> [Instruction] -> IO ()
-runDinkie threads prog = run (replicate threads prog)
+runDinkie :: String -> IO ()
+runDinkie file  = run (replicate threads prog)
+                    where
+                        cmp = compileDinkie file
+                        threads = snd cmp
+                        prog = fst cmp
+
 
 progToString :: [Instruction] -> IO ()
 progToString is = putStr $ unlines $ (showInstrList is 1)
