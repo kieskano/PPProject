@@ -98,7 +98,7 @@ checkScope'' (a:as) x                    = let (v, w) = checkScope'' as y in (v,
 
 checkDeclaration :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
 checkDeclaration s []           = (True, [])
-checkDeclaration s x            | not (elem s lx) && fst cix            = (True, [])
+checkDeclaration s x            | ((not (elem s lx)) && (not (elem (Unknown (getVarName s)) lx)) && (fst cix))  = (True, [])
                                 | otherwise = (False, ["Cannot redeclare " ++ (show s) ++ " at position V in" ++ (showScopes x)])
                                     where
                                         lx = last x
@@ -107,7 +107,7 @@ checkDeclaration s x            | not (elem s lx) && fst cix            = (True,
 
 checkUse :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
 checkUse s []                   = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes [])])
-checkUse s x                    | elem s lx || fst cix      = (True, [])
+checkUse s x                    | ((elem s lx) && (not (elem (Unknown (getVarName s)) lx))) || (fst cix)        = (True, [])
                                 | otherwise = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes x)])
                                     where
                                         lx = last x
@@ -125,9 +125,12 @@ showScopes' [s]     = " " ++ (show s)
 showScopes' (s:ss)  = (" " ++ (show s)) ++ (showScopes' ss)
 
 getParallelScope :: [[ScopeVar]] -> [[ScopeVar]]
-getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)], []]
+getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)] ++ [(Unknown v) | (Private v) <- (concat x)], []]
 
-
+getVarName :: ScopeVar -> String
+getVarName (Private s) = s
+getVarName (Global s) = s
+getVarName (Unknown s) = s
 
 
 
