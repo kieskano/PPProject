@@ -1,0 +1,15 @@
+. _# a
+. _# e
+. # b
+. >~b~< <> $test local use and ouside parallel block$
+. ~<3>~ <
+    . >~a~< <
+        . >~a~< <> $use same var$
+    >
+    . >~c~< <>
+    . # d
+    . >~d~< <> $use local$
+    . >~a~< <
+        . >~e~< <>
+    >
+>

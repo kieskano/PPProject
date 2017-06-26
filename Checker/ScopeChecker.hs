@@ -15,81 +15,87 @@ instance Eq ScopeVar where
 
 
 checkScope :: AST -> [String]
-checkScope ast = (snd (checkScope' ast []))
+checkScope ast = (snd (checkScope' ast ([],[])))
 
 
-
-checkScope' :: AST -> [[ScopeVar]] -> ([[ScopeVar]],[String])
-checkScope' (ProgT as) x                = checkScope'' as (x ++ [[]])
+-- WORLD = (scopes, errors, nestedsync)
+checkScope' :: AST -> ([[ScopeVar]],[String]) -> ([[ScopeVar]],[String])
+checkScope' (ProgT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
 -- Statements
-checkScope' (GlobalDeclT t v a) x       | elem (Unknown "=") (head x) = (x, ["Cannot declare global variable " ++ (show v) ++ " in parallel scope"] ++ (snd cx))
+checkScope' (GlobalDeclT t v a) (x,z)   | elem (Unknown "=") (head x) = (x, ["Cannot declare global variable " ++ (show v) ++ " in parallel scope"] ++ (snd cx) ++ (snd ca))
                                         | fst cd    = (fst ca, (snd ca))
                                         | otherwise = (x, (snd cd) ++ (snd ca))
                                             where
-                                                cx = checkScope' a x
+                                                cx = checkScope' a (x,z)
                                                 cd = checkDeclaration (Global v) x
                                                 y = (init x) ++ [(last x) ++ [Global v]]
-                                                ca = checkScope' a y
-checkScope' (PrivateDeclT t v a) x      | fst cd    = (fst ca, (snd ca))
+                                                ca = checkScope' a (y,z)
+checkScope' (PrivateDeclT t v a) (x,z)  | fst cd    = (fst ca, (snd ca))
                                         | otherwise = (x, (snd cd) ++ (snd ca))
                                             where
                                                 cd = checkDeclaration (Private v) x
                                                 y = (init x) ++ [(last x) ++ [(Private v)]]
-                                                ca = checkScope' a y
-checkScope' (AssignT v a) x             = (x, (snd cu) ++ (snd ca))
+                                                ca = checkScope' a (y,z)
+checkScope' (AssignT v a) (x,z)         = (x, (snd cu) ++ (snd ca))
                                             where
                                                 cu = checkUse (Unknown v) x
-                                                ca = checkScope' a x
-checkScope' (WhileT a as) x             = (x, (snd ca) ++ (snd cs))
+                                                ca = checkScope' a (x,z)
+checkScope' (WhileT a as) (x,z)         = (x, (snd ca) ++ (snd cs))
                                             where
-                                                ca = checkScope' a x
-                                                cs = checkScope'' as (x ++ [[]])
-checkScope' (IfOneT a as) x             = (x, (snd ca) ++ (snd cs))
+                                                ca = checkScope' a (x,z)
+                                                cs = checkScope'' as ((x ++ [[]]),z)
+checkScope' (IfOneT a as) (x,z)         = (x, (snd ca) ++ (snd cs))
                                             where
-                                                ca = checkScope' a x
-                                                cs = checkScope'' as (x ++ [[]])
-checkScope' (IfTwoT a as1  as2) x       = (x, (snd ca) ++ (snd cs1) ++ (snd cs2))
+                                                ca = checkScope' a (x,z)
+                                                cs = checkScope'' as ((x ++ [[]]),z)
+checkScope' (IfTwoT a as1  as2) (x,z)   = (x, (snd ca) ++ (snd cs1) ++ (snd cs2))
                                             where
-                                                ca = checkScope' a x
-                                                cs1 = checkScope'' as1 (x ++ [[]])
-                                                cs2 = checkScope'' as2 (x ++ [[]])
-checkScope' (ParallelT s as) x          | elem (Unknown "=") (head x) = (x, ["Cannot open new parallel scope within a parallel scope"])
+                                                ca = checkScope' a (x,z)
+                                                cs1 = checkScope'' as1 ((x ++ [[]]),z)
+                                                cs2 = checkScope'' as2 ((x ++ [[]]),z)
+checkScope' (ParallelT s as) (x,z)      | elem (Unknown "=") (head x) = (x, ["Cannot open new parallel scope within a parallel scope"] ++ (snd cs))
                                         | otherwise = (x, snd cs)
                                             where
                                                 y = getParallelScope x
-                                                cs = checkScope'' as y
-checkScope' (ReadIntT v) x               = (x, snd cu)
+                                                cs = checkScope'' as (y,z)
+checkScope' (SyncT v as) (x,z)          | not (elem (Unknown "=") (head x)) = (x, ["Cannot declare synchronized block outside parallel block"] ++ (snd csu) ++ (snd csn) ++ (snd cs))
+                                        | otherwise = (x, (snd csu) ++ (snd csn) ++ (snd cs))
+                                            where
+                                                csu = checkSyncUse (Global v) x
+                                                csn = checkSyncNesting v (z)
+                                                cs = checkScope'' as (x,z ++ [v])
+checkScope' (ReadIntT v) (x,z)          = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
-checkScope' (WriteIntT a) x             = (x, snd ca)
+checkScope' (WriteIntT a) (x,z)         = (x, snd ca)
                                             where
-                                                ca = checkScope' a x
+                                                ca = checkScope' a (x,z)
 -- Expressions
-checkScope' EmptyT  x                   = (x, [])
-checkScope' (IntConstT i) x             = (x, [])
-checkScope' (BoolConstT b) x            = (x, [])
-checkScope' (VarT v) x                  = (x, snd cu)
+checkScope' EmptyT  (x,z)               = (x, [])
+checkScope' (IntConstT i) (x,z)         = (x, [])
+checkScope' (BoolConstT b) (x,z)        = (x, [])
+checkScope' (VarT v) (x,z)              = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
-checkScope' ThreadIDT x                 = (x, [])
-checkScope' (OneOpT o ast) x            = (x, snd ca)
+checkScope' ThreadIDT (x,z)             = (x, [])
+checkScope' (OneOpT o ast) (x,z)        = (x, snd ca)
                                             where
-                                                ca = checkScope' ast x
-checkScope' (TwoOpT ast1 o ast2) x      = (x, (snd ca1) ++ (snd ca2))
+                                                ca = checkScope' ast (x,z)
+checkScope' (TwoOpT ast1 o ast2) (x,z)  = (x, (snd ca1) ++ (snd ca2))
                                             where
-                                                ca1 = checkScope' ast1 x
-                                                ca2 = checkScope' ast2 x
-checkScope' (BracketsT ast) x           = (x, snd ca)
+                                                ca1 = checkScope' ast1 (x,z)
+                                                ca2 = checkScope' ast2 (x,z)
+checkScope' (BracketsT ast) (x,z)       = (x, snd ca)
                                             where
-                                                ca = checkScope' ast x
+                                                ca = checkScope' ast (x,z)
 
 
 
-checkScope'' :: [AST] -> [[ScopeVar]] -> ([[ScopeVar]], [String])
-checkScope'' [] x                        = (init x, [])
-checkScope'' (a:as) x                    = let (v, w) = checkScope'' as y in (v, e ++ w)
+checkScope'' :: [AST] -> ([[ScopeVar]],[String]) -> ([[ScopeVar]], [String])
+checkScope'' [] (x,z)                        = (init x, [])
+checkScope'' (a:as) (x,z)                    = let (v, w) = checkScope'' as (y,z) in (v, e ++ w)
                                             where
-                                                (y, e) = checkScope' a x
+                                                (y, e) = checkScope' a (x,z)
 
 checkDeclaration :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
 checkDeclaration s []           = (True, [])
@@ -102,13 +108,25 @@ checkDeclaration s x            | (not (elem s lx)) && (fst cix)  = (True, [])
 
 checkUse :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
 checkUse s []                   = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes [])])
-checkUse s x                    | trace ((show s) ++  " " ++ (show x) ++ " " ++ (show(parVarElem s lx)) ++ " " ++ (show (not (parVarElem (Forbidden (getVarName s)) lx))))
-                                    ((parVarElem s lx) && (not (parVarElem (Forbidden (getVarName s)) lx))) || (fst cix)        = (True, [])
+checkUse s x                    | (parVarElem s lx) && (not (parVarElem (Forbidden (getVarName s)) lx)) || (fst cix)        = (True, [])
                                 | otherwise = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes x)])
                                     where
                                         lx = last x
                                         ix = init x
                                         cix = checkUse s ix
+
+checkSyncUse :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
+checkSyncUse s []               = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes [])])
+checkSyncUse s x                | (syncElem s lx) || (fst cix)        = (True, [])
+                                | otherwise = (False, ["Cannot use variable " ++ (show s) ++ " at position V in" ++ (showScopes x)])
+                                    where
+                                        lx = last x
+                                        ix = init x
+                                        cix = checkSyncUse s ix
+
+checkSyncNesting :: String -> [String] -> (Bool, [String])
+checkSyncNesting s ss   | trace (s ++ " " ++ (show ss) ++ " " ++ (show(not (elem s ss)))) (not (elem s ss)) = (True, [])
+                        | otherwise = (False, ["Cannot synchronize on " ++ (show s) ++ " when already synchronizing on that variable"])
 
 showScopes :: [[ScopeVar]] -> String
 showScopes []       = ""
@@ -136,6 +154,13 @@ parVarElem (Unknown x) ((Private y):ss) | x == y    = True
 parVarElem (Unknown x) ((Global y):ss)  | x == y    = True
                                         | otherwise = parVarElem (Unknown x) ss
 parVarElem x (s:ss)                     = parVarElem x ss
+
+syncElem :: ScopeVar -> [ScopeVar] -> Bool
+syncElem s [] = False
+syncElem (Global x) ((Global y):ss)     | x == y        = True
+                                        | otherwise = syncElem (Global x) ss
+syncElem x (s:ss)                       = syncElem x ss
+
 
 
 
