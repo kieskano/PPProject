@@ -131,6 +131,7 @@ checkTypes varMap (ParallelT num as)    | (read num) > 1    = (nVarMap, errors)
                                             statString = statToString (ParallelT num as)
                                             err = "Number of threads must be larger than 1, but it was " ++ num
                                                 ++ " in statement '" ++ statString ++ "'"
+checkTypes varMap (SyncT var as)        = checkTypesBlock varMap as
 checkTypes varMap (ReadIntT var)        | vType == IntType  = (varMap, [])
                                         | otherwise         = (varMap, [err])
                                         where

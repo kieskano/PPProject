@@ -14,6 +14,7 @@ grammar nt = case nt of
                         [ dot, IfOne ],
                         [ dot, IfTwo ],
                         [ dot, Parallel ],
+                        [ dot, Sync ],
                         [ dot, ReadInt ],
                         [ dot, WriteInt ]]
 
@@ -31,6 +32,8 @@ grammar nt = case nt of
         IfTwo       -> [[ iftwo, bar, Expr, bar, Block, Block ]]
 
         Parallel    -> [[ parl, IntConst, parr, Block ]]
+
+        Sync        -> [[ parr, Var, parl, Block ]]
 
         ReadInt     -> [[ readInt, Var ]]
 

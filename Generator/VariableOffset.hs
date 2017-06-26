@@ -13,8 +13,9 @@ calculateVarOffset' world (WhileT ast asts)     = calculateVarOffsetList world a
 calculateVarOffset' world (IfOneT ast asts)     = calculateVarOffsetList world asts
 calculateVarOffset' world (IfTwoT ast as1 as2)  = calculateVarOffsetList (calculateVarOffsetList world as1) as2
 calculateVarOffset' world (ParallelT s asts)    = calculateVarOffsetList world asts
+calculateVarOffset' world (SyncT s asts)        = calculateVarOffsetList world asts
 calculateVarOffset' world (GlobalDeclT _ s _)   | offMapsContains s offmaps = world
-                                                | otherwise                 = ((local,(s,curGOff):global),curLOff,curGOff+1)
+                                                | otherwise                 = ((local,(s,curGOff):global),curLOff,curGOff+2)
                                                 where
                                                     (offmaps, curLOff, curGOff) = world
                                                     (local, global) = offmaps
