@@ -24,15 +24,15 @@ name = \s x -> case s of
 
 symbol :: FAState -> Char -> FAState
 symbol = \s x -> case s of
-                        S   | elem x "/#\\()%._@" -> F 0
+                        S   | elem x "/#\\()%._@-" -> F 0
                             | elem x "!="   -> F 1
                             | elem x "|+"   -> F 2
                             | x == '?'      -> F 3
-                            | x == '-'      -> F 4
-                            | x == '>'      -> F 5
-                            | x == '*'      -> F 6
-                            | x == '<'      -> F 7
+                            | x == '>'      -> F 4
+                            | x == '*'      -> F 5
+                            | x == '<'      -> F 6
                             | x == '&'      -> Q 0
+                            | x == '~'      -> Q 1
                             | otherwise     -> E
 
                         F 1 | x == '='      -> F 0
@@ -44,19 +44,20 @@ symbol = \s x -> case s of
                         F 3 | elem x "^-<"  -> F 0
                             | otherwise     -> E
 
-                        F 4 | x == '<'      -> F 0
+                        F 4 | elem x "~="   -> F 0
                             | otherwise     -> E
 
-                        F 5 | elem x "-="   -> F 0
+                        F 5 | x == '>'      -> F 0
                             | otherwise     -> E
 
-                        F 6 | x == '>'      -> F 0
-                            | otherwise     -> E
-
-                        F 7 | elem x "*="   -> F 0
+                        F 6 | elem x "*="   -> F 0
                             | otherwise     -> E
 
                         Q 0 | x == '&'      -> F 0
+                            | otherwise     -> E
+
+
+                        Q 1 | x == '<'      -> F 0
                             | otherwise     -> E
 
                         _                   -> E
@@ -111,7 +112,7 @@ tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S na
                 | isStartOf symbol x    = let (a, b) = identifyToken (x:xs) S symbol    in a : tokenize b
                 | isStartOf comment x   = let (a, b) = identifyToken (x:xs) S comment   in     tokenize b --rm comments
                 | isStartOf whitespace x= let (a, b) = identifyToken (x:xs) S whitespace in    tokenize b --rm whitespace
-                | otherwise             = error ("parse error in tokenize on " ++ show x)
+                | otherwise             = error ("Unrecognized charachter: " ++ show x)
 
 --             ||Sentence||CurState|| (Current FSA               ) || (Token, restOfSentence)||
 identifyToken :: String -> FAState -> (FAState -> Char -> FAState) -> (String, String)

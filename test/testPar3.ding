@@ -1,0 +1,6 @@
+. _# account = 100
+. ~<4>~ <
+    . account = account + 50
+    . <* 50
+>
+. <* account
