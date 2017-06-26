@@ -4,11 +4,12 @@ import Parser.AST.AST
 import Debug.Trace
 
 
-data ScopeVar = Private String | Global String | Unknown String
+data ScopeVar = Private String | Global String | Unknown String | Forbidden String
 instance Show ScopeVar where
     show (Private s) = s
     show (Global s) = '_':s
-    show (Unknown s) = s
+    show (Unknown s) = '?':s
+    show (Forbidden s) = '/':s
 instance Eq ScopeVar where
     (==) sv1 sv2 = (==) (getVarName sv1) (getVarName sv2)
 
@@ -22,13 +23,15 @@ checkScope' :: AST -> [[ScopeVar]] -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) x                = checkScope'' as (x ++ [[]])
 -- Statements
 checkScope' (GlobalDeclT t v a) x       | elem (Unknown "=") (head x) = (x, ["Cannot declare global variable " ++ (show v) ++ " in parallel scope"] ++ (snd cx))
-                                        | otherwise =  (fst ca, (snd cd) ++ (snd ca))
+                                        | fst cd    = (fst ca, (snd ca))
+                                        | otherwise = (x, (snd cd) ++ (snd ca))
                                             where
                                                 cx = checkScope' a x
                                                 cd = checkDeclaration (Global v) x
                                                 y = (init x) ++ [(last x) ++ [Global v]]
                                                 ca = checkScope' a y
-checkScope' (PrivateDeclT t v a) x      = (fst ca, (snd cd) ++ (snd ca))
+checkScope' (PrivateDeclT t v a) x      | fst cd    = (fst ca, (snd ca))
+                                        | otherwise = (x, (snd cd) ++ (snd ca))
                                             where
                                                 cd = checkDeclaration (Private v) x
                                                 y = (init x) ++ [(last x) ++ [(Private v)]]
@@ -99,7 +102,8 @@ checkDeclaration s x            | (not (elem s lx)) && (fst cix)  = (True, [])
 
 checkUse :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
 checkUse s []                   = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes [])])
-checkUse s x                    | ((elem s lx) && (not (elem (Unknown (getVarName s)) lx))) || (fst cix)        = (True, [])
+checkUse s x                    | trace ((show s) ++  " " ++ (show x) ++ " " ++ (show(parVarElem s lx)) ++ " " ++ (show (not (parVarElem (Forbidden (getVarName s)) lx))))
+                                    ((parVarElem s lx) && (not (parVarElem (Forbidden (getVarName s)) lx))) || (fst cix)        = (True, [])
                                 | otherwise = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes x)])
                                     where
                                         lx = last x
@@ -117,13 +121,21 @@ showScopes' [s]     = " " ++ (show s)
 showScopes' (s:ss)  = (" " ++ (show s)) ++ (showScopes' ss)
 
 getParallelScope :: [[ScopeVar]] -> [[ScopeVar]]
-getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)] ++ [(Unknown v) | (Private v) <- (concat x)], []]
+getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)] ++ [(Forbidden v) | (Private v) <- (concat x)], []]
 
 getVarName :: ScopeVar -> String
 getVarName (Private s) = s
 getVarName (Global s) = s
 getVarName (Unknown s) = s
+getVarName (Forbidden s) = s
 
+parVarElem :: ScopeVar -> [ScopeVar] -> Bool
+parVarElem s [] = False
+parVarElem (Unknown x) ((Private y):ss) | x == y    = True
+                                        | otherwise = parVarElem (Unknown x) ss
+parVarElem (Unknown x) ((Global y):ss)  | x == y    = True
+                                        | otherwise = parVarElem (Unknown x) ss
+parVarElem x (s:ss)                     = parVarElem x ss
 
 
 

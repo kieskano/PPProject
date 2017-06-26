@@ -89,7 +89,7 @@ showInstr (WriteInstr r a) rn       = (show rn) ++ "\tWriteInstr\t" ++ (showReg 
 showInstr (TestAndSet a) rn         = (show rn) ++ "\tTestAndSet\t\t\t" ++ (showAddrImmDI a)
 showInstr EndProg rn                = (show rn) ++ "\tEndProg"
 showInstr Nop rn                    = (show rn) ++ "\tNop"
-showInstr (Debug s) rn              = (show rn) ++ "\tDebug\t\t" ++ s
+showInstr (Debug s) rn              = (show rn) ++ " ==>\t" ++ s
 
 showReg :: RegAddr -> [(Int, String)] -> String
 showReg i []            = "reg" ++ (show i)
