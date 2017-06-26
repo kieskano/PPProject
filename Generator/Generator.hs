@@ -4,7 +4,8 @@ import Parser.AST.AST
 import Generator.VariableOffset
 import Sprockell
 
-preProg = [Branch regSprID (Rel 2),
+preProg = [Debug "Pre-program - set up slaves",
+           Branch regSprID (Rel 2),
            Jump (Rel 8),
            Load (ImmValue 1) regA,
            Compute Sub regSprID regA regA,
@@ -14,18 +15,19 @@ preProg = [Branch regSprID (Rel 2),
            Branch regC (Rel (-3)),
            Jump (Ind regB)]
 
-afterPar = [Compute Equal regSprID reg0 regA,
+afterPar = [Debug "Post-parallel - slaves terminate and master joins",
+           Compute Equal regSprID reg0 regA,
            Branch regA (Rel 5),
            Load (ImmValue 1) regA,
            Compute Sub regSprID regA regA,
            WriteInstr reg0 (IndAddr regA),
-           Jump (Abs 4)]
+           Jump (Abs 5)]
 --           || ast || ((offMap   , offMap  ), lineNr)||( prog        , nextLineNr)
 generateProgCode :: AST -> Int -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
-generateProgCode (ProgT as) n ((l,g),i)    = preProg++code++[Load (ImmValue endLine) regA]++killSlavesCode++[EndProg]
+generateProgCode (ProgT as) n ((l,g),i)    = preProg++[Debug "Start of program"]++code++[Debug "Post-program - kill slaves", Load (ImmValue endLine) regA]++killSlavesCode++[EndProg]
                                             where
-                                                endLine = (length preProg) + (length code) + 1 + (length killSlavesCode)
-                                                code = generateCode' as ((l,g),i+(length preProg))
+                                                endLine = (length preProg) + (length code) + 3 + (length killSlavesCode)
+                                                code = generateCode' as ((l,g),i+(length preProg)+1)
                                                 killSlavesCode = generateCallSlaves (n-1)
 -- Statements
 generateCode :: AST -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
@@ -60,10 +62,11 @@ generateCode (IfTwoT a as1 as2) ((l,g),i)= bCode ++ [Pop regA, Branch regA (Rel 
                                                 eCode = generateCode' as2 ((l,g),i+(length bCode)+3+(length tCode)+1)
                                                 jumpOverT = length tCode + 2
                                                 jumpOverE = length eCode + 1
-generateCode (ParallelT s as) ((l,g),i) = [Load (ImmValue jumpLine) regA] ++ callSlavesCode ++ blockCode ++ afterPar ++ joinSlavesCode
+generateCode (ParallelT s as) ((l,g),i) = [Debug "Pre-parallel - call slaves", Load (ImmValue jumpLine) regA] ++ callSlavesCode
+                                            ++ [Debug "Start of parallel block"] ++ blockCode ++ afterPar ++ joinSlavesCode ++ [Debug "Return to program"]
                                             where
                                                 nrOfThreads = read s
-                                                jumpLine = i + 1 + (length callSlavesCode)
+                                                jumpLine = i + 3 + (length callSlavesCode)
                                                 callSlavesCode = generateCallSlaves (nrOfThreads-1)
                                                 joinSlavesCode = generateJoinSlaves (nrOfThreads-1)
                                                 blockCode = generateCode' as ((l,g),jumpLine)
