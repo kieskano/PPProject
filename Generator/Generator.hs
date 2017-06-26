@@ -70,6 +70,11 @@ generateCode (ParallelT s as) ((l,g),i) = [Debug "Pre-parallel - call slaves", L
                                                 callSlavesCode = generateCallSlaves (nrOfThreads-1)
                                                 joinSlavesCode = generateJoinSlaves (nrOfThreads-1)
                                                 blockCode = generateCode' as ((l,g),jumpLine)
+generateCode (SyncT v as) ((l,g),i)     = [Debug ("Start sync on: _"++v),TestAndSet (DirAddr (loc)), Receive regA, Branch regA (Rel 2), Jump (Rel (-3))]
+                                        ++ blockCode ++ [WriteInstr reg0 (DirAddr (loc)),Debug ("End sync on: _"++v)]
+                                            where
+                                                loc = getOffset v g + 1
+                                                blockCode = generateCode' as ((l,g),i+5)
 generateCode (ReadIntT v) ((l,g),i)     | ol /= -1      = [ReadInstr numberIO, Receive regA, Store regA (DirAddr ol)]
                                         | otherwise     = [ReadInstr numberIO, Receive regA, WriteInstr regA (DirAddr og)]
                                             where
