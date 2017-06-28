@@ -7,7 +7,7 @@ import Parser.ParseBasis
 -- ================================= AST definition ====================================== --
 -- ======================================================================================= --
 
-
+-- Data structure for the AST
 data AST    = ProgT [AST]
             -- Statements
             | GlobalDeclT String String AST
@@ -28,9 +28,18 @@ data AST    = ProgT [AST]
             | ThreadIDT
             | OneOpT String AST
             | TwoOpT AST String AST
-            | BracketsT AST -- Gone after expression correction
+            | BracketsT AST
             deriving (Show, Eq)
 
+
+-- ======================================================================================= --
+-- =========================== Tree Conversion Functions ================================= --
+-- ======================================================================================= --
+
+-- Converts parse tree (result of parser) to AST
+-- Arguments:
+--  - ParseTree     the parse tree that is to be converted.
+-- Returns:         the converted parse tree as AST
 parsetoast :: ParseTree -> AST
 parsetoast (PNode Prog stats)                       = ProgT (map parsetoast stats)
 -- Statements
@@ -63,7 +72,10 @@ parsetoast (PNode Val [PNode ThreadID []])                                  = Th
 -- Rest
 parsetoast x = error ("Error in parsetoast on: " ++ show(x))
 
-
+-- Converts an AST to a rose tree so that it can be shown
+-- Arguments:
+--  - AST           the AST that is to be converted
+-- Returns:         the converted AST as a rose tree
 asttorose :: AST -> RoseTree
 asttorose (ProgT asts)              = RoseNode "ProgT" (map asttorose asts)
 --
@@ -86,34 +98,12 @@ asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
 asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
 asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
 asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
--- asttorose x                         = error ("Error in asttorose on: " ++ show(x))
 
-
-
+-- Gets the token value of a leaf in the parse tree
+-- Arguments:
+--  - ParseTree     the parse tree (leaf) of which the token is to be returned
+-- Returns:         the token corresponding to the leaf in the argument
 getTokenString :: ParseTree -> String
 getTokenString pt   = case pt of
     PLeaf (a, s)-> s
     otherwise   -> error "IN getTokenString : is not a leaf"
-
-
-
-
-
-tAST = ProgT [
-        PrivateDeclT "#" "a" (TwoOpT (OneOpT "-"  (IntConstT "2")) "==" (VarT "b")),
-        PrivateDeclT "?" "b" EmptyT,
-        AssignT "b" (BoolConstT "\\"),
-        WhileT (VarT "b") [
-            AssignT "b" (BoolConstT "\\")
-        ],
-        IfOneT (VarT "b") [
-            AssignT "d" (BoolConstT "\\")
-        ],
-        IfTwoT (VarT "e") [
-            AssignT "f" (BoolConstT "\\")
-        ] [
-            AssignT "c" (BoolConstT "\\")
-        ]
-    ]
-
-test = showRoseTree (asttorose tAST)

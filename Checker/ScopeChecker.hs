@@ -3,7 +3,11 @@ module Checker.ScopeChecker where
 import Parser.AST.AST
 import Debug.Trace
 
+-- ======================================================================================= --
+-- =========================== Data type and main function =============================== --
+-- ======================================================================================= --
 
+-- Data type for the variables in the scopes
 data ScopeVar = Private String | Global String | Unknown String | Forbidden String
 instance Show ScopeVar where
     show (Private s) = s
@@ -13,7 +17,7 @@ instance Show ScopeVar where
 instance Eq ScopeVar where
     (==) sv1 sv2 = (==) (getVarName sv1) (getVarName sv2)
 
-
+-- This function is called by the compiler.
 checkScope :: AST -> [String]
 checkScope ast = (snd (checkScope' ast ([],[])))
 
@@ -22,7 +26,9 @@ checkScope ast = (snd (checkScope' ast ([],[])))
 checkScope' :: AST -> ([[ScopeVar]],[String]) -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
 -- Statements
-checkScope' (GlobalDeclT t v a) (x,z)   | elem (Unknown "=") (head x) = (x, ["Cannot declare global variable " ++ (show v) ++ " in parallel scope"] ++ (snd cx) ++ (snd ca))
+checkScope' (GlobalDeclT t v a) (x,z)   | elem (Unknown "=") (head x) = (x,
+                                            ["Cannot declare global variable " ++ (show v)
+                                            ++ " in parallel scope"] ++ (snd cx) ++ (snd ca))
                                         | fst cd    = (fst ca, (snd ca))
                                         | otherwise = (x, (snd cd) ++ (snd ca))
                                             where
@@ -53,12 +59,16 @@ checkScope' (IfTwoT a as1  as2) (x,z)   = (x, (snd ca) ++ (snd cs1) ++ (snd cs2)
                                                 ca = checkScope' a (x,z)
                                                 cs1 = checkScope'' as1 ((x ++ [[]]),z)
                                                 cs2 = checkScope'' as2 ((x ++ [[]]),z)
-checkScope' (ParallelT s as) (x,z)      | elem (Unknown "=") (head x) = (x, ["Cannot open new parallel scope within a parallel scope"] ++ (snd cs))
+checkScope' (ParallelT s as) (x,z)      | elem (Unknown "=") (head x) = (x,
+                                            ["Cannot open new parallel scope within a parallel scope"]
+                                            ++ (snd cs))
                                         | otherwise = (x, snd cs)
                                             where
                                                 y = getParallelScope x
                                                 cs = checkScope'' as (y,z)
-checkScope' (SyncT v as) (x,z)          | not (elem (Unknown "=") (head x)) = (x, ["Cannot declare synchronized block outside parallel block"] ++ (snd csu) ++ (snd csn) ++ (snd cs))
+checkScope' (SyncT v as) (x,z)          | not (elem (Unknown "=") (head x)) = (x,
+                                            ["Cannot declare synchronized block outside parallel block"]
+                                            ++ (snd csu) ++ (snd csn) ++ (snd cs))
                                         | otherwise = (x, (snd csu) ++ (snd csn) ++ (snd cs))
                                             where
                                                 csu = checkSyncUse (Global v) x
