@@ -11,9 +11,8 @@ preProg = [Debug "Pre-program - set up slaves",
            Compute Sub regSprID regA regA,
            ReadInstr (IndAddr regA),
            Receive regB,
-           Compute Equal regB reg0 regC,
-           Branch regC (Rel (-3)),
-           Jump (Ind regB)]
+           Branch regB (Ind regB),
+           Jump (Rel (-3))]
 
 afterPar = [Debug "Post-parallel - slaves terminate and master joins",
            Compute Equal regSprID reg0 regA,
@@ -122,7 +121,7 @@ generateCallSlaves n = (generateCallSlaves (n-1)) ++ [WriteInstr regA (DirAddr (
 
 generateJoinSlaves :: Int -> [Instruction]
 generateJoinSlaves 0 = []
-generateJoinSlaves n = generateJoinSlaves (n-1) ++ [ReadInstr (DirAddr (n-1)), Receive regA, Compute Equal regA reg0 regA, Branch regA (Rel 2), Jump (Rel (-4))]
+generateJoinSlaves n = generateJoinSlaves (n-1) ++ [ReadInstr (DirAddr (n-1)), Receive regA, Branch regA (Rel (-2))]
 
 generateCode' :: [AST] -> ((OffsetMap, OffsetMap),Int) -> [Instruction]
 generateCode' [] vm                 = []
