@@ -22,7 +22,12 @@ checkScope :: AST -> [String]
 checkScope ast = (snd (checkScope' ast ([],[])))
 
 
--- WORLD = (scopes, errors, nestedsync)
+-- Main function that returns a list of errors concerning scopes
+-- Arguments:
+--  - AST       the AST of the program that needs to be checked
+--  - ([[ScopeVar]],[String]) a representation of the world in the form (scopes, errors)
+-- Result:      Also a representation of the world, but now after scope checking of ThreadIDT
+--              pattern matched AST. If any errors occured they are also added.
 checkScope' :: AST -> ([[ScopeVar]],[String]) -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
 -- Statements
