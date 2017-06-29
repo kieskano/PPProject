@@ -13,7 +13,6 @@ data VScope = SGlob | SPriv
 data AST    = ProgT [AST]
             -- Statements
             | DeclT VScope String String AST
-            | ArrayDeclT VScope String AST
             | AssignT String AST
             | ArrayAssignT String AST AST -- TODO support dis in functions
             | WhileT AST [AST]
@@ -33,8 +32,8 @@ data AST    = ProgT [AST]
             | OneOpT String AST
             | TwoOpT AST String AST
             | BracketsT AST
-            | Empty String -- ArrayInit
-            | Fill [AST]
+            | EmptyArrayT String -- ArrayInit
+            | FillArrayT [AST]
             deriving (Show, Eq)
 
 
@@ -51,11 +50,15 @@ parsetoast (PNode Prog stats)  = ProgT (map parsetoast stats)
 parsetoast (PNode Stat [stat]) = parseStattoast stat
 parsetoast (PNode Expr nodes)  = parseExprtoast (PNode Expr nodes)
 
-parseStattoast (PNode Decl [PNode Type [t], n])                         = DeclT SPriv (getTokenString t) (getTokenString n) EmptyT
-parseStattoast (PNode Decl [PNode Type [t], n, e])                      = DeclT SPriv (getTokenString t) (getTokenString n) (parseExprtoast e)
-parseStattoast (PNode Decl [_, PNode Type [t], n])                      = DeclT SGlob (getTokenString t) (getTokenString n) EmptyT
-parseStattoast (PNode Decl [_, PNode Type [t], n, e])                   = DeclT SGlob (getTokenString t) (getTokenString n) (parseExprtoast e)
+parseStattoast :: ParseTree -> AST
+parseStattoast (PNode Decl [t, n])                         = DeclT SPriv (getType t) (getTokenString n) EmptyT
+parseStattoast (PNode Decl [t, n, e])                      = DeclT SPriv (getType t) (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode Decl [_, t, n])                      = DeclT SGlob (getType t) (getTokenString n) EmptyT
+parseStattoast (PNode Decl [_, t, n, e])                   = DeclT SGlob (getType t) (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode ArrayDecl [PNode ArrayType [t], n, e])            = DeclT SPriv ("[" ++ (getType t) ++ "]") (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode ArrayDecl [_, PNode ArrayType [t], n, e])         = DeclT SGlob ("[" ++ (getType t) ++ "]") (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode Assign [n, e])                                    = AssignT (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode ArrayAssign [n, e])                                    = AssignT (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode While [e, PNode Block s])                         = WhileT (parseExprtoast e) (map parsetoast s)
 parseStattoast (PNode IfOne [e, PNode Block s])                         = IfOneT (parseExprtoast e) (map parsetoast s)
 parseStattoast (PNode IfTwo [e, PNode Block st, PNode Block se])        = IfTwoT (parseExprtoast e) (map parsetoast st) (map parsetoast se)
@@ -64,6 +67,10 @@ parseStattoast (PNode Sync [PNode Var [i], PNode Block st])             = SyncT 
 parseStattoast (PNode ReadInt [PNode Var [v]])                          = ReadIntT (getTokenString v)
 parseStattoast (PNode WriteInt [e])                                     = WriteIntT (parseExprtoast e)
 
+getType :: ParseTree -> String
+getType (PNode Type [t]) = getTokenString t
+
+parseExprtoast :: ParseTree -> AST
 parseExprtoast (PNode Expr [l, PNode TwoOp [t], r]) = TwoOpT (parseExprtoast l) (getTokenString t) (parseExprtoast r)
 parseExprtoast (PNode Expr [PNode OneOp [o], e])    = OneOpT (getTokenString o) (parseExprtoast e)
 parseExprtoast (PNode Expr [e])                     = parseExprtoast e
@@ -72,6 +79,9 @@ parseExprtoast (PNode Val [PNode IntConst [i]])     = IntConstT (getTokenString 
 parseExprtoast (PNode Val [PNode BoolConst [b]])    = BoolConstT (getTokenString b)
 parseExprtoast (PNode Val [PNode Var [v]])          = VarT (getTokenString v)
 parseExprtoast (PNode Val [PNode ThreadID []])      = ThreadIDT
+parseExprtoast (PNode ArrayInit [PNode IntConst [i]]) = EmptyArrayT (getTokenString i)
+parseExprtoast (PNode ArrayInit exprs)              = FillArrayT (map parseExprtoast exprs)
+
 
 -- Statements
 -- parsetoast (PNode Stat [PNode Decl [PNode Type [t], n]])         = PrivateDeclT (getTokenString t) (getTokenString n) EmptyT
