@@ -12,6 +12,7 @@ data ASTElem    = IntConstTE String
                 | BoolConstTE String
                 | VarTE String
                 | ThreadIDTE
+                | ArrayExprTE String AST
                 | OneOpTE String
                 | TwoOpTE String
                 | BracketsTE AST -- Gone after expression correction
@@ -77,6 +78,7 @@ exprToList (BoolConstT x)   = [BoolConstTE x]
 exprToList (VarT x)         = [VarTE x]
 exprToList (ThreadIDT)      = [ThreadIDTE]
 exprToList (BracketsT a)    = [BracketsTE (correctExpr a)]
+exprToList (ArrayExprT s a) = [ArrayExprTE s (correctExpr a)]
 exprToList (OneOpT s a)     = [OneOpTE s] ++ (exprToList a)
 exprToList (TwoOpT a1 s a2) = (exprToList a1) ++ [TwoOpTE s] ++ (exprToList a2)
 
@@ -87,6 +89,7 @@ listToExpr [BoolConstTE x] ys   = BoolConstT x
 listToExpr [VarTE x] ys         = VarT x
 listToExpr [ThreadIDTE] ys      = ThreadIDT
 listToExpr [BracketsTE x] ys    = BracketsT x
+listToExpr [ArrayExprTE s a] ys = ArrayExprT s a
 listToExpr xs ((TwoOpTE op):ys) = TwoOpT (listToExpr rxs rxsOps) op (listToExpr lxs lxsOps)
                                 where
                                     (rxs, lxs) = let (a, b) = splitListOn (TwoOpTE op) $ reverse xs in (reverse b, reverse a)
