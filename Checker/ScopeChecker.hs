@@ -53,7 +53,7 @@ checkScope' (AssignT v a) (x,z)         = (x, (snd cu) ++ (snd ca))
                                             where
                                                 cu = checkUse (Unknown v) x
                                                 ca = checkScope' a (x,z)
-checkScope' (ArrayAssingT v i a) (x,z)  = (x, (snd cu) ++ (snd ci) ++ (snd ca))
+checkScope' (ArrayAssignT v i a) (x,z)  = (x, (snd cu) ++ (snd ci) ++ (snd ca))
                                             where
                                                 cu = checkUse (Unknown v) x
                                                 ci = checkScope' i (x,z)
@@ -114,8 +114,8 @@ checkScope' (TwoOpT ast1 o ast2) (x,z)  = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) (x,z)       = (x, snd ca)
                                             where
                                                 ca = checkScope' ast (x,z)
-checkScope' (EmptyArrayT s)             = (x, [])
-checkScope' (FillArrayT as)             = (x, snd cs)
+checkScope' (EmptyArrayT s) (x,z)       = (x, [])
+checkScope' (FillArrayT as) (x,z)       = (x, snd cs)
                                             where
                                                 cs = checkScope'' as (x,z)
 -- checkScope' x y                         = error ("Error in checkScope\' in: " ++ (show x))
