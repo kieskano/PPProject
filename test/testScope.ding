@@ -40,3 +40,21 @@
     . <* x + y
     . <* x + z
 >
+. # inta = 3
+. [#] ara = [4]
+. [#] arb = {1+3-(3*3), inta, 3}
+. _# a
+. _# e
+. # be
+. >~be~< <> $test local use and ouside parallel block$
+. ~<3>~ <
+    . >~ae~< <
+        . >~ae~< <> $use same var$
+    >
+    . >~ce~< <>
+    . # de
+    . >~de~< <> $use local$
+    . >~ae~< <
+        . >~ee~< <>
+    >
+>
