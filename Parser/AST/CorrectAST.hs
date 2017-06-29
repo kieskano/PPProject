@@ -64,7 +64,7 @@ correctProg (WriteIntT ast)         = WriteIntT (correctExpr ast)
 
 correctExpr :: AST -> AST
 correctExpr (EmptyArrayT s) = EmptyArrayT s
-correctExpr (FillArrayT as) = EmptyArrayT as
+correctExpr (FillArrayT as) = FillArrayT as
 correctExpr ast = listToExpr exprList operators'
                 where
                     exprList = exprToList ast
