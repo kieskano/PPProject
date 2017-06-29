@@ -8,8 +8,9 @@ grammar nt = case nt of
         Prog        -> [[ (*:) [Stat] ]]
 
         Stat        -> [[ dot, Decl ],
-                        [ dot, global, Decl ],
+                        [ dot, ArrayDecl ],
                         [ dot, Assign ],
+                        [ dot, ArrayAssign ],
                         [ dot, While ],
                         [ dot, IfOne ],
                         [ dot, IfTwo ],
@@ -18,12 +19,26 @@ grammar nt = case nt of
                         [ dot, ReadInt ],
                         [ dot, WriteInt ]]
 
-        Decl        -> [[ int, name, equalass, Expr ],
-                        [ int, name ],
-                        [ bool, name, equalass, Expr ],
-                        [ bool, name ]]
+        Decl        -> [[ Type, name, equalass, Expr ],
+                        [ Type, name ],
+                        [ global, Type, name, equalass, Expr ],
+                        [ global, Type, name ]]
+
+        ArrayDecl   -> [[ ArrayType, name, equalass, ArrayInit ],
+                        [ global, ArrayType, name, equalass, ArrayInit ]]
+
+        ArrayInit   -> [[ sql, IntConst, sqr ],
+                        [ curl, Expr, (*:) [comma, Expr], curr ]]
+
+        Type        -> [[ int ],
+                        [ bool ]]
+
+        ArrayType   -> [[ sql, Type, sqr ]]
 
         Assign      -> [[ name, equalass, Expr ]]
+
+        ArrayAssign -> [[ name, equalass, Expr ]]
+
 
         While       -> [[ while, bar, Expr, bar, Block ]]
 
@@ -37,14 +52,14 @@ grammar nt = case nt of
 
         ReadInt     -> [[ readInt, Var ]]
 
-        WriteInt    -> [[ writeInt, Expr]]
+        WriteInt    -> [[ writeInt, Expr ]]
 
         Block       -> [[ c, (*:) [Stat], g ]]
 
         Expr        -> [[ Val, TwoOp, Expr ],
                         [ Brackets, TwoOp, Expr ],
-                        [ Brackets ],
                         [ OneOp, Expr ],
+                        [ Brackets ],
                         [ Val ]]
 
         Brackets    -> [[ leftBr, Expr, rightBr ]]
@@ -52,7 +67,8 @@ grammar nt = case nt of
         Val         -> [[ IntConst ],
                         [ BoolConst ],
                         [ Var ],
-                        [ ThreadID ]]
+                        [ ThreadID ],
+                        [ ArrayExpr ]]
 
         IntConst    -> [[ number ]]
 
@@ -61,7 +77,9 @@ grammar nt = case nt of
 
         Var         -> [[ name ]]
 
-        ThreadID     -> [[ threadID ]]
+        ThreadID    -> [[ threadID ]]
+
+        ArrayExpr   -> [[ name, sql, Expr, sqr ]]
 
         OneOp       -> [[ minus ],
                         [ notb ]]
@@ -113,10 +131,15 @@ writeInt    = Symbol "<*"
 
 
 dot         = Symbol "."
+comma       = Symbol ","
 bar         = Symbol "|"
 c           = Symbol "<"
 g           = Symbol ">"
 equalass    = Symbol "="
+sql         = Symbol "["
+sqr         = Symbol "]"
+curl        = Symbol "{"
+curr        = Symbol "}"
 
 leftBr      = Symbol "("
 rightBr     = Symbol ")"

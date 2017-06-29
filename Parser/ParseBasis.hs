@@ -28,6 +28,10 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Prog
               | Stat
               | Decl
+              | ArrayDecl
+              | Type
+              | ArrayType
+              | ArrayInit
               | While
               | IfOne
               | IfTwo
@@ -36,6 +40,7 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | ReadInt
               | WriteInt
               | Assign
+              | ArrayAssign
               | Expr
               | OneOp
               | TwoOp
@@ -46,6 +51,7 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | BoolConst
               | Var
               | ThreadID
+              | ArrayExpr
               | Name
               | Number
               | Sym
