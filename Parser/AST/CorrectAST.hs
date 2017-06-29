@@ -47,10 +47,10 @@ twoOpOrdCompare (TwoOpTE s1) (TwoOpTE s2)   | op1Ord < twoOpOrd = LT
 
 correctProg :: AST -> AST
 correctProg (ProgT asts)            = ProgT (map correctProg asts)
-correctProg (GlobalDeclT s1 s2 EmptyT)  = GlobalDeclT s1 s2 EmptyT
-correctProg (GlobalDeclT s1 s2 ast)     = GlobalDeclT s1 s2 (correctExpr ast)
-correctProg (PrivateDeclT s1 s2 EmptyT) = PrivateDeclT s1 s2 EmptyT
-correctProg (PrivateDeclT s1 s2 ast)    = PrivateDeclT s1 s2 (correctExpr ast)
+correctProg (DeclT SGlob s1 s2 EmptyT) = DeclT SGlob s1 s2 EmptyT
+correctProg (DeclT SGlob s1 s2 ast)    = DeclT SGlob s1 s2 (correctExpr ast)
+correctProg (DeclT SPriv s1 s2 EmptyT) = DeclT SPriv s1 s2 EmptyT
+correctProg (DeclT SPriv s1 s2 ast)    = DeclT SPriv s1 s2 (correctExpr ast)
 correctProg (AssignT s1 ast)        = AssignT s1 (correctExpr ast)
 correctProg (WhileT ast asts)       = WhileT (correctExpr ast) (map correctProg asts)
 correctProg (IfOneT ast asts)       = IfOneT (correctExpr ast) (map correctProg asts)

@@ -30,11 +30,11 @@ generateProgCode (ProgT as) n ((l,g),i)    = preProg++[Debug "Start of program"]
                                                 killSlavesCode = generateCallSlaves (n-1)
 -- Statements
 generateCode :: AST -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
-generateCode (GlobalDeclT t v a) ((l,g),i) = code++[Pop regA, WriteInstr regA (DirAddr og)]
+generateCode (DeclT SGlob t v a) ((l,g),i) = code++[Pop regA, WriteInstr regA (DirAddr og)]
                                             where
                                                 code = generateCode a ((l,g),i)
                                                 og = getOffset v g
-generateCode (PrivateDeclT t v a) ((l,g),i) = (generateCode a ((l,g),i))++[Pop regA, Store regA (DirAddr ol)]
+generateCode (DeclT SPriv t v a) ((l,g),i) = (generateCode a ((l,g),i))++[Pop regA, Store regA (DirAddr ol)]
                                             where
                                                 ol = getOffset v l
 generateCode (AssignT v a) ((l,g),i)    | ol /= -1      = code++[Pop regA, Store regA (DirAddr ol)]

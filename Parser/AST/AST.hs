@@ -6,7 +6,8 @@ import Parser.ParseBasis
 -- ======================================================================================= --
 -- ================================= AST definition ====================================== --
 -- ======================================================================================= --
-data VScope = Global | Private
+data VScope = SGlob | SPriv
+            deriving (Show, Eq)
 -- Data structure for the AST
 data AST    = ProgT [AST]
             -- Statements
@@ -46,10 +47,10 @@ parsetoast (PNode Prog stats)  = ProgT (map parsetoast stats)
 parsetoast (PNode Stat [stat]) = parseStattoast stat
 parsetoast (PNode Expr nodes)  = parseExprtoast (PNode Expr nodes)
 
-parseStattoast (PNode Decl [PNode Type [t], n])                         = PrivateDeclT (getTokenString t) (getTokenString n) EmptyT
-parseStattoast (PNode Decl [PNode Type [t], n, e])                      = PrivateDeclT (getTokenString t) (getTokenString n) (parseExprtoast e)
-parseStattoast (PNode Decl [_, PNode Type [t], n])                      = GlobalDeclT (getTokenString t) (getTokenString n) EmptyT
-parseStattoast (PNode Decl [_, PNode Type [t], n, e])                   = GlobalDeclT (getTokenString t) (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode Decl [PNode Type [t], n])                         = DeclT SPriv (getTokenString t) (getTokenString n) EmptyT
+parseStattoast (PNode Decl [PNode Type [t], n, e])                      = DeclT SPriv (getTokenString t) (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode Decl [_, PNode Type [t], n])                      = DeclT SGlob (getTokenString t) (getTokenString n) EmptyT
+parseStattoast (PNode Decl [_, PNode Type [t], n, e])                   = DeclT SGlob (getTokenString t) (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode Assign [n, e])                                    = AssignT (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode While [e, PNode Block s])                         = WhileT (parseExprtoast e) (map parsetoast s)
 parseStattoast (PNode IfOne [e, PNode Block s])                         = IfOneT (parseExprtoast e) (map parsetoast s)
@@ -105,8 +106,8 @@ parseExprtoast (PNode Val [PNode ThreadID []])      = ThreadIDT
 asttorose :: AST -> RoseTree
 asttorose (ProgT asts)              = RoseNode "ProgT" (map asttorose asts)
 --
-asttorose (GlobalDeclT s1 s2 ast)   = RoseNode ("DeclT _" ++ s1 ++ " " ++ s2) [asttorose ast]
-asttorose (PrivateDeclT s1 s2 ast)  = RoseNode ("DeclT " ++ s1 ++ " " ++ s2) [asttorose ast]
+asttorose (DeclT SGlob s1 s2 ast)   = RoseNode ("DeclT _" ++ s1 ++ " " ++ s2) [asttorose ast]
+asttorose (DeclT SPriv s1 s2 ast)  = RoseNode ("DeclT " ++ s1 ++ " " ++ s2) [asttorose ast]
 asttorose (AssignT s ast)           = RoseNode ("AssignT " ++ s) [asttorose ast]
 asttorose (WhileT ast asts)         = RoseNode "WhileT" ((asttorose ast):(map asttorose asts))
 asttorose (IfOneT ast asts)         = RoseNode "IfOneT" ((asttorose ast):(map asttorose asts))
