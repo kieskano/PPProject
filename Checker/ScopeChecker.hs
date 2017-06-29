@@ -26,12 +26,13 @@ checkScope ast = (snd (checkScope' ast ([],[])))
 -- Arguments:
 --  - AST       the AST of the program that needs to be checked
 --  - ([[ScopeVar]],[String]) a representation of the world in the form (scopes, errors)
--- Result:      Also a representation of the world, but now after scope checking of ThreadIDT
---              pattern matched AST. If any errors occured they are also added.
+-- Result:      Also a representation of the world, but now after scope checking of the
+--              pattern matched AST (should be empty). If any errors occured they are 
+--              also added.
 checkScope' :: AST -> ([[ScopeVar]],[String]) -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
 -- Statements
-checkScope' (GlobalDeclT t v a) (x,z)   | elem (Unknown "=") (head x) = (x,
+checkScope' (DeclT SGlob t v a) (x,z)   | elem (Unknown "=") (head x) = (x,
                                             ["Cannot declare global variable " ++ (show v)
                                             ++ " in parallel scope"] ++ (snd cx) ++ (snd ca))
                                         | fst cd    = (fst ca, (snd ca))
@@ -41,7 +42,7 @@ checkScope' (GlobalDeclT t v a) (x,z)   | elem (Unknown "=") (head x) = (x,
                                                 cd = checkDeclaration (Global v) x
                                                 y = (init x) ++ [(last x) ++ [Global v]]
                                                 ca = checkScope' a (y,z)
-checkScope' (PrivateDeclT t v a) (x,z)  | fst cd    = (fst ca, (snd ca))
+checkScope' (DeclT SPriv t v a) (x,z)   | fst cd    = (fst ca, (snd ca))
                                         | otherwise = (x, (snd cd) ++ (snd ca))
                                             where
                                                 cd = checkDeclaration (Private v) x
@@ -103,7 +104,7 @@ checkScope' (TwoOpT ast1 o ast2) (x,z)  = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) (x,z)       = (x, snd ca)
                                             where
                                                 ca = checkScope' ast (x,z)
-
+checkScope' x y                         = error ("Error in checkScope\' in: " ++ (show x))
 
 
 checkScope'' :: [AST] -> ([[ScopeVar]],[String]) -> ([[ScopeVar]], [String])
@@ -111,6 +112,12 @@ checkScope'' [] (x,z)                        = (init x, [])
 checkScope'' (a:as) (x,z)                    = let (v, w) = checkScope'' as (y,z) in (v, e ++ w)
                                             where
                                                 (y, e) = checkScope' a (x,z)
+
+
+
+
+
+
 
 checkDeclaration :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
 checkDeclaration s []           = (True, [])
@@ -143,6 +150,11 @@ checkSyncNesting :: String -> [String] -> (Bool, [String])
 checkSyncNesting s ss   | trace (s ++ " " ++ (show ss) ++ " " ++ (show(not (elem s ss)))) (not (elem s ss)) = (True, [])
                         | otherwise = (False, ["Cannot synchronize on " ++ (show s) ++ " when already synchronizing on that variable"])
 
+
+
+
+
+
 showScopes :: [[ScopeVar]] -> String
 showScopes []       = ""
 showScopes [ss]     = (" <" ++ (showScopes' ss) ++ " V >")
@@ -152,6 +164,11 @@ showScopes' :: [ScopeVar] -> String
 showScopes' []      = ""
 showScopes' [s]     = " " ++ (show s)
 showScopes' (s:ss)  = (" " ++ (show s)) ++ (showScopes' ss)
+
+
+
+
+
 
 getParallelScope :: [[ScopeVar]] -> [[ScopeVar]]
 getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)] ++ [(Forbidden v) | (Private v) <- (concat x)], []]
@@ -189,28 +206,4 @@ syncElem x (s:ss)                       = syncElem x ss
 
 
 
-
-
--- checkDeclaration s x    | trace ("checking " ++ s ++ " in " ++ show(x)) (length lx /= 0 && not (elem s lx) && fst cix)      = trace "c1" (True, [])
---                         | length lx == 0 && fst cix                                                                      = trace ("c2 " ++ (show lx)) (True, [])
---                         | otherwise = trace "c3" (False, [("Cannot redeclare " ++ s)] ++ (snd cix))
---                             where
---                                 lx = last x
---                                 ix = init x
---                                 cix = checkDeclaration s ix
-
-
--- checkScope' (ProgT as) x                = trace "prog" (checkScope'' as (x ++ [[]]))
--- checkScope' (WhileT a as) x             = trace "while" (checkScope'' as (x ++ [[]]))
--- checkScope' (IfOneT a as) x             = trace "if1" (checkScope'' as (x ++ [[]]))
--- checkScope' (IfTwoT a as1  as2) x       = trace "if2" ((x, (snd cs1) ++ (snd cs2)))
---                                             where
---                                                 cs1 = checkScope'' as1 (x ++ [[]])
---                                                 cs2 = checkScope'' as2 (x ++ [[]])
--- -- "declarations"
--- checkScope' (DeclT s1 s2 ast) x         = trace "decl" ((fst ca, (snd cd) ++ (snd ca)))
---                                             where
---                                                 cd = checkDeclaration s2 x
---                                                 y = (init x) ++ [(last x) ++ [s2]]
---                                                 ca = checkScope' ast y
--- checkScope' a x                         = (x, [])
+--
