@@ -25,10 +25,11 @@ checkScope ast = (snd (checkScope' ast ([],[])))
 -- Main function that returns a list of errors concerning scopes
 -- Arguments:
 --  - AST       the AST of the program that needs to be checked
---  - ([[ScopeVar]],[String]) a representation of the world in the form (scopes, errors)
+--  - ([[ScopeVar]],[String]) a representation of the world in the form (scopes, sync-
+--    nesting)
 -- Result:      Also a representation of the world, but now after scope checking of the
---              pattern matched AST (should be empty). If any errors occured they are 
---              also added.
+--              pattern matched AST (should be empty). If any errors occured they are
+--              also added. The return world is in the form (scopes, errors)
 checkScope' :: AST -> ([[ScopeVar]],[String]) -> ([[ScopeVar]],[String])
 checkScope' (ProgT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
 -- Statements
@@ -51,6 +52,11 @@ checkScope' (DeclT SPriv t v a) (x,z)   | fst cd    = (fst ca, (snd ca))
 checkScope' (AssignT v a) (x,z)         = (x, (snd cu) ++ (snd ca))
                                             where
                                                 cu = checkUse (Unknown v) x
+                                                ca = checkScope' a (x,z)
+checkScope' (ArrayAssingT v i a) (x,z)  = (x, (snd cu) ++ (snd ci) ++ (snd ca))
+                                            where
+                                                cu = checkUse (Unknown v) x
+                                                ci = checkScope' i (x,z)
                                                 ca = checkScope' a (x,z)
 checkScope' (WhileT a as) (x,z)         = (x, (snd ca) ++ (snd cs))
                                             where
@@ -94,6 +100,10 @@ checkScope' (VarT v) (x,z)              = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
 checkScope' ThreadIDT (x,z)             = (x, [])
+checkScope' (ArrayExprT v a) (x,z)      = (x, (snd cu) ++ (snd ca))
+                                            where
+                                                cu = checkUse (Unknown v) x
+                                                ca = checkScope' a (x,z)
 checkScope' (OneOpT o ast) (x,z)        = (x, snd ca)
                                             where
                                                 ca = checkScope' ast (x,z)
@@ -104,7 +114,11 @@ checkScope' (TwoOpT ast1 o ast2) (x,z)  = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) (x,z)       = (x, snd ca)
                                             where
                                                 ca = checkScope' ast (x,z)
-checkScope' x y                         = error ("Error in checkScope\' in: " ++ (show x))
+checkScope' (EmptyArrayT s)             = (x, [])
+checkScope' (FillArrayT as)             = (x, snd cs)
+                                            where
+                                                cs = checkScope'' as (x,z)
+-- checkScope' x y                         = error ("Error in checkScope\' in: " ++ (show x))
 
 
 checkScope'' :: [AST] -> ([[ScopeVar]],[String]) -> ([[ScopeVar]], [String])
