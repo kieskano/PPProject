@@ -122,8 +122,9 @@ asttorose :: AST -> RoseTree
 asttorose (ProgT asts)              = RoseNode "ProgT" (map asttorose asts)
 --
 asttorose (DeclT SGlob s1 s2 ast)   = RoseNode ("DeclT _" ++ s1 ++ " " ++ s2) [asttorose ast]
-asttorose (DeclT SPriv s1 s2 ast)  = RoseNode ("DeclT " ++ s1 ++ " " ++ s2) [asttorose ast]
+asttorose (DeclT SPriv s1 s2 ast)   = RoseNode ("DeclT " ++ s1 ++ " " ++ s2) [asttorose ast]
 asttorose (AssignT s ast)           = RoseNode ("AssignT " ++ s) [asttorose ast]
+asttorose (ArrayAssignT s ast1 ast2)= RoseNode ("ArrayAssignT " ++ s) [asttorose ast1, asttorose ast2]
 asttorose (WhileT ast asts)         = RoseNode "WhileT" ((asttorose ast):(map asttorose asts))
 asttorose (IfOneT ast asts)         = RoseNode "IfOneT" ((asttorose ast):(map asttorose asts))
 asttorose (IfTwoT ast asts1 asts2)  = RoseNode "IfTwoT" (((asttorose ast):(map asttorose asts1)) ++ (map asttorose asts2))
@@ -140,7 +141,9 @@ asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
 asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
 asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
 asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
-
+astto
+asttorose (EmptyArrayT s)           = RoseNode ("EmptyArrayT ["++s++"]") []
+asttorose (FillArrayT asts)         = RoseNode ("FillArrayT") (map asttorose asts)
 -- Gets the token value of a leaf in the parse tree
 -- Arguments:
 --  - ParseTree     the parse tree (leaf) of which the token is to be returned
