@@ -65,25 +65,25 @@ getVal s vmap = case (lookup s vmap) of
 --         ||  map Var:Type    || AST || (map Var:Type    , errors  )||
 checkTypes :: [(String, Type)] -> AST -> ([(String, Type)], [String])
 checkTypes varMap (ProgT as)            = checkTypesBlock varMap as
-checkTypes varMap (GlobalDeclT s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
-checkTypes varMap (GlobalDeclT s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
+checkTypes varMap (DeclT SGlob s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
+checkTypes varMap (DeclT SGlob s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
                                         | otherwise         = ((s2, varType):varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             varType = getVal s1 typeMap
                                             errors' = map (++ " in statement '" ++ statString ++ "'") errors
-                                            statString = statToString (GlobalDeclT s1 s2 expr)
+                                            statString = statToString (DeclT SGlob s1 s2 expr)
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
-checkTypes varMap (PrivateDeclT s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
-checkTypes varMap (PrivateDeclT s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
+checkTypes varMap (DeclT SPriv s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
+checkTypes varMap (DeclT SPriv s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
                                         | otherwise         = ((s2, varType):varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             varType = getVal s1 typeMap
                                             errors' = map (++ " in statement '" ++ statString ++ "'") errors
-                                            statString = statToString (PrivateDeclT s1 s2 expr)
+                                            statString = statToString (DeclT SPriv s1 s2 expr)
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
@@ -209,10 +209,10 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
 
 
 statToString :: AST -> String
-statToString (GlobalDeclT s1 s2 EmptyT) = ". _" ++ s1 ++ ' ':s2
-statToString (GlobalDeclT s1 s2 a)      = ". _" ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
-statToString (PrivateDeclT s1 s2 EmptyT) = ". " ++ s1 ++ ' ':s2
-statToString (PrivateDeclT s1 s2 a)     = ". " ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
+statToString (DeclT SGlob s1 s2 EmptyT) = ". _" ++ s1 ++ ' ':s2
+statToString (DeclT SGlob s1 s2 a)      = ". _" ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
+statToString (DeclT SPriv s1 s2 EmptyT) = ". " ++ s1 ++ ' ':s2
+statToString (DeclT SPriv s1 s2 a)      = ". " ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
 statToString (AssignT s a)              = ". " ++ s ++ " = " ++ (exprToString a)
 statToString (WhileT a _)               = ". ?^ |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfOneT a _)               = ". ?- |" ++ (exprToString a) ++ "| < ... >"

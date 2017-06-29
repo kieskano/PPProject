@@ -14,12 +14,12 @@ calculateVarOffset' world (IfOneT ast asts)     = calculateVarOffsetList world a
 calculateVarOffset' world (IfTwoT ast as1 as2)  = calculateVarOffsetList (calculateVarOffsetList world as1) as2
 calculateVarOffset' world (ParallelT s asts)    = calculateVarOffsetList world asts
 calculateVarOffset' world (SyncT s asts)        = calculateVarOffsetList world asts
-calculateVarOffset' world (GlobalDeclT _ s _)   | offMapsContains s offmaps = world
+calculateVarOffset' world (DeclT SGlob _ s _)   | offMapsContains s offmaps = world
                                                 | otherwise                 = ((local,(s,curGOff):global),curLOff,curGOff+2)
                                                 where
                                                     (offmaps, curLOff, curGOff) = world
                                                     (local, global) = offmaps
-calculateVarOffset' world (PrivateDeclT _ s _)  | offMapsContains s offmaps = world
+calculateVarOffset' world (DeclT SPriv _ s _)  | offMapsContains s offmaps = world
                                                 | otherwise                 = (((s,curLOff):local,global),curLOff+1,curGOff)
                                                 where
                                                     (offmaps, curLOff, curGOff) = world
@@ -43,8 +43,8 @@ offMapsContains s (m1,m2) = case (lookup s m1, lookup s m2) of
 calculateThreadAmount :: AST -> Int
 calculateThreadAmount (ProgT as)                = calculateThreadAmount' as
 -- Statements
-calculateThreadAmount (PrivateDeclT s1 s2 a)    = calculateThreadAmount a
-calculateThreadAmount (GlobalDeclT s1 s2 a)     = calculateThreadAmount a
+calculateThreadAmount (DeclT SPriv s1 s2 a)     = calculateThreadAmount a
+calculateThreadAmount (DeclT SGlob s1 s2 a)     = calculateThreadAmount a
 calculateThreadAmount (AssignT s a)             = calculateThreadAmount a
 calculateThreadAmount (WhileT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
 calculateThreadAmount (IfOneT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
