@@ -141,7 +141,7 @@ asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
 asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
 asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
 asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
-astto
+asttorose (ArrayExprT s ast)        = RoseNode ("ArrayExprT "++s) [asttorose ast]
 asttorose (EmptyArrayT s)           = RoseNode ("EmptyArrayT ["++s++"]") []
 asttorose (FillArrayT asts)         = RoseNode ("FillArrayT") (map asttorose asts)
 -- Gets the token value of a leaf in the parse tree
