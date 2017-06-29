@@ -52,6 +52,7 @@ correctProg (DeclT SGlob s1 s2 ast)    = DeclT SGlob s1 s2 (correctExpr ast)
 correctProg (DeclT SPriv s1 s2 EmptyT) = DeclT SPriv s1 s2 EmptyT
 correctProg (DeclT SPriv s1 s2 ast)    = DeclT SPriv s1 s2 (correctExpr ast)
 correctProg (AssignT s1 ast)        = AssignT s1 (correctExpr ast)
+correctProg (ArrayAssignT s1 ast1 ast2) = ArrayAssignT s1 (correctExpr ast1) (correctExpr ast2)
 correctProg (WhileT ast asts)       = WhileT (correctExpr ast) (map correctProg asts)
 correctProg (IfOneT ast asts)       = IfOneT (correctExpr ast) (map correctProg asts)
 correctProg (IfTwoT ast asts1 asts2)= IfTwoT (correctExpr ast) (map correctProg asts1) (map correctProg asts2)
@@ -62,6 +63,8 @@ correctProg (WriteIntT ast)         = WriteIntT (correctExpr ast)
 
 
 correctExpr :: AST -> AST
+correctExpr (EmptyArrayT s) = EmptyArrayT s
+correctExpr (FillArrayT as) = EmptyArrayT as
 correctExpr ast = listToExpr exprList operators'
                 where
                     exprList = exprToList ast

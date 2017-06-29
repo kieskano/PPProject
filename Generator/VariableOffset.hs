@@ -5,7 +5,7 @@ import Parser.AST.AST
 type OffsetMap = [(String, Int)]
 
 calculateVarOffset :: AST -> Int -> (OffsetMap, OffsetMap)
-calculateVarOffset ast gOff = let (res,_,_) = calculateVarOffset' (([],[]),0,gOff) ast in res
+calculateVarOffset ast gOff = let (res,_,_) = calculateVarOffset' (([],[]),0,gOff+1) ast in res
 
 calculateVarOffset' :: ((OffsetMap, OffsetMap), Int, Int) -> AST -> ((OffsetMap, OffsetMap), Int, Int)
 calculateVarOffset' world (ProgT asts)          = calculateVarOffsetList world asts
