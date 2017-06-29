@@ -55,6 +55,7 @@ calculateThreadAmount (ProgT as)                = calculateThreadAmount' as
 calculateThreadAmount (DeclT SPriv s1 s2 a)     = calculateThreadAmount a
 calculateThreadAmount (DeclT SGlob s1 s2 a)     = calculateThreadAmount a
 calculateThreadAmount (AssignT s a)             = calculateThreadAmount a
+calculateThreadAmount (ArrayAssignT s a1 a2)    = maximum [calculateThreadAmount a1, calculateThreadAmount a2]
 calculateThreadAmount (WhileT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
 calculateThreadAmount (IfOneT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
 calculateThreadAmount (IfTwoT a as1 as2)        = maximum [calculateThreadAmount a, calculateThreadAmount' as1, calculateThreadAmount' as2]
@@ -67,9 +68,12 @@ calculateThreadAmount (IntConstT s)             = 1
 calculateThreadAmount (BoolConstT s)            = 1
 calculateThreadAmount (VarT s)                  = 1
 calculateThreadAmount ThreadIDT                 = 1
+calculateThreadAmount (ArrayExprT s a)          = calculateThreadAmount a
 calculateThreadAmount (OneOpT s a)              = calculateThreadAmount a
 calculateThreadAmount (TwoOpT a1 s a2)          = maximum [calculateThreadAmount a1, calculateThreadAmount a2]
 calculateThreadAmount (BracketsT a)             = calculateThreadAmount a
+calculateThreadAmount (EmptyArrayT s)           = 1
+calculateThreadAmount (FillArrayT as)           = calculateThreadAmount' as
 
 
 calculateThreadAmount' :: [AST] -> Int

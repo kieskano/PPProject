@@ -30,6 +30,14 @@ generateProgCode (ProgT as) n ((l,g),i)    = preProg++[Debug "Start of program"]
                                                 killSlavesCode = generateCallSlaves (n-1)
 -- Statements
 generateCode :: AST -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
+generateCode (DeclT scope t v (EmptyArrayT s)) ((l,g),i)    = generateEmptyArrayDeclaration (read s) (ol,og) (read s)
+                                                                where
+                                                                    ol = getOffset v l
+                                                                    og = getOffset v g
+generateCode (DeclT scope t v (FillArrayT as)) ((l,g),i)    = generateArrayDeclaration as (ol,og) ((l,g),i) (length as)
+                                                                where
+                                                                    ol = getOffset v l
+                                                                    og = getOffset v g
 generateCode (DeclT SGlob t v a) ((l,g),i) = code++[Pop regA, WriteInstr regA (DirAddr og)]
                                             where
                                                 code = generateCode a ((l,g),i)
@@ -43,6 +51,15 @@ generateCode (AssignT v a) ((l,g),i)    | ol /= -1      = code++[Pop regA, Store
                                                 code = generateCode a ((l,g),i)
                                                 ol = getOffset v l
                                                 og = getOffset v g
+generateCode (ArrayAssignT v a1 a2) ((l,g),i)   | ol /= -1      = eCode ++ iCode ++ [Pop regA, Load (ImmValue ol) regB, Compute Add regA regB regB,
+                                                                Pop regA, Store regA (IndAddr regB)]
+                                                | otherwise     = eCode ++ iCode ++ [Pop regA, Load (ImmValue og) regB, Compute Add regA regB regB,
+                                                                Pop regA, WriteInstr regA (IndAddr regB)]
+                                                    where
+                                                        ol = (getOffset v l) +1
+                                                        og = (getOffset v g)
+                                                        iCode = generateCode a1 ((l,g), i + (length eCode))
+                                                        eCode = generateCode a2 ((l,g), i)
 generateCode (WhileT a as) ((l,g),i)    = bCode ++ [Pop regA, Branch regA (Rel 2), Jump (Rel jumpOver)] ++ wCode ++ [Jump (Rel jumpBack)]
                                             where
                                                 bCode = generateCode a ((l,g),i)
@@ -90,6 +107,14 @@ generateCode (VarT v) ((l,g),i)         | ol /= -1      = [Load (DirAddr ol) reg
                                                 ol = getOffset v l
                                                 og = getOffset v g
 generateCode ThreadIDT ((l,g),i)        = [Push regSprID]
+generateCode (ArrayExprT v a) ((l,g),i) | ol /= -1      = iCode ++ [Pop regA, Load (ImmValue ol) regB, Compute Add regA regB regA,
+                                                        Load (IndAddr regA) regA, Push regA]
+                                        | otherwise     = iCode ++ [Pop regA, Load (ImmValue og) regB, Compute Add regA regB regA,
+                                                        ReadInstr (IndAddr regA), Receive regA, Push regA]
+                                            where
+                                                iCode = generateCode a ((l,g),i)
+                                                ol = getOffset v l + 1
+                                                og = getOffset v g + 1
 generateCode (OneOpT o a) ((l,g),i)     | o == "-"      = (generateCode a ((l,g),i))++[Pop regA, Load (ImmValue (-1)) regB, Compute Mul regA regB regA, Push regA]
                                         | o == "!"      = (generateCode a ((l,g),i))++[Pop regA, Load (ImmValue 1) regB, Compute Xor regA regB regA, Push regA]
 generateCode (TwoOpT a1 o a2) ((l,g),i) | o == "*"      = generateTwoOpCode a1 a2 Mul ((l,g),i)
@@ -106,8 +131,35 @@ generateCode (TwoOpT a1 o a2) ((l,g),i) | o == "*"      = generateTwoOpCode a1 a
                                         | o == "&&"     = generateTwoOpCode a1 a2 And ((l,g),i)
                                         | o == "+|"     = generateTwoOpCode a1 a2 Xor ((l,g),i)
 generateCode (BracketsT a) ((l,g),i)    = generateCode a ((l,g),i)
+generateCode (EmptyArrayT s) ((l,g),i)  = []
+generateCode (FillArrayT a) ((l,g),i)   = []
 
 
+
+
+generateEmptyArrayDeclaration :: Int -> (Int, Int) -> Int -> [Instruction]
+generateEmptyArrayDeclaration 0 ((-1), o) le    = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
+generateEmptyArrayDeclaration i ((-1), o) le    = (generateEmptyArrayDeclaration (i-1) ((-1), o) le) ++ [WriteInstr reg0 (DirAddr ad)]
+                                                where
+                                                    ad = o + i
+generateEmptyArrayDeclaration 0 (o, (-1)) le        = [Load (ImmValue le) regA, Store regA (DirAddr o)]
+generateEmptyArrayDeclaration i (o, (-1)) le    = (generateEmptyArrayDeclaration (i-1) (o, (-1)) le) ++ [Store reg0 (DirAddr ad)]
+                                                where
+                                                    ad = o + 1
+
+generateArrayDeclaration :: [AST] -> (Int, Int) -> ((OffsetMap, OffsetMap), Int) -> Int -> [Instruction]
+generateArrayDeclaration [] ((-1), o) w le              = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
+generateArrayDeclaration as ((-1), o) ((l,g),i) le      = (generateArrayDeclaration (init as) (o, (-1)) ((l,g),i + (length eCode) + 2) le) ++
+                                                        eCode ++ [Pop regA, WriteInstr regA (DirAddr ad)]
+                                                            where
+                                                                ad = o + 1
+                                                                eCode = generateCode (last as) ((l,g),i)
+generateArrayDeclaration [] (o, (-1)) w le              = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
+generateArrayDeclaration as (o, (-1)) ((l,g),i) le      = (generateArrayDeclaration (init as) (o, (-1)) ((l,g),i + (length eCode) + 2) le) ++
+                                                        eCode ++ [Pop regA, Store regA (DirAddr ad)]
+                                                            where
+                                                                ad = o + 1
+                                                                eCode = generateCode (last as) ((l,g),i)
 
 
 
