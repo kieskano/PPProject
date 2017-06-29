@@ -66,9 +66,9 @@ grammar nt = case nt of
 
         Val         -> [[ IntConst ],
                         [ BoolConst ],
+                        [ ArrayExpr ],
                         [ Var ],
-                        [ ThreadID ],
-                        [ ArrayExpr ]]
+                        [ ThreadID ]]
 
         IntConst    -> [[ number ]]
 

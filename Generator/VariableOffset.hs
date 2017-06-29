@@ -14,19 +14,28 @@ calculateVarOffset' world (IfOneT ast asts)     = calculateVarOffsetList world a
 calculateVarOffset' world (IfTwoT ast as1 as2)  = calculateVarOffsetList (calculateVarOffsetList world as1) as2
 calculateVarOffset' world (ParallelT s asts)    = calculateVarOffsetList world asts
 calculateVarOffset' world (SyncT s asts)        = calculateVarOffsetList world asts
-calculateVarOffset' world (DeclT SGlob _ s _)   | offMapsContains s offmaps = world
-                                                | otherwise                 = ((local,(s,curGOff):global),curLOff,curGOff+2)
+calculateVarOffset' world (DeclT SGlob t s ast) | offMapsContains s offmaps = world
+                                                | otherwise                 = ((local,(s,curGOff):global),curLOff,curGOff+1 + (getDataOffset t ast))
                                                 where
                                                     (offmaps, curLOff, curGOff) = world
                                                     (local, global) = offmaps
-calculateVarOffset' world (DeclT SPriv _ s _)  | offMapsContains s offmaps = world
-                                                | otherwise                 = (((s,curLOff):local,global),curLOff+1,curGOff)
+calculateVarOffset' world (DeclT SPriv t s ast) | offMapsContains s offmaps = world
+                                                | otherwise                 = (((s,curLOff):local,global),curLOff+(getDataOffset t ast),curGOff)
                                                 where
                                                     (offmaps, curLOff, curGOff) = world
                                                     (local, global) = offmaps
 calculateVarOffset' world _                     = world
 
 
+
+getDataOffset :: String -> AST -> Int
+getDataOffset "#" _                 = 1
+getDataOffset "?" _                 = 1
+getDataOffset ('[':t:']':"") ast    = 1 + (getNumOfElems ast) * (getDataOffset [t] ast)
+
+getNumOfElems :: AST -> Int
+getNumOfElems (EmptyArrayT s)   = read s
+getNumOfElems (FillArrayT asts) = length asts
 
 calculateVarOffsetList :: ((OffsetMap, OffsetMap), Int, Int) -> [AST] -> ((OffsetMap, OffsetMap), Int, Int)
 calculateVarOffsetList world []             = world
