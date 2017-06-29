@@ -37,7 +37,7 @@ grammar nt = case nt of
 
         Assign      -> [[ name, equalass, Expr ]]
 
-        ArrayAssign -> [[ name, equalass, Expr ]]
+        ArrayAssign -> [[ name, sql, Expr, sqr, equalass, Expr ]]
 
 
         While       -> [[ while, bar, Expr, bar, Block ]]
