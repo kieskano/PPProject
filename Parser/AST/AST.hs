@@ -8,10 +8,12 @@ import Parser.ParseBasis
 -- ======================================================================================= --
 data VScope = SGlob | SPriv
             deriving (Show, Eq)
+
 -- Data structure for the AST
 data AST    = ProgT [AST]
             -- Statements
             | DeclT VScope String String AST
+            | ArrayDeclT VScope String AST
             | AssignT String AST
             | ArrayAssignT String AST AST -- TODO support dis in functions
             | WhileT AST [AST]
@@ -31,6 +33,8 @@ data AST    = ProgT [AST]
             | OneOpT String AST
             | TwoOpT AST String AST
             | BracketsT AST
+            | Empty String -- ArrayInit
+            | Fill [AST]
             deriving (Show, Eq)
 
 
