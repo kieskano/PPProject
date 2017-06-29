@@ -51,14 +51,14 @@ parsetoast (PNode Stat [stat]) = parseStattoast stat
 parsetoast (PNode Expr nodes)  = parseExprtoast (PNode Expr nodes)
 
 parseStattoast :: ParseTree -> AST
-parseStattoast (PNode Decl [t, n])                         = DeclT SPriv (getType t) (getTokenString n) EmptyT
-parseStattoast (PNode Decl [t, n, e])                      = DeclT SPriv (getType t) (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode Decl [PNode Type [t], n])            = DeclT SPriv (getTokenString t) (getTokenString n) EmptyT
+parseStattoast (PNode Decl [PNode Type [t], n, e])         = DeclT SPriv (getTokenString t) (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode Decl [_, t, n])                      = DeclT SGlob (getType t) (getTokenString n) EmptyT
 parseStattoast (PNode Decl [_, t, n, e])                   = DeclT SGlob (getType t) (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode ArrayDecl [PNode ArrayType [t], n, e])            = DeclT SPriv ("[" ++ (getType t) ++ "]") (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode ArrayDecl [_, PNode ArrayType [t], n, e])         = DeclT SGlob ("[" ++ (getType t) ++ "]") (getTokenString n) (parseExprtoast e)
 parseStattoast (PNode Assign [n, e])                                    = AssignT (getTokenString n) (parseExprtoast e)
-parseStattoast (PNode ArrayAssign [n, e])                                    = AssignT (getTokenString n) (parseExprtoast e)
+parseStattoast (PNode ArrayAssign [n, e1, e2])                          = ArrayAssignT (getTokenString n) (parseExprtoast e1) (parseExprtoast e2)
 parseStattoast (PNode While [e, PNode Block s])                         = WhileT (parseExprtoast e) (map parsetoast s)
 parseStattoast (PNode IfOne [e, PNode Block s])                         = IfOneT (parseExprtoast e) (map parsetoast s)
 parseStattoast (PNode IfTwo [e, PNode Block st, PNode Block se])        = IfTwoT (parseExprtoast e) (map parsetoast st) (map parsetoast se)
@@ -79,6 +79,7 @@ parseExprtoast (PNode Val [PNode IntConst [i]])     = IntConstT (getTokenString 
 parseExprtoast (PNode Val [PNode BoolConst [b]])    = BoolConstT (getTokenString b)
 parseExprtoast (PNode Val [PNode Var [v]])          = VarT (getTokenString v)
 parseExprtoast (PNode Val [PNode ThreadID []])      = ThreadIDT
+parseExprtoast (PNode Val [PNode ArrayExpr [n, e]]) = ArrayExprT (getTokenString n) (parseExprtoast e)
 parseExprtoast (PNode ArrayInit [PNode IntConst [i]]) = EmptyArrayT (getTokenString i)
 parseExprtoast (PNode ArrayInit exprs)              = FillArrayT (map parseExprtoast exprs)
 
