@@ -65,7 +65,8 @@ myShow (instrs,s) = printf "instrs: %s\nsprStates:\n%s\nrequests: %s\nreplies: %
                     (show $ sharedMem s)
 
 myShow' (instrs,s) = show instrs ++ "\n"
-                     ++ (unlines $ map show $ sprStates s)
+                     ++ (unlines $ map show $ sprStates s) ++ "\n"
+                     ++ (show $ sharedMem s)
 
 
 -- ======================================================================

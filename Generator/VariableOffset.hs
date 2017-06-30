@@ -26,6 +26,7 @@ calculateVarOffset' world (DeclT SPriv t s ast) | offMapsContains s offmaps = wo
                                                     (local, global) = offmaps
 calculateVarOffset' world _                     = world
 
+getMaxArrayLengths :: [(String, Int)] -> [(String, Int)]
 
 
 getDataOffset :: String -> AST -> Int
