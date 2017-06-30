@@ -49,6 +49,8 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Val
               | IntConst
               | BoolConst
+              | CharConst
+              | CharArrInit
               | Var
               | ThreadID
               | ArrayExpr

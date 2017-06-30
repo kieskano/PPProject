@@ -28,10 +28,12 @@ grammar nt = case nt of
                         [ global, ArrayType, name, equalass, ArrayInit ]]
 
         ArrayInit   -> [[ sql, IntConst, sqr ],
-                        [ curl, Expr, (*:) [comma, Expr], curr ]]
+                        [ curl, Expr, (*:) [comma, Expr], curr ],
+                        [ string ]]
 
         Type        -> [[ int ],
-                        [ bool ]]
+                        [ bool ],
+                        [ char ]]
 
         ArrayType   -> [[ sql, Type, sqr ]]
 
@@ -66,6 +68,7 @@ grammar nt = case nt of
 
         Val         -> [[ IntConst ],
                         [ BoolConst ],
+                        [ CharConst ],
                         [ ArrayExpr ],
                         [ Var ],
                         [ ThreadID ]]
@@ -74,6 +77,8 @@ grammar nt = case nt of
 
         BoolConst   -> [[ true ],
                         [ false ]]
+
+        CharConst   -> [[ character ]]
 
         Var         -> [[ name ]]
 
@@ -100,6 +105,7 @@ grammar nt = case nt of
 
 int         = Terminal "#"
 bool        = Terminal "?"
+char        = Terminal "€"
 
 notb        = Terminal "!"
 minus       = Terminal "-"
@@ -148,3 +154,5 @@ threadID    = Symbol "@"
 
 name        = SyntCat Name
 number      = SyntCat Number
+character   = SyntCat CharConst
+string      = SyntCat CharArrInit

@@ -2,6 +2,7 @@ module Parser.AST.AST where
 
 import FPPrac.Trees
 import Parser.ParseBasis
+import Data.Char
 
 -- ======================================================================================= --
 -- ================================= AST definition ====================================== --
@@ -26,6 +27,7 @@ data AST    = ProgT [AST]
             | EmptyT
             | IntConstT String
             | BoolConstT String
+            | CharConstT Char
             | VarT String
             | ThreadIDT
             | ArrayExprT String AST -- TODO support dis in functions
@@ -77,12 +79,23 @@ parseExprtoast (PNode Expr [e])                     = parseExprtoast e
 parseExprtoast (PNode Brackets [e])                 = BracketsT (parseExprtoast(e))
 parseExprtoast (PNode Val [PNode IntConst [i]])     = IntConstT (getTokenString i)
 parseExprtoast (PNode Val [PNode BoolConst [b]])    = BoolConstT (getTokenString b)
+parseExprtoast (PNode Val [PNode CharConst [c]])    = CharConstT (fst $ head $ readLitChar char)
+                                                    where
+                                                        char = drop 1 $ take (length (getTokenString c) -1) (getTokenString c)
 parseExprtoast (PNode Val [PNode Var [v]])          = VarT (getTokenString v)
 parseExprtoast (PNode Val [PNode ThreadID []])      = ThreadIDT
 parseExprtoast (PNode Val [PNode ArrayExpr [n, e]]) = ArrayExprT (getTokenString n) (parseExprtoast e)
 parseExprtoast (PNode ArrayInit [PNode IntConst [i]]) = EmptyArrayT (getTokenString i)
+parseExprtoast (PNode ArrayInit [s])                = FillArrayT (stringToCharConstArray string)
+                                                    where
+                                                        string = drop 1 $ take (length (getTokenString s) -1) (getTokenString s)
 parseExprtoast (PNode ArrayInit exprs)              = FillArrayT (map parseExprtoast exprs)
 
+stringToCharConstArray :: String -> [AST]
+stringToCharConstArray "" = []
+stringToCharConstArray s  = (CharConstT char) : (stringToCharConstArray rest)
+                            where
+                                (char, rest) = head $ readLitChar s
 
 -- Statements
 -- parsetoast (PNode Stat [PNode Decl [PNode Type [t], n]])         = PrivateDeclT (getTokenString t) (getTokenString n) EmptyT
@@ -136,6 +149,7 @@ asttorose (WriteIntT ast)           = RoseNode "WriteIntT" [asttorose ast]
 asttorose EmptyT                    = RoseNode "EmptyT" []
 asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []
 asttorose (BoolConstT b)            = RoseNode ("BoolConstT " ++ b) []
+asttorose (CharConstT c)            = RoseNode ("BoolConstT '" ++ [c] ++ "'") []
 asttorose (VarT s)                  = RoseNode ("VarT " ++ s) []
 asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
 asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]

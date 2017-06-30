@@ -24,7 +24,7 @@ name = \s x -> case s of
 
 symbol :: FAState -> Char -> FAState
 symbol = \s x -> case s of
-                        S   | elem x "/#\\()[]{}%.,_@-" -> F 0
+                        S   | elem x "/#\\()[]{}%.,_@-€" -> F 0
                             | elem x "!="   -> F 1
                             | elem x "|+"   -> F 2
                             | x == '?'      -> F 3
@@ -74,6 +74,32 @@ number = \s x -> case s of
 
                         _                   -> E
 
+character :: FAState -> Char -> FAState
+character = \s x -> case s of
+                        S   | x == '\''     -> Q 0
+                            | otherwise     -> E
+
+                        Q 0 | x == '\\'     -> Q 1
+                            | otherwise     -> Q 2
+
+                        Q 1 | x /= '\'' && x /= '\\' -> Q 2
+                            | otherwise     -> E
+
+                        Q 2 | x == '\''     -> F 0
+                            | otherwise     -> E
+
+                        _                   -> E
+
+string :: FAState -> Char -> FAState
+string = \s x -> case s of
+                        S   | x == '\"'     -> Q 0
+                            | otherwise     -> E
+
+                        Q 0 | x == '\"'     -> F 0
+                            | otherwise     -> Q 0
+
+                        _                   -> E
+
 comment :: FAState -> Char -> FAState
 comment = \s x -> case s of
                         S   | x == '$'      -> F 0
@@ -110,6 +136,8 @@ tokenize ""                             = []
 tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S name      in a : tokenize b
                 | isStartOf number x    = let (a, b) = identifyToken (x:xs) S number    in a : tokenize b
                 | isStartOf symbol x    = let (a, b) = identifyToken (x:xs) S symbol    in a : tokenize b
+                | isStartOf character x = let (a, b) = identifyToken (x:xs) S character in a : tokenize b
+                | isStartOf string x    = let (a, b) = identifyToken (x:xs) S string    in a : tokenize b
                 | isStartOf comment x   = let (a, b) = identifyToken (x:xs) S comment   in     tokenize b --rm comments
                 | isStartOf whitespace x= let (a, b) = identifyToken (x:xs) S whitespace in    tokenize b --rm whitespace
                 | otherwise             = error ("Unrecognized charachter: " ++ show x)
@@ -132,6 +160,8 @@ lexer []                                = []
 lexer (x:xs)    | isOfType name x       = (Name, x)     : lexer xs
                 | isOfType number x     = (Number, x)   : lexer xs
                 | isOfType symbol x     = (Sym, x)      : lexer xs
+                | isOfType character x  = (CharConst, x): lexer xs
+                | isOfType string x     = (CharArrInit, x): lexer xs
                 | otherwise             = error ("parse error in lexer on " ++ show x)
 
 

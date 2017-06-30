@@ -5,9 +5,10 @@ import Data.List
 
 data Type   = IntType
             | BoolType
+            | CharType
             | ArrayType Type
             | VoidType
-            | Or Type Type
+            | Or [Type]
             deriving (Eq)
 
 instance Show Type where
@@ -15,13 +16,16 @@ instance Show Type where
     show BoolType = "?"
     show (ArrayType t) = "[" ++ (show t) ++ "]"
     show VoidType = "VOID"
-    show (Or t1 t2) = (show t1) ++ " | " ++ (show t2)
+    show (Or ts) = "OR " ++ (show ts)
 
 
 typeMap :: [(String, Type)]
 typeMap =          [("#", IntType),
                     ("?", BoolType),
-                    ("[#]", ArrayType IntType)]
+                    ("€", BoolType),
+                    ("[#]", ArrayType IntType),
+                    ("[?]", ArrayType BoolType),
+                    ("[€]", ArrayType CharType)]
 
 oneOpArgTypeMap :: [(String, Type)]
 oneOpArgTypeMap =  [("-", IntType),
@@ -35,12 +39,12 @@ twoOpArgTypeMap :: [(String, (Type, Type))]
 twoOpArgTypeMap =  [("||", (BoolType, BoolType)),
                     ("&&", (BoolType, BoolType)),
                     ("+|", (BoolType, BoolType)),
-                    ("==", (Or BoolType IntType, Or BoolType IntType)),
-                    ("!=", (Or BoolType IntType, Or BoolType IntType)),
-                    ("<", (IntType, IntType)),
-                    (">", (IntType, IntType)),
-                    ("<=", (IntType, IntType)),
-                    (">=", (IntType, IntType)),
+                    ("==", (Or [BoolType, IntType, CharType], Or [BoolType, IntType, CharType])),
+                    ("!=", (Or [BoolType, IntType, CharType], Or [BoolType, IntType, CharType])),
+                    ("<", (Or [IntType, CharType], Or [IntType, CharType])),
+                    (">", (Or [IntType, CharType], Or [IntType, CharType])),
+                    ("<=", (Or [IntType, CharType], Or [IntType, CharType])),
+                    (">=", (Or [IntType, CharType], Or [IntType, CharType])),
                     ("+", (IntType, IntType)),
                     ("-", (IntType, IntType)),
                     ("*", (IntType, IntType)),
@@ -224,8 +228,8 @@ checkExprType varMap (OneOpT s e)       | eType == opArgType = (opRetType, error
                                                 ++ (show eType) ++ "' as argument of operator '"
                                                 ++ s ++ "'"
 checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
-                                        (Or ta1 ta2, Or tb1 tb2)
-                                            | elem e1Type [ta1, ta2] && elem e2Type [tb1, tb2]
+                                        (Or tas, Or tbs)
+                                            | elem e1Type tas && elem e2Type tbs
                                                  && e1Type == e2Type        ->
                                                     (opRetType, errors)
                                             | otherwise                     ->
