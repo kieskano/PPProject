@@ -14,6 +14,7 @@ data Type   = IntType
 instance Show Type where
     show IntType = "#"
     show BoolType = "?"
+    show CharType = "*"
     show (ArrayType t) = "[" ++ (show t) ++ "]"
     show VoidType = "VOID"
     show (Or ts) = "OR " ++ (show ts)
@@ -22,10 +23,10 @@ instance Show Type where
 typeMap :: [(String, Type)]
 typeMap =          [("#", IntType),
                     ("?", BoolType),
-                    ("€", BoolType),
+                    ("*", BoolType),
                     ("[#]", ArrayType IntType),
                     ("[?]", ArrayType BoolType),
-                    ("[€]", ArrayType CharType)]
+                    ("[*]", ArrayType CharType)]
 
 oneOpArgTypeMap :: [(String, Type)]
 oneOpArgTypeMap =  [("-", IntType),

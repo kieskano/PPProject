@@ -3,6 +3,7 @@ module Parser.AST.AST where
 import FPPrac.Trees
 import Parser.ParseBasis
 import Data.Char
+import Debug.Trace
 
 -- ======================================================================================= --
 -- ================================= AST definition ====================================== --
@@ -95,7 +96,7 @@ stringToCharConstArray :: String -> [AST]
 stringToCharConstArray "" = []
 stringToCharConstArray s  = (CharConstT char) : (stringToCharConstArray rest)
                             where
-                                (char, rest) = head $ readLitChar s
+                                (char, rest) = head $ readLitChar (trace s s)
 
 -- Statements
 -- parsetoast (PNode Stat [PNode Decl [PNode Type [t], n]])         = PrivateDeclT (getTokenString t) (getTokenString n) EmptyT
@@ -149,7 +150,7 @@ asttorose (WriteIntT ast)           = RoseNode "WriteIntT" [asttorose ast]
 asttorose EmptyT                    = RoseNode "EmptyT" []
 asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []
 asttorose (BoolConstT b)            = RoseNode ("BoolConstT " ++ b) []
-asttorose (CharConstT c)            = RoseNode ("BoolConstT '" ++ [c] ++ "'") []
+asttorose (CharConstT c)            = RoseNode ("CharConstT '" ++ [c] ++ "'") []
 asttorose (VarT s)                  = RoseNode ("VarT " ++ s) []
 asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
 asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]

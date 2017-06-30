@@ -2,6 +2,7 @@ module Parser.Tokenizer where
 
 import Parser.ParseBasis
 import System.IO.Unsafe
+import Debug.Trace
 
 data FAState = S | F Int | Q Int  | E   -- S = Start, F = Final, Q = Normal, E = Error
     deriving (Show, Eq)
@@ -24,7 +25,7 @@ name = \s x -> case s of
 
 symbol :: FAState -> Char -> FAState
 symbol = \s x -> case s of
-                        S   | elem x "/#\\()[]{}%.,_@-€" -> F 0
+                        S   | elem x "/#\\()[]{}%.,_@-" -> F 0
                             | elem x "!="   -> F 1
                             | elem x "|+"   -> F 2
                             | x == '?'      -> F 3
@@ -133,7 +134,7 @@ isFinal state = case state of
 
 tokenize :: String -> [String]
 tokenize ""                             = []
-tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S name      in a : tokenize b
+tokenize (x:xs) | isStartOf name (trace [x] x)      = let (a, b) = identifyToken (x:xs) S name      in a : tokenize b
                 | isStartOf number x    = let (a, b) = identifyToken (x:xs) S number    in a : tokenize b
                 | isStartOf symbol x    = let (a, b) = identifyToken (x:xs) S symbol    in a : tokenize b
                 | isStartOf character x = let (a, b) = identifyToken (x:xs) S character in a : tokenize b

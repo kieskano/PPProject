@@ -105,7 +105,7 @@ grammar nt = case nt of
 
 int         = Terminal "#"
 bool        = Terminal "?"
-char        = Terminal "€"
+char        = Terminal "*"
 
 notb        = Terminal "!"
 minus       = Terminal "-"
