@@ -98,7 +98,7 @@ finalPError (nt0,ts) (PError t rule nt str k) = PError (PNode nt0 (ts++[t])) rul
 parse :: Grammar -> Alphabet -> [Token] -> ParseTree
 
 parse gr s tokens | null correctParses = maximum $ map fst parses
-                  | not $ null rest    = error ("tokenList not fully parsed. Still left: " ++ (show $ map snd rest))
+                  | not $ null rest    = error ("ParseError Expected "++ (show s) ++" at: V" ++ (printProg $ map snd rest))
                   | otherwise          = final
           where
             parses = [ (t,rem) | r <- gr s
@@ -112,3 +112,8 @@ parse gr s tokens | null correctParses = maximum $ map fst parses
             (final,rest)  = head correctParses
 
 x ∈ xs = elem x xs
+
+printProg :: [Token] -> String
+printProg []            = ""
+printProg ((_,"."):ts)  = "\n. " ++ (printProg ts)
+printProg ((_,s):ts)    = s ++ " " ++ (printProg ts)
