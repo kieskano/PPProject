@@ -3,6 +3,7 @@ module Generator.Generator where
 import Parser.AST.AST
 import Generator.VariableOffset
 import Sprockell
+import Debug.Trace
 
 preProg = [Debug "Pre-program - set up slaves",
            Branch regSprID (Rel 2),
@@ -145,20 +146,20 @@ generateEmptyArrayDeclaration i ((-1), o) le    = (generateEmptyArrayDeclaration
 generateEmptyArrayDeclaration 0 (o, (-1)) le        = [Load (ImmValue le) regA, Store regA (DirAddr o)]
 generateEmptyArrayDeclaration i (o, (-1)) le    = (generateEmptyArrayDeclaration (i-1) (o, (-1)) le) ++ [Store reg0 (DirAddr ad)]
                                                 where
-                                                    ad = o + 1
+                                                    ad = o + i
 
 generateArrayDeclaration :: [AST] -> (Int, Int) -> ((OffsetMap, OffsetMap), Int) -> Int -> [Instruction]
 generateArrayDeclaration [] ((-1), o) w le              = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
 generateArrayDeclaration as ((-1), o) ((l,g),i) le      = (generateArrayDeclaration (init as) (o, (-1)) ((l,g),i + (length eCode) + 2) le) ++
                                                         eCode ++ [Pop regA, WriteInstr regA (DirAddr ad)]
                                                             where
-                                                                ad = o + 1
+                                                                ad = o + i
                                                                 eCode = generateCode (last as) ((l,g),i)
-generateArrayDeclaration [] (o, (-1)) w le              = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
+generateArrayDeclaration [] (o, (-1)) w le              = [Load (ImmValue le) regA, Store regA (DirAddr o)]
 generateArrayDeclaration as (o, (-1)) ((l,g),i) le      = (generateArrayDeclaration (init as) (o, (-1)) ((l,g),i + (length eCode) + 2) le) ++
                                                         eCode ++ [Pop regA, Store regA (DirAddr ad)]
                                                             where
-                                                                ad = o + 1
+                                                                ad = trace ((show o) ++ " " ++ (show i) ++ " " ++ show (o+i)) (o + i)
                                                                 eCode = generateCode (last as) ((l,g),i)
 
 

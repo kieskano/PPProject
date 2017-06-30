@@ -14,6 +14,7 @@ import Sprockell
 import Generator.Generator
 import Generator.VariableOffset
 import Debug.Trace
+import Text.Printf
 
 {-test1 = showRoseTree (toRoseTree (parseDinkie "test/testSmall.ding"))
 test = showRoseTree (asttorose (parsetoast (parseDinkie "test/testScope2.ding")))
@@ -53,7 +54,7 @@ runDinkie file  = trace (progToString prog) (run (replicate threads prog))
                         prog = fst cmp
 
 runDinkieDebug :: String -> IO ()
-runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimplePrintAndWait myShow) (replicate threads prog))
+runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimplePrint debugShow') (replicate threads prog))
                     where
                         cmp = compileDinkie file
                         threads = snd cmp
@@ -127,7 +128,17 @@ showAddrImmDI (IndAddr r) = showReg r regMap
 
 
 
+debugShow :: DbgInput -> String
+debugShow (instrs,s) = printf "instrs: %s\nsprStates:\n%s\nrequests: %s\nreplies: %s\nrequestFifo: %s\nsharedMem: %s\n"
+                    (show instrs)
+                    (unlines $ map show $ sprStates s)
+                    (show $ requestChnls s)
+                    (show $ replyChnls s)
+                    (show $ requestFifo s)
+                    (show $ sharedMem s)
 
+debugShow' (instrs,s) = show instrs ++ "\n"
+                     ++ (unlines $ map show $ sprStates s)
 
 
 
