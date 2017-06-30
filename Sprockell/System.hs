@@ -32,7 +32,7 @@ shMem sharedMem (i,req)
                         let prompt = printf "Sprockell %i asks for a number: " i
                         fmap Just (promptForRead prompt)
                     WriteReq v a  -> do
-                        printf "Sprockell %i says %i\n" i v
+                        printf "%i" v
                         return Nothing
                     TestReq a     -> error $ "TestAndSet on IO address: " ++ show req ++ " not supported"
         return (sharedMem,(i,reply))

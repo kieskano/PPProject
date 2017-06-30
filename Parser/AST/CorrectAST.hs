@@ -60,8 +60,8 @@ correctProg (IfOneT ast asts)       = IfOneT (correctExpr ast) (map correctProg 
 correctProg (IfTwoT ast asts1 asts2)= IfTwoT (correctExpr ast) (map correctProg asts1) (map correctProg asts2)
 correctProg (ParallelT s asts)      = ParallelT s (map correctProg asts)
 correctProg (SyncT s asts)          = SyncT s (map correctProg asts)
-correctProg (ReadIntT s)            = ReadIntT s
-correctProg (WriteIntT ast)         = WriteIntT (correctExpr ast)
+correctProg (ReadStatT t s)         = ReadStatT t s
+correctProg (WriteStatT t ast)      = WriteStatT t (correctExpr ast)
 
 
 correctExpr :: AST -> AST

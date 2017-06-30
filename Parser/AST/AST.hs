@@ -16,14 +16,14 @@ data AST    = ProgT [AST]
             -- Statements
             | DeclT VScope String String AST
             | AssignT String AST
-            | ArrayAssignT String AST AST -- TODO support dis in functions
+            | ArrayAssignT String AST AST
             | WhileT AST [AST]
             | IfOneT AST [AST]
             | IfTwoT AST [AST] [AST]
             | ParallelT String [AST]
             | SyncT String [AST]
-            | ReadIntT String
-            | WriteIntT AST
+            | ReadStatT String String -- FIXME CHANGED (ReadIntT s) to (ReadStatT s s)
+            | WriteStatT String AST -- FIXME CHANGED (WriteIntT a) to (WriteStatT s a)
             -- Expressions
             | EmptyT
             | IntConstT String
@@ -31,7 +31,7 @@ data AST    = ProgT [AST]
             | CharConstT Char
             | VarT String
             | ThreadIDT
-            | ArrayExprT String AST -- TODO support dis in functions
+            | ArrayExprT String AST
             | OneOpT String AST
             | TwoOpT AST String AST
             | BracketsT AST
@@ -67,8 +67,9 @@ parseStattoast (PNode IfOne [e, PNode Block s])                         = IfOneT
 parseStattoast (PNode IfTwo [e, PNode Block st, PNode Block se])        = IfTwoT (parseExprtoast e) (map parsetoast st) (map parsetoast se)
 parseStattoast (PNode Parallel [PNode IntConst [i], PNode Block st])    = ParallelT (getTokenString i) (map parsetoast st)
 parseStattoast (PNode Sync [PNode Var [i], PNode Block st])             = SyncT (getTokenString i) (map parsetoast st)
-parseStattoast (PNode ReadInt [PNode Var [v]])                          = ReadIntT (getTokenString v)
-parseStattoast (PNode WriteInt [e])                                     = WriteIntT (parseExprtoast e)
+parseStattoast (PNode ReadStat [t, PNode Var [v]])                      = ReadStatT (getType t) (getTokenString v)
+parseStattoast (PNode WriteStat [PNode ArrayType [t], e])               = WriteStatT ("["++(getType t)++"]") (parseExprtoast e)
+parseStattoast (PNode WriteStat [t, e])                                 = WriteStatT (getType t)(parseExprtoast e)
 
 getType :: ParseTree -> String
 getType (PNode Type [t]) = getTokenString t
@@ -144,8 +145,8 @@ asttorose (IfOneT ast asts)         = RoseNode "IfOneT" ((asttorose ast):(map as
 asttorose (IfTwoT ast asts1 asts2)  = RoseNode "IfTwoT" (((asttorose ast):(map asttorose asts1)) ++ (map asttorose asts2))
 asttorose (ParallelT s asts)        = RoseNode ("ParallelT "++s) (map asttorose asts)
 asttorose (SyncT s asts)            = RoseNode ("SyncT "++s) (map asttorose asts)
-asttorose (ReadIntT s)              = RoseNode ("ReadIntT " ++ s) []
-asttorose (WriteIntT ast)           = RoseNode "WriteIntT" [asttorose ast]
+asttorose (ReadStatT t s)              = RoseNode ("ReadStatT " ++ t ++ " " ++ s) []
+asttorose (WriteStatT t ast)           = RoseNode ("WriteStatT" ++ t) [asttorose ast]
 -- Expressions
 asttorose EmptyT                    = RoseNode "EmptyT" []
 asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []

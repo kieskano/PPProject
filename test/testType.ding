@@ -89,7 +89,7 @@ $IFWHILE$
 
 $READWRITEINT$
 
-. *> i
-. *> k
-. <* i
-. <* k
+. # > i
+. # > k
+. # < i
+. # < k

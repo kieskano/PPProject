@@ -86,10 +86,10 @@ checkScope' (SyncT v as) (x,z)          | not (elem (Unknown "=") (head x)) = (x
                                                 csu = checkSyncUse (Global v) x
                                                 csn = checkSyncNesting v (z)
                                                 cs = checkScope'' as (x,z ++ [v])
-checkScope' (ReadIntT v) (x,z)          = (x, snd cu)
+checkScope' (ReadStatT t v) (x,z)       = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
-checkScope' (WriteIntT a) (x,z)         = (x, snd ca)
+checkScope' (WriteStatT t a) (x,z)      = (x, snd ca)
                                             where
                                                 ca = checkScope' a (x,z)
 -- Expressions

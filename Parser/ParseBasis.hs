@@ -37,8 +37,8 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | IfTwo
               | Parallel
               | Sync
-              | ReadInt
-              | WriteInt
+              | ReadStat
+              | WriteStat
               | Assign
               | ArrayAssign
               | Expr

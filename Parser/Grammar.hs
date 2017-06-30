@@ -16,8 +16,8 @@ grammar nt = case nt of
                         [ dot, IfTwo ],
                         [ dot, Parallel ],
                         [ dot, Sync ],
-                        [ dot, ReadInt ],
-                        [ dot, WriteInt ]]
+                        [ dot, ReadStat ],
+                        [ dot, WriteStat ]]
 
         Decl        -> [[ Type, name, equalass, Expr ],
                         [ Type, name ],
@@ -52,9 +52,10 @@ grammar nt = case nt of
 
         Sync        -> [[ parr, Var, parl, Block ]]
 
-        ReadInt     -> [[ readInt, Var ]]
+        ReadStat    -> [[ Type, readstat, Var ]]
 
-        WriteInt    -> [[ writeInt, Expr ]]
+        WriteStat   -> [[ Type, writestat, Expr ],
+                        [ ArrayType, writestat, Expr ]]
 
         Block       -> [[ c, (*:) [Stat], g ]]
 
@@ -132,8 +133,8 @@ ifone       = Symbol "?-"
 iftwo       = Symbol "?<"
 parl        = Symbol "~<"
 parr        = Symbol ">~"
-readInt     = Symbol "*>"
-writeInt    = Symbol "<*"
+readstat    = Symbol ">"
+writestat   = Symbol "<"
 
 
 dot         = Symbol "."

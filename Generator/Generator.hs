@@ -23,6 +23,8 @@ afterPar = [Debug "Post-parallel - slaves terminate and master joins",
            Compute Sub regSprID regA regA,
            WriteInstr reg0 (IndAddr regA),
            Jump (Abs 5)]
+
+
 --           || ast || ((offMap   , offMap  ), lineNr)||( prog        , nextLineNr)
 generateProgCode :: AST -> Int -> ((OffsetMap, OffsetMap), Int) -> [Instruction]
 generateProgCode (ProgT as) n ((l,g),i)    = preProg++[Debug "Start of program"]++code++[Debug "Post-program - kill slaves", Load (ImmValue endLine) regA]++killSlavesCode++[EndProg]
@@ -93,12 +95,32 @@ generateCode (SyncT v as) ((l,g),i)     = [Debug ("Start sync on: _"++v),TestAnd
                                             where
                                                 loc = getOffset v g - 1
                                                 blockCode = generateCode' as ((l,g),i+5)
-generateCode (ReadIntT v) ((l,g),i)     | ol /= -1      = [ReadInstr numberIO, Receive regA, Store regA (DirAddr ol)]
-                                        | otherwise     = [ReadInstr numberIO, Receive regA, WriteInstr regA (DirAddr og)]
+generateCode (ReadStatT "#" v) ((l,g),i) | ol /= -1      = [ReadInstr numberIO, Receive regA, Store regA (DirAddr ol)]
+                                         | otherwise     = [ReadInstr numberIO, Receive regA, WriteInstr regA (DirAddr og)]
                                             where
                                                 ol = getOffset v l
                                                 og = getOffset v g
-generateCode (WriteIntT a) ((l,g),i)    = (generateCode a ((l,g),i))++[Pop regA, WriteInstr regA numberIO]
+generateCode (ReadStatT "*" v) ((l,g),i) | ol /= -1      = [ReadInstr charIO, Receive regA, Store regA (DirAddr ol)]
+                                         | otherwise     = [ReadInstr charIO, Receive regA, WriteInstr regA (DirAddr og)]
+                                            where
+                                                ol = getOffset v l
+                                                og = getOffset v g
+generateCode (WriteStatT "#" a) ((l,g),i) = (generateCode a ((l,g),i))++[Pop regA, WriteInstr regA numberIO]
+generateCode (WriteStatT "*" a) ((l,g),i) = (generateCode a ((l,g),i))++[Pop regA, WriteInstr regA charIO]
+generateCode (WriteStatT "?" a) ((l,g),i) = (generateCode a ((l,g),i))++[Pop regA, Branch regA (Rel 4), Load (ImmValue (ord '\\')) regA, WriteInstr regA charIO,Jump (Rel 3), Load (ImmValue (ord '/')) regA, WriteInstr regA charIO]
+generateCode (WriteStatT ('[':t:r) (VarT v)) ((l,g),i)   | ol /= -1      = (if t /= '*' then [Load (ImmValue (ord '[')) regC, WriteInstr regC charIO] else [] )++
+                                                                           [Load (ImmValue ol) regE, Load (ImmValue 1) regD, Load (DirAddr (ol)) regA, Compute Add regA regE regA, Load (ImmValue 1) regB, Compute Add regB regE regB,
+                                                                            Compute GtE regB regA regC, Branch regC (Rel (4 + (length pCode))), Load (IndAddr regB) regF]
+                                                                            ++ pCode ++ [Compute Add regB regD regB, Jump (Rel ((length pCode + 4)*(-1))), Load (IndAddr regB) regF] ++ pCode' ++ (if t /= '*' then [Load (ImmValue (ord ']')) regC, WriteInstr regC charIO] else [] )
+                                                         | otherwise     = (if t /= '*' then [Load (ImmValue (ord '[')) regC, WriteInstr regC charIO] else [] )++
+                                                                           [Load (ImmValue og) regE, Load (ImmValue 1) regD, ReadInstr (DirAddr (og)), Receive regA, Compute Add regA regE regA, Load (ImmValue 1) regB, Compute Add regB regE regB,
+                                                                            Compute GtE regB regA regC, Branch regC (Rel (5 + (length pCode))), ReadInstr (IndAddr regB), Receive regF]
+                                                                            ++ pCode ++ [Compute Add regB regD regB, Jump (Rel ((length pCode + 5)*(-1))), ReadInstr (IndAddr regB), Receive regF] ++ pCode' ++ (if t /= '*' then [Load (ImmValue (ord ']')) regC, WriteInstr regC charIO] else [] )
+                                                            where
+                                                                ol = getOffset v l
+                                                                og = getOffset v g
+                                                                pCode = generatePrintElemCode t
+                                                                pCode' = generatePrintElemCode' t
 -- Expressions
 generateCode EmptyT ((l,g),i)           = [Push reg0]
 generateCode (IntConstT n) ((l,g),i)    = [Load (ImmValue (read n)) regA, Push regA]
@@ -138,6 +160,18 @@ generateCode (TwoOpT a1 o a2) ((l,g),i) | o == "*"      = generateTwoOpCode a1 a
 generateCode (BracketsT a) ((l,g),i)    = generateCode a ((l,g),i)
 generateCode (EmptyArrayT s) ((l,g),i)  = []
 generateCode (FillArrayT a) ((l,g),i)   = []
+
+
+
+generatePrintElemCode :: Char -> [Instruction]
+generatePrintElemCode '#' = [WriteInstr regF numberIO, Load (ImmValue (ord ',')) regF, WriteInstr regF charIO]
+generatePrintElemCode '*' = [WriteInstr regF charIO]
+generatePrintElemCode '?' = [Branch regF (Rel 4), Load (ImmValue (ord '\\')) regF, WriteInstr regF charIO, Jump (Rel 3), Load (ImmValue (ord '/')) regF, WriteInstr regF charIO, Load (ImmValue (ord ',')) regF, WriteInstr regF charIO]
+
+generatePrintElemCode' :: Char -> [Instruction]
+generatePrintElemCode' '#' = [WriteInstr regF numberIO]
+generatePrintElemCode' '*' = [WriteInstr regF charIO]
+generatePrintElemCode' '?' = [Branch regF (Rel 4), Load (ImmValue (ord '\\')) regF, WriteInstr regF charIO, Jump (Rel 3), Load (ImmValue (ord '/')) regF, WriteInstr regF charIO]
 
 
 generateIOOB :: VScope -> Int -> [Instruction]

@@ -170,21 +170,23 @@ checkTypes varMap (ParallelT num as)    | (read num) > 1    = (nVarMap, errors)
                                             err = "Number of threads must be larger than 1, but it was " ++ num
                                                 ++ " in statement '" ++ statString ++ "'"
 checkTypes varMap (SyncT var as)        = checkTypesBlock varMap as
-checkTypes varMap (ReadIntT var)        | vType == IntType  = (varMap, [])
+checkTypes varMap (ReadStatT t var)     | vType == rType    = (varMap, [])
                                         | otherwise         = (varMap, [err])
                                         where
+                                            rType = getVal t typeMap
                                             vType = getVal var varMap
-                                            statString = statToString (ReadIntT var)
-                                            err = "Could not match expected type '" ++ (show IntType)
+                                            statString = statToString (ReadStatT t var)
+                                            err = "Could not match expected type '" ++ (show rType)
                                                 ++ "' with actual type '" ++ (show vType) ++ "' of variable '"
                                                 ++ var ++ "' in statement '" ++ statString ++ "'"
-checkTypes varMap (WriteIntT expr)      | eType == IntType  = (varMap, errors')
+checkTypes varMap (WriteStatT t expr)   | eType == wType    = (varMap, errors')
                                         | otherwise         = (varMap, err:errors')
                                         where
+                                            wType = getVal t typeMap
                                             (eType, errors) = checkExprType varMap expr
                                             errors' = map (++ " in statement '" ++ statString ++ "'") errors
-                                            statString = exprToString expr
-                                            err = "Could not match expected type '" ++ (show IntType)
+                                            statString = exprToString (WriteStatT t expr)
+                                            err = "Could not match expected type '" ++ (show wType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
 
@@ -273,8 +275,8 @@ statToString (WhileT a _)               = ". ?^ |" ++ (exprToString a) ++ "| < .
 statToString (IfOneT a _)               = ". ?- |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfTwoT a _ _)             = ". ?< |" ++ (exprToString a) ++ "| < ... > < ... >"
 statToString (ParallelT s _)            = ". -<" ++ s ++ ">- < ... >"
-statToString (ReadIntT s)               = ". *> " ++ s
-statToString (WriteIntT a)              = ". <* " ++ (exprToString a)
+statToString (ReadStatT t s)               = ". "++t++"> " ++ s
+statToString (WriteStatT t a)              = ". "++t++"< " ++ (exprToString a)
 
 exprToString :: AST -> String
 exprToString (IntConstT s)      = s

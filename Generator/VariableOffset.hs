@@ -94,8 +94,8 @@ calculateThreadAmount (WhileT a as)             = maximum [calculateThreadAmount
 calculateThreadAmount (IfOneT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
 calculateThreadAmount (IfTwoT a as1 as2)        = maximum [calculateThreadAmount a, calculateThreadAmount' as1, calculateThreadAmount' as2]
 calculateThreadAmount (ParallelT s as)          = read s
-calculateThreadAmount (ReadIntT s)              = 1
-calculateThreadAmount (WriteIntT a)             = calculateThreadAmount a
+calculateThreadAmount (ReadStatT t s)           = 1
+calculateThreadAmount (WriteStatT t a)          = calculateThreadAmount a
 --Expressions
 calculateThreadAmount EmptyT                    = 1
 calculateThreadAmount (IntConstT s)             = 1
