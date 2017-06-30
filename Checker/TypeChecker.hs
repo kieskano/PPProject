@@ -1,9 +1,11 @@
 module Checker.TypeChecker where
 
 import Parser.AST.AST
+import Data.List
 
 data Type   = IntType
             | BoolType
+            | ArrayType Type
             | VoidType
             | Or Type Type
             deriving (Eq)
@@ -11,13 +13,15 @@ data Type   = IntType
 instance Show Type where
     show IntType = "#"
     show BoolType = "?"
+    show (ArrayType t) = "[" ++ (show t) ++ "]"
     show VoidType = "VOID"
     show (Or t1 t2) = (show t1) ++ " | " ++ (show t2)
 
 
 typeMap :: [(String, Type)]
 typeMap =          [("#", IntType),
-                    ("?", BoolType)]
+                    ("?", BoolType),
+                    ("[#]", ArrayType IntType)]
 
 oneOpArgTypeMap :: [(String, Type)]
 oneOpArgTypeMap =  [("-", IntType),
@@ -66,6 +70,18 @@ getVal s vmap = case (lookup s vmap) of
 checkTypes :: [(String, Type)] -> AST -> ([(String, Type)], [String])
 checkTypes varMap (ProgT as)            = checkTypesBlock varMap as
 checkTypes varMap (DeclT SGlob s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
+checkTypes varMap (DeclT SGlob s1 s2 (EmptyArrayT s))  = ((s2, getVal s1 typeMap):varMap, [])
+checkTypes varMap (DeclT SGlob s1 s2 (FillArrayT exprs))
+                                        | aType == varType  = ((s2, getVal s1 typeMap):varMap, errors')
+                                        | otherwise         = ((s2, getVal s1 typeMap):varMap, err:errors')
+                                        where
+                                            (aType, errors) = checkArrayType varMap exprs
+                                            varType = getVal s2 typeMap
+                                            errors' = map (++ " in statement '" ++ statString ++ "'") errors
+                                            statString = statToString (DeclT SGlob s1 s2 (FillArrayT exprs))
+                                            err = "Could not match expected type '" ++ (show varType)
+                                                ++ "' with actual type '" ++ (show aType) ++ "' of the expression in "
+                                                ++ "statement '" ++ statString ++ "'"
 checkTypes varMap (DeclT SGlob s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
                                         | otherwise         = ((s2, varType):varMap, errors')
                                         where
@@ -96,6 +112,23 @@ checkTypes varMap (AssignT s1 expr)     | eType == varType  = (varMap, errors')
                                             statString = statToString (AssignT s1 expr)
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
+                                                ++ "statement '" ++ statString ++ "'"
+checkTypes varMap (ArrayAssignT s expr1 expr2)
+                                        | e1Type == IntType && e2Type == varType = (varMap, errors1'++errors2')
+                                        | e2Type == varType                      = (varMap, err1:errors1'++errors2')
+                                        | otherwise                              = (varMap, err2:errors1'++errors2')
+                                        where
+                                            (e1Type, errors1) = checkExprType varMap expr1
+                                            (e2Type, errors2) = checkExprType varMap expr2
+                                            (ArrayType varType) = getVal s varMap
+                                            errors1' = map (++ " in statement '" ++ statString ++ "'") errors1
+                                            errors2' = map (++ " in statement '" ++ statString ++ "'") errors2
+                                            statString = statToString (ArrayAssignT s expr1 expr2)
+                                            err1 = "Could not match expected type '" ++ (show IntType)
+                                                ++ "' with actual type '" ++ (show e1Type) ++ "' of the index expression in "
+                                                ++ "statement '" ++ statString ++ "'"
+                                            err2 = "Could not match expected type '" ++ (show varType)
+                                                ++ "' with actual type '" ++ (show e2Type) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
 checkTypes varMap (WhileT expr as)      | eType == BoolType = let (x, y) = checkTypesBlock varMap as in (x, errors' ++ y)
                                         | otherwise         = let (x, y) = checkTypesBlock varMap as in (x, err:errors' ++ y)
@@ -156,6 +189,14 @@ checkTypesBlock varMap (a:as)   = let (x, y) = checkTypesBlock newVarMap as in (
                                 where
                                     (newVarMap, errors) = checkTypes varMap a
 
+checkArrayType :: [(String, Type)] -> [AST] -> (Type, [String])
+checkArrayType varMap as | length types == 1    = (ArrayType (types!!0), errors)
+                         | otherwise            = (ArrayType (types!!0), err:errors)
+                        where
+                            results = map (checkExprType varMap) as
+                            types   = nub $ map (fst) results
+                            errors  = concat $ map (snd) results
+                            err = "Array declaration contains multiple typee, but only one is allowed"
 
 checkExprType :: [(String, Type)] -> AST -> (Type, [String])
 checkExprType varMap (VarT s)           = (getVal s varMap, [])
@@ -163,6 +204,15 @@ checkExprType varMap (IntConstT s)      = (IntType, [])
 checkExprType varMap (BoolConstT s)     = (BoolType, [])
 checkExprType varMap (ThreadIDT)        = (IntType, [])
 checkExprType varMap (BracketsT e)      = checkExprType varMap e
+checkExprType varMap (ArrayExprT s e)   | eType == IntType   = (elemType, errors)
+                                        | otherwise          = (elemType, err:errors)
+                                        where
+                                            (eType, errors) = checkExprType varMap e
+                                            (ArrayType elemType) = getVal s varMap
+                                            err = "Could not match expected type '"
+                                                ++ (show IntType) ++ "' with actual type '"
+                                                ++ (show eType) ++ "' as index of array '"
+                                                ++ s ++ "'"
 checkExprType varMap (OneOpT s e)       | eType == opArgType = (opRetType, errors)
                                         | otherwise          = (opRetType, err:errors)
                                         where
