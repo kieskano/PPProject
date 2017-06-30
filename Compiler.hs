@@ -40,13 +40,20 @@ compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scop
                         ast = parsetoast parseTree
                         ast' = ast --correctProg ast
                         scopeErrors = checkScope ast'
-                        typeErrors = snd $ checkTypes [] ast'
+                        typeErrors = [] --snd $ checkTypes [] ast'
                         threads = calculateThreadAmount ast'
                         offsets = calculateVarOffset ast' (threads - 1)
                         code = generateProgCode ast' threads (offsets,0)
 
 runDinkie :: String -> IO ()
 runDinkie file  = trace (progToString prog) (run (replicate threads prog))
+                    where
+                        cmp = compileDinkie file
+                        threads = snd cmp
+                        prog = fst cmp
+
+runDinkieDebug :: String -> IO ()
+runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimplePrintAndWait myShow) (replicate threads prog))
                     where
                         cmp = compileDinkie file
                         threads = snd cmp
