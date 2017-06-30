@@ -59,6 +59,7 @@ getMaxArrayLengthsList varMap (a:as)    = getMaxArrayLengthsList (getMaxArrayLen
 getDataOffset :: String -> AST -> Int
 getDataOffset "#" _                 = 1
 getDataOffset "?" _                 = 1
+getDataOffset "*" _                 = 1
 getDataOffset ('[':t:']':"") ast    = 1 + (getNumOfElems ast) * (getDataOffset [t] ast)
 
 getNumOfElems :: AST -> Int
@@ -99,6 +100,7 @@ calculateThreadAmount (WriteIntT a)             = calculateThreadAmount a
 calculateThreadAmount EmptyT                    = 1
 calculateThreadAmount (IntConstT s)             = 1
 calculateThreadAmount (BoolConstT s)            = 1
+calculateThreadAmount (CharConstT s)            = 1
 calculateThreadAmount (VarT s)                  = 1
 calculateThreadAmount ThreadIDT                 = 1
 calculateThreadAmount (ArrayExprT s a)          = calculateThreadAmount a

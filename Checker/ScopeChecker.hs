@@ -96,6 +96,7 @@ checkScope' (WriteIntT a) (x,z)         = (x, snd ca)
 checkScope' EmptyT  (x,z)               = (x, [])
 checkScope' (IntConstT i) (x,z)         = (x, [])
 checkScope' (BoolConstT b) (x,z)        = (x, [])
+checkScope' (CharConstT b) (x,z)        = (x, [])
 checkScope' (VarT v) (x,z)              = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x

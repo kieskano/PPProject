@@ -134,7 +134,7 @@ isFinal state = case state of
 
 tokenize :: String -> [String]
 tokenize ""                             = []
-tokenize (x:xs) | isStartOf name (trace [x] x)      = let (a, b) = identifyToken (x:xs) S name      in a : tokenize b
+tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S name      in a : tokenize b
                 | isStartOf number x    = let (a, b) = identifyToken (x:xs) S number    in a : tokenize b
                 | isStartOf symbol x    = let (a, b) = identifyToken (x:xs) S symbol    in a : tokenize b
                 | isStartOf character x = let (a, b) = identifyToken (x:xs) S character in a : tokenize b

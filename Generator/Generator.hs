@@ -4,6 +4,7 @@ import Parser.AST.AST
 import Generator.VariableOffset
 import Sprockell
 import Debug.Trace
+import Data.Char
 
 preProg = [Debug "Pre-program - set up slaves",
            Branch regSprID (Rel 2),
@@ -102,6 +103,7 @@ generateCode (WriteIntT a) ((l,g),i)    = (generateCode a ((l,g),i))++[Pop regA,
 generateCode EmptyT ((l,g),i)           = [Push reg0]
 generateCode (IntConstT n) ((l,g),i)    = [Load (ImmValue (read n)) regA, Push regA]
 generateCode (BoolConstT b) ((l,g),i)   = [Load (ImmValue (readBoolToInt b)) regA, Push regA]
+generateCode (CharConstT c) ((l,g),i)   = [Load (ImmValue (ord c)) regA, Push regA]
 generateCode (VarT v) ((l,g),i)         | ol /= -1      = [Load (DirAddr ol) regA, Push regA]
                                         | otherwise     = [ReadInstr (DirAddr og), Receive regA, Push regA]
                                             where

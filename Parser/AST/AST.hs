@@ -96,7 +96,7 @@ stringToCharConstArray :: String -> [AST]
 stringToCharConstArray "" = []
 stringToCharConstArray s  = (CharConstT char) : (stringToCharConstArray rest)
                             where
-                                (char, rest) = head $ readLitChar (trace s s)
+                                (char, rest) = head $ readLitChar s
 
 -- Statements
 -- parsetoast (PNode Stat [PNode Decl [PNode Type [t], n]])         = PrivateDeclT (getTokenString t) (getTokenString n) EmptyT

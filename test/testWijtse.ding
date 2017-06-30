@@ -1,1 +1,2 @@
 . [*] a = "Hallo wereld!\n"
+. * b = 'a'

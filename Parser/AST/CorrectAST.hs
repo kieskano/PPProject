@@ -10,6 +10,7 @@ import Debug.Trace
 
 data ASTElem    = IntConstTE String
                 | BoolConstTE String
+                | CharConstTE Char
                 | VarTE String
                 | ThreadIDTE
                 | ArrayExprTE String AST
@@ -75,6 +76,7 @@ correctExpr ast = listToExpr exprList operators'
 exprToList :: AST -> [ASTElem]
 exprToList (IntConstT x)    = [IntConstTE x]
 exprToList (BoolConstT x)   = [BoolConstTE x]
+exprToList (CharConstT x)   = [CharConstTE x]
 exprToList (VarT x)         = [VarTE x]
 exprToList (ThreadIDT)      = [ThreadIDTE]
 exprToList (BracketsT a)    = [BracketsTE (correctExpr a)]
@@ -86,6 +88,7 @@ listToExpr :: [ASTElem] -> [ASTElem] -> AST
 listToExpr [OneOpTE s, x] ys    = OneOpT s (listToExpr [x] ys)
 listToExpr [IntConstTE x] ys    = IntConstT x
 listToExpr [BoolConstTE x] ys   = BoolConstT x
+listToExpr [CharConstTE x] ys   = CharConstT x
 listToExpr [VarTE x] ys         = VarT x
 listToExpr [ThreadIDTE] ys      = ThreadIDT
 listToExpr [BracketsTE x] ys    = BracketsT x
