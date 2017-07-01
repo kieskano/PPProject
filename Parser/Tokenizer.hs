@@ -34,6 +34,7 @@ symbol = \s x -> case s of
                             | x == '<'      -> F 6
                             | x == '&'      -> Q 0
                             | x == '~'      -> Q 1
+                            | x == ':'      -> Q 2
                             | otherwise     -> E
 
                         F 1 | x == '='      -> F 0
@@ -57,8 +58,10 @@ symbol = \s x -> case s of
                         Q 0 | x == '&'      -> F 0
                             | otherwise     -> E
 
-
                         Q 1 | x == '<'      -> F 0
+                            | otherwise     -> E
+
+                        Q 2 | x == ':'      -> F 0
                             | otherwise     -> E
 
                         _                   -> E

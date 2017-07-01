@@ -26,6 +26,10 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
 
               -- | <... define your own non-terminals ...>
               | Prog
+              | Main
+              | Function
+              | Arguments
+              | Argument
               | Stat
               | Decl
               | ArrayDecl
@@ -39,6 +43,7 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Sync
               | ReadStat
               | WriteStat
+              | Return
               | Assign
               | ArrayAssign
               | Expr

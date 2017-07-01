@@ -5,7 +5,15 @@ import Parser.ParseBasis
 grammar :: Grammar
 grammar nt = case nt of
 
-        Prog        -> [[ (*:) [Stat] ]]
+        Prog        -> [[ Main, (*:) [Function] ]]
+
+        Main        -> [[ dot, main, Block ]]
+
+        Function    -> [[ dot, (?:) [Type], name, Arguments, Block ]]
+
+        Arguments   -> [[ leftBr, (?:) [(*:) [Argument, comma], Argument], rightBr]]
+
+        Argument    -> [[ Type, name ]]
 
         Stat        -> [[ dot, Decl ],
                         [ dot, ArrayDecl ],
@@ -17,12 +25,11 @@ grammar nt = case nt of
                         [ dot, Parallel ],
                         [ dot, Sync ],
                         [ dot, ReadStat ],
-                        [ dot, WriteStat ]]
+                        [ dot, WriteStat ],
+                        [ dot, Return ]]
 
-        Decl        -> [[ Type, name, equalass, Expr ],
-                        [ Type, name ],
-                        [ global, Type, name, equalass, Expr ],
-                        [ global, Type, name ]]
+        Decl        -> [[ (?:) [global], Type, name, equalass, Expr ],
+                        [ (?:) [global], Type, name ]]
 
         ArrayDecl   -> [[ ArrayType, name, equalass, ArrayInit ],
                         [ global, ArrayType, name, equalass, ArrayInit ]]
@@ -56,6 +63,8 @@ grammar nt = case nt of
 
         WriteStat   -> [[ Type, writestat, Expr ],
                         [ ArrayType, writestat, Expr ]]
+
+        Return      -> [[ returnstat, Expr ]]
 
         Block       -> [[ c, (*:) [Stat], g ]]
 
@@ -135,7 +144,7 @@ parl        = Symbol "~<"
 parr        = Symbol ">~"
 readstat    = Symbol ">"
 writestat   = Symbol "<"
-
+returnstat  = Symbol "::"
 
 dot         = Symbol "."
 comma       = Symbol ","
@@ -147,11 +156,11 @@ sql         = Symbol "["
 sqr         = Symbol "]"
 curl        = Symbol "{"
 curr        = Symbol "}"
-
 leftBr      = Symbol "("
 rightBr     = Symbol ")"
 
 threadID    = Symbol "@"
+main        = Symbol "main"
 
 name        = SyntCat Name
 number      = SyntCat Number

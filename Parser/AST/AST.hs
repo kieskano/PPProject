@@ -12,7 +12,10 @@ data VScope = SGlob | SPriv
             deriving (Show, Eq)
 
 -- Data structure for the AST
-data AST    = ProgT [AST]
+data AST    = ProgT AST [AST]
+            | MainT [AST]
+            | FunctionT String String [AST] [AST]
+            | ArgumentT String String
             -- Statements
             | DeclT VScope String String AST
             | AssignT String AST
@@ -24,6 +27,7 @@ data AST    = ProgT [AST]
             | SyncT String [AST]
             | ReadStatT String String
             | WriteStatT String AST
+            | ReturnT AST
             -- Expressions
             | EmptyT
             | IntConstT String
@@ -35,6 +39,7 @@ data AST    = ProgT [AST]
             | OneOpT String AST
             | TwoOpT AST String AST
             | BracketsT AST
+            | FuncExprT [String]
             | EmptyArrayT String -- ArrayInit
             | FillArrayT [AST]
             deriving (Show, Eq)
@@ -49,7 +54,10 @@ data AST    = ProgT [AST]
 --  - ParseTree     the parse tree that is to be converted.
 -- Returns:         the converted parse tree as AST
 parsetoast :: ParseTree -> AST
-parsetoast (PNode Prog stats)  = ProgT (map parsetoast stats)
+parsetoast (PNode Prog (main:functions)) = ProgT (parsetoast main) (map parsetoast functions)
+parsetoast (PNode Main [PNode Block st]) = MainT (map parsetoast st)
+parsetoast (PNode Function [t, n, PNode Arguments args, PNode Block st]) = FunctionT (getType t) (getTokenString n) (map parsetoast args) (map parsetoast st)
+parsetoast (PNode Argument [t, n]) = ArgumentT (getType t) (getTokenString n)
 parsetoast (PNode Stat [stat]) = parseStattoast stat
 parsetoast (PNode Expr nodes)  = parseExprtoast (PNode Expr nodes)
 
@@ -70,6 +78,7 @@ parseStattoast (PNode Sync [PNode Var [i], PNode Block st])             = SyncT 
 parseStattoast (PNode ReadStat [t, PNode Var [v]])                      = ReadStatT (getType t) (getTokenString v)
 parseStattoast (PNode WriteStat [PNode ArrayType [t], e])               = WriteStatT ("["++(getType t)++"]") (parseExprtoast e)
 parseStattoast (PNode WriteStat [t, e])                                 = WriteStatT (getType t)(parseExprtoast e)
+parseStattoast (PNode Return [e])                                       = ReturnT (parseExprtoast e)
 
 getType :: ParseTree -> String
 getType (PNode Type [t]) = getTokenString t
@@ -134,7 +143,10 @@ stringToCharConstArray s  = (CharConstT char) : (stringToCharConstArray rest)
 --  - AST           the AST that is to be converted
 -- Returns:         the converted AST as a rose tree
 asttorose :: AST -> RoseTree
-asttorose (ProgT asts)              = RoseNode "ProgT" (map asttorose asts)
+asttorose (ProgT main funcs)        = RoseNode "ProgT" ((asttorose main):(map asttorose funcs))
+asttorose (MainT asts)              = RoseNode "MainT" (map asttorose asts)
+asttorose (FunctionT t n args sts)  = RoseNode ("FunctionT "++t++" "++n) ((map asttorose args)++(map asttorose sts))
+asttorose (ArgumentT t n)           = RoseNode ("ArgumentT "++t++" "++n) []
 --
 asttorose (DeclT SGlob s1 s2 ast)   = RoseNode ("DeclT _" ++ s1 ++ " " ++ s2) [asttorose ast]
 asttorose (DeclT SPriv s1 s2 ast)   = RoseNode ("DeclT " ++ s1 ++ " " ++ s2) [asttorose ast]
