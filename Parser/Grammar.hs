@@ -7,13 +7,14 @@ grammar nt = case nt of
 
         Prog        -> [[ Main, (*:) [Function] ]]
 
-        Main        -> [[ dot, main, Block ]]
+        Main        -> [[ dot, maint, Block ]]
 
         Function    -> [[ dot, (?:) [Type], name, Arguments, Block ]]
 
         Arguments   -> [[ leftBr, (?:) [(*:) [Argument, comma], Argument], rightBr]]
 
-        Argument    -> [[ Type, name ]]
+        Argument    -> [[ Type, name ],
+                        [ ArrayType, name ]]
 
         Stat        -> [[ dot, Decl ],
                         [ dot, ArrayDecl ],
@@ -80,6 +81,7 @@ grammar nt = case nt of
                         [ BoolConst ],
                         [ CharConst ],
                         [ ArrayExpr ],
+                        [ FuncExpr ],
                         [ Var ],
                         [ ThreadID ]]
 
@@ -95,6 +97,8 @@ grammar nt = case nt of
         ThreadID    -> [[ threadID ]]
 
         ArrayExpr   -> [[ name, sql, Expr, sqr ]]
+
+        FuncExpr    -> [[ name, leftBr, (*:) [name], rightBr ]]
 
         OneOp       -> [[ minus ],
                         [ notb ]]
@@ -160,7 +164,7 @@ leftBr      = Symbol "("
 rightBr     = Symbol ")"
 
 threadID    = Symbol "@"
-main        = Symbol "main"
+maint       = Symbol "//"
 
 name        = SyntCat Name
 number      = SyntCat Number

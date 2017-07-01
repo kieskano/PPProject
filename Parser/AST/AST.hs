@@ -39,7 +39,7 @@ data AST    = ProgT AST [AST]
             | OneOpT String AST
             | TwoOpT AST String AST
             | BracketsT AST
-            | FuncExprT [String]
+            | FuncExprT String [String]
             | EmptyArrayT String -- ArrayInit
             | FillArrayT [AST]
             deriving (Show, Eq)
@@ -60,6 +60,7 @@ parsetoast (PNode Function [t, n, PNode Arguments args, PNode Block st]) = Funct
 parsetoast (PNode Argument [t, n]) = ArgumentT (getType t) (getTokenString n)
 parsetoast (PNode Stat [stat]) = parseStattoast stat
 parsetoast (PNode Expr nodes)  = parseExprtoast (PNode Expr nodes)
+parsetoast x = error $ show x
 
 parseStattoast :: ParseTree -> AST
 parseStattoast (PNode Decl [PNode Type [t], n])            = DeclT SPriv (getTokenString t) (getTokenString n) EmptyT
@@ -82,6 +83,7 @@ parseStattoast (PNode Return [e])                                       = Return
 
 getType :: ParseTree -> String
 getType (PNode Type [t]) = getTokenString t
+getType (PNode ArrayType [t]) = getType t
 
 parseExprtoast :: ParseTree -> AST
 parseExprtoast (PNode Expr [l, PNode TwoOp [t], r]) = TwoOpT (parseExprtoast l) (getTokenString t) (parseExprtoast r)
@@ -96,6 +98,7 @@ parseExprtoast (PNode Val [PNode CharConst [c]])    = CharConstT (fst $ head $ r
 parseExprtoast (PNode Val [PNode Var [v]])          = VarT (getTokenString v)
 parseExprtoast (PNode Val [PNode ThreadID []])      = ThreadIDT
 parseExprtoast (PNode Val [PNode ArrayExpr [n, e]]) = ArrayExprT (getTokenString n) (parseExprtoast e)
+parseExprtoast (PNode Val [PNode FuncExpr (n:r)])   = FuncExprT (getTokenString n) (map getTokenString r)
 parseExprtoast (PNode ArrayInit [PNode IntConst [i]]) = EmptyArrayT (getTokenString i)
 parseExprtoast (PNode ArrayInit [s])                = FillArrayT (stringToCharConstArray string)
                                                     where
@@ -108,35 +111,6 @@ stringToCharConstArray s  = (CharConstT char) : (stringToCharConstArray rest)
                             where
                                 (char, rest) = head $ readLitChar s
 
--- Statements
--- parsetoast (PNode Stat [PNode Decl [PNode Type [t], n]])         = PrivateDeclT (getTokenString t) (getTokenString n) EmptyT
--- parsetoast (PNode Stat [PNode Decl [PNode Type [t], n, e]])      = PrivateDeclT (getTokenString t) (getTokenString n) (parsetoast e)
--- parsetoast (PNode Stat [_, PNode Decl [PNode Type [t], n]])      = GlobalDeclT (getTokenString t) (getTokenString n) EmptyT
--- parsetoast (PNode Stat [_, PNode Decl [PNode Type [t], n, e]])   = GlobalDeclT (getTokenString t) (getTokenString n) (parsetoast e)
--- parsetoast (PNode Stat [PNode Assign [n, e]])       = AssignT (getTokenString n) (parsetoast e)
--- parsetoast (PNode Stat [PNode While [e, PNode Block s]])                    = WhileT (parsetoast e) (map parsetoast s)
--- parsetoast (PNode Stat [PNode IfOne [e, PNode Block s]])                    = IfOneT (parsetoast e) (map parsetoast s)
--- parsetoast (PNode Stat [PNode IfTwo [e, PNode Block st, PNode Block se]])   = IfTwoT (parsetoast e) (map parsetoast st) (map parsetoast se)
--- parsetoast (PNode Stat [PNode Parallel [PNode IntConst [i], PNode Block st]])   = ParallelT (getTokenString i) (map parsetoast st)
--- parsetoast (PNode Stat [PNode Sync [PNode Var [i], PNode Block st]])        = SyncT (getTokenString i) (map parsetoast st)
--- parsetoast (PNode Stat [PNode ReadInt [PNode Var [v]]])                     = ReadIntT (getTokenString v)
--- parsetoast (PNode Stat [PNode WriteInt [e]])                                = WriteIntT (parsetoast e)
--- -- Expressions
--- parsetoast (PNode Expr [PNode Brackets [v], PNode TwoOp [t], e])            = TwoOpT (parsetoast (PNode Expr [PNode Brackets [v]])) (getTokenString (t)) (parsetoast(e))
--- parsetoast (PNode Expr [v, PNode TwoOp [t], e])                             = TwoOpT (parsetoast v) (getTokenString (t)) (parsetoast e)
--- parsetoast (PNode Expr [PNode Expr e])                                      = parsetoast (PNode Expr e)
--- parsetoast (PNode Expr [PNode OneOp [o], PNode Expr e])                     = OneOpT (getTokenString o) (parsetoast (PNode Expr e))
--- parsetoast (PNode Expr [PNode Brackets [e]])                                = BracketsT (parsetoast(e))
--- parsetoast (PNode Expr [PNode Val [PNode IntConst [i]]])                    = IntConstT (getTokenString i)
--- parsetoast (PNode Expr [PNode Val [PNode BoolConst [b]]])                   = BoolConstT (getTokenString b)
--- parsetoast (PNode Expr [PNode Val [PNode Var [v]]])                         = VarT (getTokenString v)
--- parsetoast (PNode Expr [PNode Val [PNode ThreadID []]])                     = ThreadIDT
--- parsetoast (PNode Val [PNode IntConst [i]])                                 = IntConstT (getTokenString i)
--- parsetoast (PNode Val [PNode BoolConst [b]])                                = BoolConstT (getTokenString b)
--- parsetoast (PNode Val [PNode Var [v]])                                      = VarT (getTokenString v)
--- parsetoast (PNode Val [PNode ThreadID []])                                  = ThreadIDT
--- Rest
--- parsetoast x = error ("Error in parsetoast on: " ++ show(x))
 
 -- Converts an AST to a rose tree so that it can be shown
 -- Arguments:
@@ -157,8 +131,9 @@ asttorose (IfOneT ast asts)         = RoseNode "IfOneT" ((asttorose ast):(map as
 asttorose (IfTwoT ast asts1 asts2)  = RoseNode "IfTwoT" (((asttorose ast):(map asttorose asts1)) ++ (map asttorose asts2))
 asttorose (ParallelT s asts)        = RoseNode ("ParallelT "++s) (map asttorose asts)
 asttorose (SyncT s asts)            = RoseNode ("SyncT "++s) (map asttorose asts)
-asttorose (ReadStatT t s)              = RoseNode ("ReadStatT " ++ t ++ " " ++ s) []
-asttorose (WriteStatT t ast)           = RoseNode ("WriteStatT" ++ t) [asttorose ast]
+asttorose (ReadStatT t s)           = RoseNode ("ReadStatT " ++ t ++ " " ++ s) []
+asttorose (WriteStatT t ast)        = RoseNode ("WriteStatT s" ++ t) [asttorose ast]
+asttorose (ReturnT ast)             = RoseNode "ReturnT" [asttorose ast]
 -- Expressions
 asttorose EmptyT                    = RoseNode "EmptyT" []
 asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []
@@ -170,8 +145,16 @@ asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
 asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
 asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
 asttorose (ArrayExprT s ast)        = RoseNode ("ArrayExprT "++s) [asttorose ast]
+asttorose (FuncExprT s args)        = RoseNode ("FuncExprT "++s++"(" ++ argsToString args ++ ")") []
 asttorose (EmptyArrayT s)           = RoseNode ("EmptyArrayT ["++s++"]") []
 asttorose (FillArrayT asts)         = RoseNode ("FillArrayT") (map asttorose asts)
+
+
+argsToString :: [String] -> String
+argsToString [] = ""
+argsToString [a] = a
+argsToString (a:as) = a ++ " " ++ (argsToString as)
+
 -- Gets the token value of a leaf in the parse tree
 -- Arguments:
 --  - ParseTree     the parse tree (leaf) of which the token is to be returned

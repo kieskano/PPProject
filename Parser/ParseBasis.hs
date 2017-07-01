@@ -55,10 +55,11 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | IntConst
               | BoolConst
               | CharConst
+              | ArrayExpr
+              | FuncExpr
               | CharArrInit
               | Var
               | ThreadID
-              | ArrayExpr
               | Name
               | Number
               | Sym
