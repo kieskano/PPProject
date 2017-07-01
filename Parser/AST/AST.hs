@@ -22,8 +22,8 @@ data AST    = ProgT [AST]
             | IfTwoT AST [AST] [AST]
             | ParallelT String [AST]
             | SyncT String [AST]
-            | ReadStatT String String -- FIXME CHANGED (ReadIntT s) to (ReadStatT s s)
-            | WriteStatT String AST -- FIXME CHANGED (WriteIntT a) to (WriteStatT s a)
+            | ReadStatT String String
+            | WriteStatT String AST
             -- Expressions
             | EmptyT
             | IntConstT String

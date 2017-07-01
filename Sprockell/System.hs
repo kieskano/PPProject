@@ -5,7 +5,7 @@ module Sprockell.System where
 import Sprockell.BasicFunctions
 import Sprockell.HardwareTypes
 import Sprockell.Sprockell
-import Data.Char   (ord,chr)
+import Data.Char   (ord,chr,readLitChar)
 import System.IO   (Handle,stdin,hGetChar,hReady,BufferMode(..),hSetBuffering)
 import Text.Printf (printf)
 import Text.Read   (readMaybe)
@@ -29,7 +29,7 @@ shMem sharedMem (i,req)
         reply <- case req of
                     NoRequest     -> return Nothing
                     ReadReq a     -> do
-                        let prompt = printf "Sprockell %i asks for a number: " i
+                        let prompt = printf "%i? " i
                         fmap Just (promptForRead prompt)
                     WriteReq v a  -> do
                         printf "%i" v
@@ -41,8 +41,8 @@ shMem sharedMem (i,req)
                     NoRequest     -> return Nothing
                     ReadReq a     -> do
                         --mChar :: Maybe Char
-                        mChar <- hGetCharNonBlocking stdin
-                        return (Just $ maybe 0 ord mChar)
+                        let prompt = printf "%i? " i
+                        fmap Just (promptForChar prompt)
                     WriteReq v a  -> do
                         putChar $ chr v
                         return Nothing
@@ -86,6 +86,24 @@ promptForRead prompt = do
                 Nothing -> do putStrLn "Invalid input"
                               promptForRead'
                 Just x  -> return x
+
+promptForChar :: String -> IO Int
+promptForChar prompt = do
+    setupBuffering
+    promptForChar'  `finally`  restoreBuffering
+    where
+        setupBuffering   = hSetBuffering stdin LineBuffering  -- needed to make line editing work
+        restoreBuffering = hSetBuffering stdin NoBuffering
+
+        promptForChar' = do
+            putStr prompt
+            l <- getLine
+            case readLitChar l of
+                []        -> do putStrLn "Invalid input"
+                                promptForChar'
+                [(c, "")] -> return (ord c)
+                [(c, _)]  -> do putStrLn "Invalid input"
+                                promptForChar'
 
 reqAddr :: Request -> Maybe MemAddr
 reqAddr req = case req of
