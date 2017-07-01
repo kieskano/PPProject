@@ -14,6 +14,7 @@ data ASTElem    = IntConstTE String
                 | VarTE String
                 | ThreadIDTE
                 | ArrayExprTE String AST
+                | FuncExprTE String [AST]
                 | OneOpTE String
                 | TwoOpTE String
                 | BracketsTE AST -- Gone after expression correction
@@ -48,7 +49,9 @@ twoOpOrdCompare (TwoOpTE s1) (TwoOpTE s2)   | op1Ord < twoOpOrd = LT
                                                 twoOpOrd = twoOpOrdering s2
 
 correctProg :: AST -> AST
-correctProg (ProgT asts)            = ProgT (map correctProg asts)
+correctProg (ProgT main funcs)         = ProgT (correctProg main) (map correctProg funcs)
+correctProg (FunctionT s1 s2 args asts)= FunctionT s1 s2 args (map correctProg asts)
+correctProg (ArgumentT s1 s2)          = ArgumentT s1 s2
 correctProg (DeclT SGlob s1 s2 EmptyT) = DeclT SGlob s1 s2 EmptyT
 correctProg (DeclT SGlob s1 s2 ast)    = DeclT SGlob s1 s2 (correctExpr ast)
 correctProg (DeclT SPriv s1 s2 EmptyT) = DeclT SPriv s1 s2 EmptyT
@@ -62,7 +65,7 @@ correctProg (ParallelT s asts)      = ParallelT s (map correctProg asts)
 correctProg (SyncT s asts)          = SyncT s (map correctProg asts)
 correctProg (ReadStatT t s)         = ReadStatT t s
 correctProg (WriteStatT t ast)      = WriteStatT t (correctExpr ast)
-
+correctProg (ReturnT ast)           = ReturnT (correctExpr ast)
 
 correctExpr :: AST -> AST
 correctExpr (EmptyArrayT s) = EmptyArrayT s
@@ -81,6 +84,7 @@ exprToList (VarT x)         = [VarTE x]
 exprToList (ThreadIDT)      = [ThreadIDTE]
 exprToList (BracketsT a)    = [BracketsTE (correctExpr a)]
 exprToList (ArrayExprT s a) = [ArrayExprTE s (correctExpr a)]
+exprToList (FuncExprT s ss) = [FuncExprTE s ss]
 exprToList (OneOpT s a)     = [OneOpTE s] ++ (exprToList a)
 exprToList (TwoOpT a1 s a2) = (exprToList a1) ++ [TwoOpTE s] ++ (exprToList a2)
 
@@ -93,6 +97,7 @@ listToExpr [VarTE x] ys         = VarT x
 listToExpr [ThreadIDTE] ys      = ThreadIDT
 listToExpr [BracketsTE x] ys    = BracketsT x
 listToExpr [ArrayExprTE s a] ys = ArrayExprT s a
+listToExpr [FuncExprTE s ss] ys = FuncExprT s ss
 listToExpr xs ((TwoOpTE op):ys) = TwoOpT (listToExpr rxs rxsOps) op (listToExpr lxs lxsOps)
                                 where
                                     (rxs, lxs) = let (a, b) = splitListOn (TwoOpTE op) $ reverse xs in (reverse b, reverse a)

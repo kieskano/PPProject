@@ -39,7 +39,7 @@ data AST    = ProgT AST [AST]
             | OneOpT String AST
             | TwoOpT AST String AST
             | BracketsT AST
-            | FuncExprT String [String]
+            | FuncExprT String [AST]
             | EmptyArrayT String -- ArrayInit
             | FillArrayT [AST]
             deriving (Show, Eq)
@@ -98,7 +98,7 @@ parseExprtoast (PNode Val [PNode CharConst [c]])    = CharConstT (fst $ head $ r
 parseExprtoast (PNode Val [PNode Var [v]])          = VarT (getTokenString v)
 parseExprtoast (PNode Val [PNode ThreadID []])      = ThreadIDT
 parseExprtoast (PNode Val [PNode ArrayExpr [n, e]]) = ArrayExprT (getTokenString n) (parseExprtoast e)
-parseExprtoast (PNode Val [PNode FuncExpr (n:r)])   = FuncExprT (getTokenString n) (map getTokenString r)
+parseExprtoast (PNode Val [PNode FuncExpr (n:r)])   = FuncExprT (getTokenString n) (map (VarT . getTokenString) r)
 parseExprtoast (PNode ArrayInit [PNode IntConst [i]]) = EmptyArrayT (getTokenString i)
 parseExprtoast (PNode ArrayInit [s])                = FillArrayT (stringToCharConstArray string)
                                                     where
@@ -145,7 +145,7 @@ asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
 asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
 asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
 asttorose (ArrayExprT s ast)        = RoseNode ("ArrayExprT "++s) [asttorose ast]
-asttorose (FuncExprT s args)        = RoseNode ("FuncExprT "++s++"(" ++ argsToString args ++ ")") []
+asttorose (FuncExprT s args)        = RoseNode ("FuncExprT "++s) (map asttorose args)
 asttorose (EmptyArrayT s)           = RoseNode ("EmptyArrayT ["++s++"]") []
 asttorose (FillArrayT asts)         = RoseNode ("FillArrayT") (map asttorose asts)
 
