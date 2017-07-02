@@ -1,60 +1,99 @@
-. ?- |boolif| <
-    . # int = 0
-    . f = 0
-    . ? booliftwo
-    . # int = a
->
-. # int
-. ? boolwhile = /
-. ?< |booliftwo| <
-    . ? b
-    . ?^ |boolwhile| <
-        . boolwhile = \
-        . # e = 1
-        . g = d - e
+. // <   
+   . ?- |boolif| <
+        . # int = 0
+        . f = 0
+        . ? booliftwo
+        . # int = a
     >
-><
-    . ? b
-    . ? boolwhile = \
->
-. _# intg
-. ~<3>~ <
-    . int = 3
-    . intg = 5
-    . ? aaa = /
-    . _? bbb = /
->
-. aaa = \
-. bbb = /
-. intg = 3
-. ~<2>~ <
+    . # int
+    . ? boolwhile = /
+    . ?< |booliftwo| <
+        . ? b
+        . ?^ |boolwhile| <
+            . boolwhile = \
+            . # e = 1
+            . g = d - e
+        >
+    ><
+        . ? b
+        . ? boolwhile = \
+    >
+    . _# intg
+    . ~<3>~ <
+        . int = 3
+        . intg = 5
+        . ? aaa = /
+        . _? bbb = /
+    >
+    . aaa = \
+    . bbb = /
+    . intg = 3
     . ~<2>~ <
-        . intg = 3
+        . ~<2>~ <
+            . intg = 3
+        >
+    >
+    . # x
+    . # z
+    . ?- |boolwhile| <
+        . # > x
+        . # > y
+        . # < x + y
+        . # < x + z
+    >
+    . # inta = 3
+    . [#] ara = [4]
+    . [#] arb = {1+3-(3*3), inta, 3}
+    . _# ae
+    . _# ee
+    . # be
+    . >~be~< <> $test local use and ouside parallel block$
+    . ~<3>~ <
+        . >~ae~< <
+            . >~ae~< <> $use same var$
+        >
+        . >~ce~< <>
+        . # de
+        . >~de~< <> $use local$
+        . >~ae~< <
+            . >~ee~< <>
+        >
     >
 >
-. # x
-. # z
-. ?- |boolwhile| <
-    . # > x
-    . # > y
-    . # < x + y
-    . # < x + z
+
+
+. # f1 (# ab) <
+    . bc = ab + 1
+    . :: bc
+    . _# cd
+    . ? f2 () <>
 >
-. # inta = 3
-. [#] ara = [4]
-. [#] arb = {1+3-(3*3), inta, 3}
-. _# ae
-. _# ee
-. # be
-. >~be~< <> $test local use and ouside parallel block$
-. ~<3>~ <
-    . >~ae~< <
-        . >~ae~< <> $use same var$
-    >
-    . >~ce~< <>
-    . # de
-    . >~de~< <> $use local$
-    . >~ae~< <
-        . >~ee~< <>
-    >
->
+
+. f3 (# de) < . de = 1 . :: a >
+
+. ? f4()<>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
