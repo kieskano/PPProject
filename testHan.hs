@@ -41,7 +41,7 @@ compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scop
                         ast = parsetoast parseTree
                         ast' = correctProg ast
                         scopeErrors = checkScope ast
-                        typeErrors = snd $ checkTypes [] ast'
+                        typeErrors = snd $ checkTypes VoidType [] ast'
                         --threads = calculateThreadAmount ast'
                         --offsets = calculateVarOffset ast' (threads - 1)
                         code = []--generateProgCode ast' threads (offsets,0)

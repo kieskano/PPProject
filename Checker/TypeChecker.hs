@@ -212,7 +212,7 @@ checkTypesBlock :: Type -> [(String, Type)] -> [AST] -> ([(String, Type)], [Stri
 checkTypesBlock t varMap []       = (varMap, [])
 checkTypesBlock t varMap (a:as)   = let (x, y) = checkTypesBlock t newVarMap as in (x, errors ++ y)
                                 where
-                                    (newVarMap, errors) = checkTypes varMap a
+                                    (newVarMap, errors) = checkTypes t varMap a
 
 checkArrayType :: [(String, Type)] -> [AST] -> (Type, [String])
 checkArrayType varMap as | length types == 1    = (ArrayType (types!!0), errors)
