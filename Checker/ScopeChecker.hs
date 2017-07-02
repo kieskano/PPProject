@@ -2,18 +2,20 @@ module Checker.ScopeChecker where
 
 import Parser.AST.AST
 import Debug.Trace
+import Data.List
 
 -- ======================================================================================= --
 -- =========================== Data type and main function =============================== --
 -- ======================================================================================= --
 
 -- Data type for the variables in the scopes
-data ScopeVar = Private String | Global String | Unknown String | Forbidden String
+data ScopeVar = Private String | Global String | Unknown String | Forbidden String | Funct String
 instance Show ScopeVar where
     show (Private s) = s
     show (Global s) = '_':s
     show (Unknown s) = '?':s
     show (Forbidden s) = '/':s
+    show (Funct s) = "::"++s
 instance Eq ScopeVar where
     (==) sv1 sv2 = (==) (getVarName sv1) (getVarName sv2)
 
@@ -31,11 +33,40 @@ checkScope ast = (snd (checkScope' ast ([],[])))
 --              pattern matched AST (should be empty). If any errors occured they are
 --              also added. The return world is in the form (scopes, errors)
 checkScope' :: AST -> ([[ScopeVar]],[String]) -> ([[ScopeVar]],[String])
-checkScope' (ProgT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
+checkScope' (ProgT a as) (x,z)          | fc        = (x, (snd ca) ++ (snd cs))
+                                        | otherwise = (x, ["Cannot have duplicate function names: " ++ (show gf)]
+                                                    ++ (snd ca) ++ (snd cs))
+                                            where
+                                                ca = checkScope' a (x, z)
+                                                gf = getFunctions as
+                                                fc = (length gf) == (length (nub gf))
+                                                cs = checkScope'' as ((x ++ [gf]),z)
+checkScope' (MainT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
+checkScope' (FunctionT t f ar as) (x,z) | elem (Unknown "::") (trace ("1" ++ (show x) ++ " " ++ f) (head x)) = (x,
+                                            ["Cannot declare a new function within a function"]
+                                            ++ (snd cs1))
+                                        | elem (Unknown ":") (trace ("2" ++ (show x)) (head x)) = (x,
+                                            ["Cannot declare a new function within a function"]
+                                            ++ (snd cs2))
+                                        | ac && t /= "" = (x, snd cs1)
+                                        | ac            = (x, snd cs2)
+                                        | t /= ""       = (x, ["Cannot have duplicate argument names: " ++ (show ga)] ++ (snd cs1))
+                                        | otherwise     = (x, ["Cannot have duplicate argument names: " ++ (show ga)] ++ (snd cs2))
+                                            where
+                                                ga = getArguments ar
+                                                ac = (length ga) == (length (nub ga))
+                                                y1 = [[Unknown "::"] ++ ga ++ (trace ("3" ++ (show x)) (head x))]
+                                                y2 = [[Unknown ":"] ++ ga ++ (trace ("4" ++ (show x)) (head x))]
+                                                cs1 = checkScope'' as (y1,z)
+                                                cs2 = checkScope'' as (y2,z)
+checkScope' (ArgumentT t v) (x,z)       = (x, [])
 -- Statements
 checkScope' (DeclT SGlob t v a) (x,z)   | elem (Unknown "=") (head x) = (x,
                                             ["Cannot declare global variable " ++ (show v)
                                             ++ " in parallel scope"] ++ (snd cx) ++ (snd ca))
+                                        | elem (Unknown "::") (head x) || elem (Unknown ":") (head x) = (x,
+                                            ["Cannot declare global variable " ++ (show v)
+                                            ++ " in a function"] ++ (snd cx) ++ (snd ca))
                                         | fst cd    = (fst ca, (snd ca))
                                         | otherwise = (x, (snd cd) ++ (snd ca))
                                             where
@@ -74,6 +105,9 @@ checkScope' (IfTwoT a as1  as2) (x,z)   = (x, (snd ca) ++ (snd cs1) ++ (snd cs2)
 checkScope' (ParallelT s as) (x,z)      | elem (Unknown "=") (head x) = (x,
                                             ["Cannot open new parallel scope within a parallel scope"]
                                             ++ (snd cs))
+                                        | elem (Unknown "::") (head x) || elem (Unknown ":") (head x) = (x,
+                                            ["Cannot open new parallel scope within a function"]
+                                            ++ (snd cs))
                                         | otherwise = (x, snd cs)
                                             where
                                                 y = getParallelScope x
@@ -90,6 +124,12 @@ checkScope' (ReadStatT t v) (x,z)       = (x, snd cu)
                                             where
                                                 cu = checkUse (Unknown v) x
 checkScope' (WriteStatT t a) (x,z)      = (x, snd ca)
+                                            where
+                                                ca = checkScope' a (x,z)
+checkScope' (ReturnT a) (x,z)           | not (elem (Unknown "::") (head x)) = (x,
+                                            ["Cannot declare a return outside a function with a type"]
+                                            ++ (snd ca))
+                                        | otherwise = (x, snd ca)
                                             where
                                                 ca = checkScope' a (x,z)
 -- Expressions
@@ -115,6 +155,10 @@ checkScope' (TwoOpT ast1 o ast2) (x,z)  = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) (x,z)       = (x, snd ca)
                                             where
                                                 ca = checkScope' ast (x,z)
+checkScope' (FuncExprT f as) (x,z)      = (x, snd cs)
+                                            where
+                                                cu = checkUse (Unknown f) x
+                                                cs = checkScope'' as (x,z)
 checkScope' (EmptyArrayT s) (x,z)       = (x, [])
 checkScope' (FillArrayT as) (x,z)       = (x, snd cs)
                                             where
@@ -185,20 +229,37 @@ showScopes' (s:ss)  = (" " ++ (show s)) ++ (showScopes' ss)
 
 
 
+
+getFunctions :: [AST] -> [ScopeVar]
+getFunctions []         = []
+getFunctions ((FunctionT t f ar as):a)  = (Funct f):(getFunctions a)
+getFunctions (a:as)                     = error ((show a) ++ " not a function in getFunctions")
+
+getArguments :: [AST] -> [ScopeVar]
+getArguments []         = []
+getArguments ((ArgumentT t v):a)        = (Private v):(getArguments a)
+getArguments (a:as)                     = error ((show a) ++ " not an argument in getArguments")
+
+
 getParallelScope :: [[ScopeVar]] -> [[ScopeVar]]
 getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)] ++ [(Forbidden v) | (Private v) <- (concat x)], []]
+
+getFunctionScope x = [[Unknown "::"]]
 
 getVarName :: ScopeVar -> String
 getVarName (Private s) = s
 getVarName (Global s) = s
 getVarName (Unknown s) = s
 getVarName (Forbidden s) = s
+getVarName (Funct s) = s
 
 parVarElem :: ScopeVar -> [ScopeVar] -> Bool
 parVarElem s [] = False
 parVarElem (Unknown x) ((Private y):ss) | x == y    = True
                                         | otherwise = parVarElem (Unknown x) ss
 parVarElem (Unknown x) ((Global y):ss)  | x == y    = True
+                                        | otherwise = parVarElem (Unknown x) ss
+parVarElem (Unknown x) ((Funct y):ss)   | x == y    = True
                                         | otherwise = parVarElem (Unknown x) ss
 parVarElem x (s:ss)                     = parVarElem x ss
 
