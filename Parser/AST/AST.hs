@@ -80,6 +80,7 @@ parseStattoast (PNode ReadStat [t, PNode Var [v]])                      = ReadSt
 parseStattoast (PNode WriteStat [PNode ArrayType [t], e])               = WriteStatT ("["++(getType t)++"]") (parseExprtoast e)
 parseStattoast (PNode WriteStat [t, e])                                 = WriteStatT (getType t)(parseExprtoast e)
 parseStattoast (PNode Return [e])                                       = ReturnT (parseExprtoast e)
+parseStattoast (PNode Function l)                                       = parsetoast (PNode Function l)
 
 getType :: ParseTree -> String
 getType (PNode Type [t]) = getTokenString t
