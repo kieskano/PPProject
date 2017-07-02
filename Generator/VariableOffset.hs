@@ -21,17 +21,19 @@ calculateVarOffset' world varLens (DeclT SGlob t s ast) | offMapsContains s offm
                                                         where
                                                             (offmaps, curLOff, curGOff) = world
                                                             (local, global) = offmaps
-                                                            size = if offMapsContains s (varLens,[]) then getVal s varLens else (getDataOffset t ast)
+                                                            size = getVal s varLens
 calculateVarOffset' world varLens (DeclT SPriv t s ast) | offMapsContains s offmaps = world
                                                         | otherwise                 = (((s,curLOff):local,global),curLOff+size,curGOff)
                                                         where
                                                             (offmaps, curLOff, curGOff) = world
                                                             (local, global) = offmaps
-                                                            size = if offMapsContains s (varLens,[]) then getVal s varLens else (getDataOffset t ast)
+                                                            size = getVal s varLens
 calculateVarOffset' world varLens _                     = world
 
 getMaxVarSizes :: [(String, Int)] -> AST -> [(String, Int)]
-getMaxVarSizes varMap (ProgT asts)          = getMaxVarSizesList varMap asts
+getMaxVarSizes varMap (ProgT main funcs)    = getMaxVarSizes (getMaxVarSizesList varMap funcs) main
+getMaxVarSizes varMap (MainT asts)          = getMaxVarSizesList varMap asts
+getMaxVarSizes varMap (FunctionT _ _ _ asts) = getMaxVarSizesList varMap asts
 getMaxVarSizes varMap (WhileT ast asts)     = getMaxVarSizesList varMap asts
 getMaxVarSizes varMap (IfOneT ast asts)     = getMaxVarSizesList varMap asts
 getMaxVarSizes varMap (IfTwoT ast as1 as2)  = getMaxVarSizesList (getMaxVarSizesList varMap as1) as2
@@ -81,71 +83,73 @@ offMapsContains s (m1,m2) = case (lookup s m1, lookup s m2) of
                                 (_, Just _)     -> True
                                 _               -> False
 
-renameVars :: AST -> Int
-renameVars (ProgT a as)              = maximum [renameVars a, renameVars' as]
-renameVars (MainT as)                = renameVars' as
-renameVars (FunctionT _ _ _ as)      = renameVars' as
+calculateThreadAmount :: AST -> Int
+calculateThreadAmount (ProgT main funcs)        = calculateThreadAmount main
+calculateThreadAmount (MainT as)                = calculateThreadAmount' as
 -- Statements
-renameVars (DeclT SPriv s1 s2 a)     = renameVars a
-renameVars (DeclT SGlob s1 s2 a)     = renameVars a
-renameVars (AssignT s a)             = renameVars a
-renameVars (ArrayAssignT s a1 a2)    = maximum [renameVars a1, renameVars a2]
-renameVars (WhileT a as)             = maximum [renameVars a, renameVars' as]
-renameVars (IfOneT a as)             = maximum [renameVars a, renameVars' as]
-renameVars (IfTwoT a as1 as2)        = maximum [renameVars a, renameVars' as1, renameVars' as2]
-renameVars (ParallelT s as)          = read s
-renameVars (ReadStatT t s)           = 1
-renameVars (WriteStatT t a)          = renameVars a
+calculateThreadAmount (DeclT SPriv s1 s2 a)     = calculateThreadAmount a
+calculateThreadAmount (DeclT SGlob s1 s2 a)     = calculateThreadAmount a
+calculateThreadAmount (AssignT s a)             = calculateThreadAmount a
+calculateThreadAmount (ArrayAssignT s a1 a2)    = maximum [calculateThreadAmount a1, calculateThreadAmount a2]
+calculateThreadAmount (WhileT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
+calculateThreadAmount (IfOneT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
+calculateThreadAmount (IfTwoT a as1 as2)        = maximum [calculateThreadAmount a, calculateThreadAmount' as1, calculateThreadAmount' as2]
+calculateThreadAmount (ParallelT s as)          = read s
+calculateThreadAmount (ReadStatT t s)           = 1
+calculateThreadAmount (WriteStatT t a)          = calculateThreadAmount a
 --Expressions
-renameVars EmptyT                    = 1
-renameVars (IntConstT s)             = 1
-renameVars (BoolConstT s)            = 1
-renameVars (CharConstT s)            = 1
-renameVars (VarT s)                  = 1
-renameVars ThreadIDT                 = 1
-renameVars (ArrayExprT s a)          = renameVars a
-renameVars (OneOpT s a)              = renameVars a
-renameVars (TwoOpT a1 s a2)          = maximum [renameVars a1, renameVars a2]
-renameVars (BracketsT a)             = renameVars a
-renameVars (EmptyArrayT s)           = 1
-renameVars (FillArrayT as)           = renameVars' as
+calculateThreadAmount EmptyT                    = 1
+calculateThreadAmount (IntConstT s)             = 1
+calculateThreadAmount (BoolConstT s)            = 1
+calculateThreadAmount (CharConstT s)            = 1
+calculateThreadAmount (VarT s)                  = 1
+calculateThreadAmount ThreadIDT                 = 1
+calculateThreadAmount (ArrayExprT s a)          = 1
+calculateThreadAmount (FuncExprT s a)           = 1
+calculateThreadAmount (OneOpT s a)              = calculateThreadAmount a
+calculateThreadAmount (TwoOpT a1 s a2)          = maximum [calculateThreadAmount a1, calculateThreadAmount a2]
+calculateThreadAmount (BracketsT a)             = calculateThreadAmount a
+calculateThreadAmount (EmptyArrayT s)           = 1
+calculateThreadAmount (FillArrayT as)           = calculateThreadAmount' as
 
 
-renameVars' :: [AST] -> Int
-renameVars' [] = 1
-renameVars' as = maximum (map renameVars as)
+calculateThreadAmount' :: [AST] -> Int
+calculateThreadAmount' [] = 1
+calculateThreadAmount' as = maximum (map calculateThreadAmount as)
 
 renameVars :: Int -> AST -> AST
-renameVars (ProgT as)                = renameVars' as
+renameVars n (ProgT a as)              = (ProgT (renameVars 0 a) (map (\(a,b) -> renameVars a b) $ zip [1..] as))
+renameVars n (MainT as)                = (MainT (renameVars' n as))
+renameVars n (FunctionT x y z as)      = (FunctionT x y (renameVars' n z) (renameVars' n as))
+renameVars n (ArgumentT t name)        = (ArgumentT t (name++(show n)))
 -- Statements
-renameVars (DeclT SPriv s1 s2 a)     = renameVars a
-renameVars (DeclT SGlob s1 s2 a)     = renameVars a
-renameVars (AssignT s a)             = renameVars a
-renameVars (ArrayAssignT s a1 a2)    = maximum [renameVars a1, renameVars a2]
-renameVars (WhileT a as)             = maximum [renameVars a, renameVars' as]
-renameVars (IfOneT a as)             = maximum [renameVars a, renameVars' as]
-renameVars (IfTwoT a as1 as2)        = maximum [renameVars a, renameVars' as1, renameVars' as2]
-renameVars (ParallelT s as)          = read s
-renameVars (ReadStatT t s)           = 1
-renameVars (WriteStatT t a)          = renameVars a
+renameVars n (DeclT s s1 s2 a)         = (DeclT s s1 (s2++(show n)) (renameVars n a))
+renameVars n (AssignT s a)             = (AssignT (s++(show n)) (renameVars n a))
+renameVars n (ArrayAssignT s a1 a2)    = (ArrayAssignT (s++(show n)) (renameVars n a1) (renameVars n a2))
+renameVars n (WhileT a as)             = (WhileT (renameVars n a) (renameVars' n as))
+renameVars n (IfOneT a as)             = (IfOneT (renameVars n a) (renameVars' n as))
+renameVars n (IfTwoT a as1 as2)        = (IfTwoT (renameVars n a) (renameVars' n as1) (renameVars' n as2))
+renameVars n (ParallelT s as)          = (ParallelT (s++(show n)) (renameVars' n as))
+renameVars n (ReadStatT t s)           = (ReadStatT t (s++(show n)))
+renameVars n (WriteStatT t a)          = (WriteStatT t (renameVars n a))
 --Expressions
-renameVars EmptyT                    = 1
-renameVars (IntConstT s)             = 1
-renameVars (BoolConstT s)            = 1
-renameVars (CharConstT s)            = 1
-renameVars (VarT s)                  = 1
-renameVars ThreadIDT                 = 1
-renameVars (ArrayExprT s a)          = renameVars a
-renameVars (OneOpT s a)              = renameVars a
-renameVars (TwoOpT a1 s a2)          = maximum [renameVars a1, renameVars a2]
-renameVars (BracketsT a)             = renameVars a
-renameVars (EmptyArrayT s)           = 1
-renameVars (FillArrayT as)           = renameVars' as
+renameVars n EmptyT                    = EmptyT
+renameVars n (IntConstT s)             = (IntConstT s)
+renameVars n (BoolConstT s)            = (BoolConstT s)
+renameVars n (CharConstT s)            = (CharConstT s)
+renameVars n (VarT s)                  = (VarT (s++(show n)))
+renameVars n ThreadIDT                 = ThreadIDT
+renameVars n (ArrayExprT s a)          = (ArrayExprT (s++(show n)) (renameVars n a))
+renameVars n (FuncExprT s a)           = (FuncExprT s (renameVars' n a))
+renameVars n (OneOpT s a)              = (OneOpT s (renameVars n a))
+renameVars n (TwoOpT a1 s a2)          = (TwoOpT (renameVars n a1) s (renameVars n a2))
+renameVars n (BracketsT a)             = (BracketsT (renameVars n a))
+renameVars n (EmptyArrayT s)           = (EmptyArrayT s)
+renameVars n (FillArrayT as)           = (FillArrayT as)
 
 
-renameVars' :: [AST] -> Int
-renameVars' [] = 1
-renameVars' as = maximum (map renameVars as)
+renameVars' :: Int -> [AST] -> [AST]
+renameVars' n as = map (renameVars n) as
 
 
 

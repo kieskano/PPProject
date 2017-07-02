@@ -57,6 +57,7 @@ parsetoast :: ParseTree -> AST
 parsetoast (PNode Prog (main:functions)) = ProgT (parsetoast main) (map parsetoast functions)
 parsetoast (PNode Main [PNode Block st]) = MainT (map parsetoast st)
 parsetoast (PNode Function [t, n, PNode Arguments args, PNode Block st]) = FunctionT (getType t) (getTokenString n) (map parsetoast args) (map parsetoast st)
+parsetoast (PNode Function [n, PNode Arguments args, PNode Block st])    = FunctionT "" (getTokenString n) (map parsetoast args) (map parsetoast st)
 parsetoast (PNode Argument [t, n]) = ArgumentT (getType t) (getTokenString n)
 parsetoast (PNode Stat [stat]) = parseStattoast stat
 parsetoast (PNode Expr nodes)  = parseExprtoast (PNode Expr nodes)

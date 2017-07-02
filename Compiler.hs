@@ -40,6 +40,7 @@ compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scop
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
                         ast' = correctProg ast
+                        ast'' = renameVars 0 ast'
                         scopeErrors = checkScope ast
                         typeErrors = snd $ checkTypes [] ast'
                         threads = calculateThreadAmount ast'
