@@ -27,7 +27,8 @@ grammar nt = case nt of
                         [ dot, Sync ],
                         [ dot, ReadStat ],
                         [ dot, WriteStat ],
-                        [ dot, Return ]]
+                        [ dot, Return ],
+                        [ Function ]]
 
         Decl        -> [[ (?:) [global], Type, name, equalass, Expr ],
                         [ (?:) [global], Type, name ]]
