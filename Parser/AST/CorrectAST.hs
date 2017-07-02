@@ -50,6 +50,7 @@ twoOpOrdCompare (TwoOpTE s1) (TwoOpTE s2)   | op1Ord < twoOpOrd = LT
 
 correctProg :: AST -> AST
 correctProg (ProgT main funcs)         = ProgT (correctProg main) (map correctProg funcs)
+correctProg (MainT asts)               = MainT (map correctProg asts)
 correctProg (FunctionT s1 s2 args asts)= FunctionT s1 s2 args (map correctProg asts)
 correctProg (ArgumentT s1 s2)          = ArgumentT s1 s2
 correctProg (DeclT SGlob s1 s2 EmptyT) = DeclT SGlob s1 s2 EmptyT

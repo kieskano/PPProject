@@ -24,7 +24,7 @@ instance Show Type where
 typeMap :: [(String, Type)]
 typeMap =          [("#", IntType),
                     ("?", BoolType),
-                    ("*", BoolType),
+                    ("*", CharType),
                     ("", VoidType),
                     ("[#]", ArrayType IntType),
                     ("[?]", ArrayType BoolType),
@@ -117,7 +117,7 @@ checkTypes t varMap (DeclT SPriv s1 s2 expr)    | eType == varType  = ((s2, varT
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
-checkTypes t varMap (AssignT s1 expr)     | eType == varType  = (varMap, errors')
+checkTypes t varMap (AssignT s1 expr)   | eType == varType  = (varMap, errors')
                                         | otherwise         = (varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
@@ -203,7 +203,7 @@ checkTypes t varMap (ReturnT expr)      | eType == t    = (varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             errors' = map (++ " in statement '" ++ statString ++ "'") errors
-                                            statString = exprToString (ReturnT expr)
+                                            statString = statToString (ReturnT expr)
                                             err = "Could not match expected type '" ++ (show t)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
@@ -227,6 +227,7 @@ checkExprType :: [(String, Type)] -> AST -> (Type, [String])
 checkExprType varMap (VarT s)           = (getVal s varMap, [])
 checkExprType varMap (IntConstT s)      = (IntType, [])
 checkExprType varMap (BoolConstT s)     = (BoolType, [])
+checkExprType varMap (CharConstT s)     = (CharType, [])
 checkExprType varMap (ThreadIDT)        = (IntType, [])
 checkExprType varMap (BracketsT e)      = checkExprType varMap e
 checkExprType varMap (ArrayExprT s e)   | eType == IntType   = (elemType, errors)
@@ -290,6 +291,7 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                                 ++ s ++ "'"
 
 checkArgTypes :: Int -> [(String, Type)] -> [Type] -> [AST] -> [String]
+checkArgTypes n varMap [] _                 = []
 checkArgTypes n varMap (t:ts) ((VarT v):vs) | t == vt   = checkArgTypes (n+1) varMap ts vs
                                             | otherwise = err : (checkArgTypes (n+1) varMap ts vs)
                                             where
@@ -301,7 +303,7 @@ checkArgTypes n varMap (t:ts) ((VarT v):vs) | t == vt   = checkArgTypes (n+1) va
 
 getAllFuncTypes :: [AST] -> [(String, Type)]
 getAllFuncTypes [] = []
-getAllFuncTypes ((FunctionT s1 s2 args _):r) = (s2, getVal s1 typeMap) : (getAllFuncTypes r)
+getAllFuncTypes ((FunctionT s1 s2 args _):r) = (s2, FuncType (getVal s1 typeMap) (map snd $ getAllArgTypes args)) : (getAllFuncTypes r)
 
 getAllArgTypes :: [AST] -> [(String, Type)]
 getAllArgTypes [] = []
@@ -310,28 +312,36 @@ getAllArgTypes ((ArgumentT s1 s2):r) = (s2, getVal s1 typeMap) : (getAllArgTypes
 
 
 statToString :: AST -> String
-statToString (DeclT SGlob s1 s2 EmptyT) = ". _" ++ s1 ++ ' ':s2
-statToString (DeclT SGlob s1 s2 a)      = ". _" ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
-statToString (DeclT SPriv s1 s2 EmptyT) = ". " ++ s1 ++ ' ':s2
-statToString (DeclT SPriv s1 s2 a)      = ". " ++ s1 ++ ' ':s2 ++ " = " ++ (exprToString a)
-statToString (AssignT s a)              = ". " ++ s ++ " = " ++ (exprToString a)
+statToString (DeclT SGlob s1 s2 EmptyT) = ". _" ++ s1 ++ ' ':(rmVarNr s2)
+statToString (DeclT SGlob s1 s2 a)      = ". _" ++ s1 ++ ' ':(rmVarNr s2) ++ " = " ++ (exprToString a)
+statToString (DeclT SPriv s1 s2 EmptyT) = ". " ++ s1 ++ ' ':(rmVarNr s2)
+statToString (DeclT SPriv s1 s2 a)      = ". " ++ s1 ++ ' ':(rmVarNr s2) ++ " = " ++ (exprToString a)
+statToString (AssignT s a)              = ". " ++ (rmVarNr s) ++ " = " ++ (exprToString a)
 statToString (WhileT a _)               = ". ?^ |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfOneT a _)               = ". ?- |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfTwoT a _ _)             = ". ?< |" ++ (exprToString a) ++ "| < ... > < ... >"
 statToString (ParallelT s _)            = ". -<" ++ s ++ ">- < ... >"
-statToString (ReadStatT t s)            = ". "++t++"> " ++ s
+statToString (SyncT s _)                = ". >~" ++ (rmVarNr s) ++ "~< < ... >"
+statToString (ReadStatT t s)            = ". "++t++"> " ++ (rmVarNr s)
 statToString (WriteStatT t a)           = ". "++t++"< " ++ (exprToString a)
 statToString (ReturnT a)                = ". :: " ++ (exprToString a)
 
 exprToString :: AST -> String
 exprToString (IntConstT s)      = s
 exprToString (BoolConstT s)     = s
-exprToString (VarT s)           = s
+exprToString (CharConstT s)     = '\'':s:'\'':""
+exprToString (ArrayExprT s i)   = (rmVarNr s)++"["++(exprToString i)++"]"
+exprToString (FuncExprT s [])   = s++"()"
+exprToString (FuncExprT s (a:as)) = s++"("++(exprToString a)++ (concat $ map ((","++) . exprToString) as) ++")"
+exprToString (VarT s)           = (rmVarNr s)
 exprToString (OneOpT s a)       = s ++ (exprToString a)
 exprToString (TwoOpT a1 s a2)   = (exprToString a1) ++ " " ++ s ++ " " ++ (exprToString a2)
 exprToString (BracketsT a)      = "(" ++ (exprToString a) ++ ")"
+exprToString x = error (show x)
 
-
+rmVarNr :: String -> String
+rmVarNr s   | elem '#' s = rmVarNr (init s)
+            | otherwise  = s
 
 
 

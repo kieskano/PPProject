@@ -12,7 +12,7 @@ import Parser.AST.CorrectAST
 import Parser.NewFile
 import Sprockell
 --import Generator.Generator
---import Generator.VariableOffset
+import Generator.VariableOffset
 import Debug.Trace
 import Text.Printf
 
@@ -40,8 +40,9 @@ compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scop
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
                         ast' = correctProg ast
+                        ast'' = renameVars 0 ast'
                         scopeErrors = checkScope ast
-                        typeErrors = snd $ checkTypes VoidType [] ast'
+                        typeErrors = snd $ checkTypes VoidType [] ast''
                         --threads = calculateThreadAmount ast'
                         --offsets = calculateVarOffset ast' (threads - 1)
                         code = []--generateProgCode ast' threads (offsets,0)
