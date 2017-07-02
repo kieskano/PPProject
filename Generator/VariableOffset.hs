@@ -10,7 +10,7 @@ calculateVarOffset ast gOff = let (res,_,_) = calculateVarOffset' (([],[]),0,gOf
 calculateVarOffset' :: ((OffsetMap, OffsetMap), Int, Int) -> [(String, Int)]-> AST -> ((OffsetMap, OffsetMap), Int, Int)
 calculateVarOffset' world varLens (ProgT ast asts)      = calculateVarOffset' (calculateVarOffsetList world varLens asts) varLens ast
 calculateVarOffset' world varLens (MainT asts)          = calculateVarOffsetList world varLens asts
-calculateVarOffset' world varLens (FunctionT s s asts1 asts2) = calculateVarOffsetList world varLens asts2
+calculateVarOffset' world varLens (FunctionT _ _ asts1 asts2) = calculateVarOffsetList world varLens asts2
 calculateVarOffset' world varLens (WhileT ast asts)     = calculateVarOffsetList world varLens asts
 calculateVarOffset' world varLens (IfOneT ast asts)     = calculateVarOffsetList world varLens asts
 calculateVarOffset' world varLens (IfTwoT ast as1 as2)  = calculateVarOffsetList (calculateVarOffsetList world varLens as1) varLens as2
@@ -81,39 +81,71 @@ offMapsContains s (m1,m2) = case (lookup s m1, lookup s m2) of
                                 (_, Just _)     -> True
                                 _               -> False
 
-calculateThreadAmount :: AST -> Int
-calculateThreadAmount (ProgT as)                = calculateThreadAmount' as
+renameVars :: AST -> Int
+renameVars (ProgT a as)              = maximum [renameVars a, renameVars' as]
+renameVars (MainT as)                = renameVars' as
+renameVars (FunctionT _ _ _ as)      = renameVars' as
 -- Statements
-calculateThreadAmount (DeclT SPriv s1 s2 a)     = calculateThreadAmount a
-calculateThreadAmount (DeclT SGlob s1 s2 a)     = calculateThreadAmount a
-calculateThreadAmount (AssignT s a)             = calculateThreadAmount a
-calculateThreadAmount (ArrayAssignT s a1 a2)    = maximum [calculateThreadAmount a1, calculateThreadAmount a2]
-calculateThreadAmount (WhileT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
-calculateThreadAmount (IfOneT a as)             = maximum [calculateThreadAmount a, calculateThreadAmount' as]
-calculateThreadAmount (IfTwoT a as1 as2)        = maximum [calculateThreadAmount a, calculateThreadAmount' as1, calculateThreadAmount' as2]
-calculateThreadAmount (ParallelT s as)          = read s
-calculateThreadAmount (ReadStatT t s)           = 1
-calculateThreadAmount (WriteStatT t a)          = calculateThreadAmount a
+renameVars (DeclT SPriv s1 s2 a)     = renameVars a
+renameVars (DeclT SGlob s1 s2 a)     = renameVars a
+renameVars (AssignT s a)             = renameVars a
+renameVars (ArrayAssignT s a1 a2)    = maximum [renameVars a1, renameVars a2]
+renameVars (WhileT a as)             = maximum [renameVars a, renameVars' as]
+renameVars (IfOneT a as)             = maximum [renameVars a, renameVars' as]
+renameVars (IfTwoT a as1 as2)        = maximum [renameVars a, renameVars' as1, renameVars' as2]
+renameVars (ParallelT s as)          = read s
+renameVars (ReadStatT t s)           = 1
+renameVars (WriteStatT t a)          = renameVars a
 --Expressions
-calculateThreadAmount EmptyT                    = 1
-calculateThreadAmount (IntConstT s)             = 1
-calculateThreadAmount (BoolConstT s)            = 1
-calculateThreadAmount (CharConstT s)            = 1
-calculateThreadAmount (VarT s)                  = 1
-calculateThreadAmount ThreadIDT                 = 1
-calculateThreadAmount (ArrayExprT s a)          = calculateThreadAmount a
-calculateThreadAmount (OneOpT s a)              = calculateThreadAmount a
-calculateThreadAmount (TwoOpT a1 s a2)          = maximum [calculateThreadAmount a1, calculateThreadAmount a2]
-calculateThreadAmount (BracketsT a)             = calculateThreadAmount a
-calculateThreadAmount (EmptyArrayT s)           = 1
-calculateThreadAmount (FillArrayT as)           = calculateThreadAmount' as
+renameVars EmptyT                    = 1
+renameVars (IntConstT s)             = 1
+renameVars (BoolConstT s)            = 1
+renameVars (CharConstT s)            = 1
+renameVars (VarT s)                  = 1
+renameVars ThreadIDT                 = 1
+renameVars (ArrayExprT s a)          = renameVars a
+renameVars (OneOpT s a)              = renameVars a
+renameVars (TwoOpT a1 s a2)          = maximum [renameVars a1, renameVars a2]
+renameVars (BracketsT a)             = renameVars a
+renameVars (EmptyArrayT s)           = 1
+renameVars (FillArrayT as)           = renameVars' as
 
 
-calculateThreadAmount' :: [AST] -> Int
-calculateThreadAmount' [] = 1
-calculateThreadAmount' as = maximum (map calculateThreadAmount as)
+renameVars' :: [AST] -> Int
+renameVars' [] = 1
+renameVars' as = maximum (map renameVars as)
+
+renameVars :: Int -> AST -> AST
+renameVars (ProgT as)                = renameVars' as
+-- Statements
+renameVars (DeclT SPriv s1 s2 a)     = renameVars a
+renameVars (DeclT SGlob s1 s2 a)     = renameVars a
+renameVars (AssignT s a)             = renameVars a
+renameVars (ArrayAssignT s a1 a2)    = maximum [renameVars a1, renameVars a2]
+renameVars (WhileT a as)             = maximum [renameVars a, renameVars' as]
+renameVars (IfOneT a as)             = maximum [renameVars a, renameVars' as]
+renameVars (IfTwoT a as1 as2)        = maximum [renameVars a, renameVars' as1, renameVars' as2]
+renameVars (ParallelT s as)          = read s
+renameVars (ReadStatT t s)           = 1
+renameVars (WriteStatT t a)          = renameVars a
+--Expressions
+renameVars EmptyT                    = 1
+renameVars (IntConstT s)             = 1
+renameVars (BoolConstT s)            = 1
+renameVars (CharConstT s)            = 1
+renameVars (VarT s)                  = 1
+renameVars ThreadIDT                 = 1
+renameVars (ArrayExprT s a)          = renameVars a
+renameVars (OneOpT s a)              = renameVars a
+renameVars (TwoOpT a1 s a2)          = maximum [renameVars a1, renameVars a2]
+renameVars (BracketsT a)             = renameVars a
+renameVars (EmptyArrayT s)           = 1
+renameVars (FillArrayT as)           = renameVars' as
 
 
+renameVars' :: [AST] -> Int
+renameVars' [] = 1
+renameVars' as = maximum (map renameVars as)
 
 
 

@@ -18,6 +18,7 @@ name = \s x -> case s of
 
                         F 0 | isALetter x   -> F 0
                             | x == '_'      -> F 0
+                            | isADigit x    -> F 0
                             | otherwise     -> E
 
                         _                   -> E
