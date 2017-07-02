@@ -8,6 +8,7 @@ data Type   = IntType
             | CharType
             | ArrayType Type
             | VoidType
+            | FuncType Type [Type]
             | Or [Type]
             deriving (Eq)
 
@@ -24,6 +25,7 @@ typeMap :: [(String, Type)]
 typeMap =          [("#", IntType),
                     ("?", BoolType),
                     ("*", BoolType),
+                    ("", VoidType),
                     ("[#]", ArrayType IntType),
                     ("[?]", ArrayType BoolType),
                     ("[*]", ArrayType CharType)]
@@ -73,7 +75,13 @@ getVal s vmap = case (lookup s vmap) of
 
 --         ||  map Var:Type    || AST || (map Var:Type    , errors  )||
 checkTypes :: [(String, Type)] -> AST -> ([(String, Type)], [String])
-checkTypes varMap (ProgT as)            = checkTypesBlock varMap as
+checkTypes varMap (ProgT main funcs)          = let (a,b) = checkTypes nVarMap main in (a,b++errors)
+                                        where
+                                            (nVarMap, errors) = checkTypesBlock (getAllFuncTypes funcs) funcs
+checkTypes varMap (MainT sts)                 = checkTypesBlock varMap sts
+checkTypes varMap (FunctionT s1 s2 args sts)  = let (_,b) = checkTypesBlock (varMap++argTypes) sts in (varMap,b)
+                                        where
+                                            argTypes = getAllArgTypes args
 checkTypes varMap (DeclT SGlob s1 s2 EmptyT)  = ((s2, getVal s1 typeMap):varMap, [])
 checkTypes varMap (DeclT SGlob s1 s2 (EmptyArrayT s))  = ((s2, getVal s1 typeMap):varMap, [])
 checkTypes varMap (DeclT SGlob s1 s2 (FillArrayT exprs))
@@ -220,6 +228,13 @@ checkExprType varMap (ArrayExprT s e)   | eType == IntType   = (elemType, errors
                                                 ++ (show IntType) ++ "' with actual type '"
                                                 ++ (show eType) ++ "' as index of array '"
                                                 ++ s ++ "'"
+checkExprType varMap (FuncExprT s args) | length argTypes == length args = (rType, errors)
+                                        | otherwise                      = (rType, [err])
+                                        where
+                                            errors = map (++" of function "++s) $ checkArgTypes 0 varMap argTypes args
+                                            (FuncType rType argTypes) = getVal s varMap
+                                            err = "Could not match expected number of arguments " ++ (show $ length argTypes)
+                                                ++ " with actual number of arguments " ++ (show $ length args) ++ " of function " ++ s
 checkExprType varMap (OneOpT s e)       | eType == opArgType = (opRetType, errors)
                                         | otherwise          = (opRetType, err:errors)
                                         where
@@ -263,6 +278,24 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                                 ++ (show $ snd opArgType) ++ "' with actual type '"
                                                 ++ (show e2Type) ++ "' as second argument of operator '"
                                                 ++ s ++ "'"
+
+checkArgTypes :: Int -> [(String, Type)] -> [Type] -> [AST] -> [String]
+checkArgTypes n varMap (t:ts) ((VarT v):vs) | t == vt   = checkArgTypes (n+1) varMap ts vs
+                                            | otherwise = err : (checkArgTypes (n+1) varMap ts vs)
+                                            where
+                                                vt = getVal v varMap
+                                                err = "Could not match expected type '" ++ (show t)
+                                                    ++ "' with actual type '" ++ (show vt)
+                                                    ++ " of argument number " ++ (show n)
+
+getAllFuncTypes :: [AST] -> [(String, Type)]
+getAllFuncTypes [] = []
+getAllFuncTypes ((FunctionT s1 s2 args _):r) = (s2, getVal s1 typeMap) : (getAllFuncTypes r)
+
+getAllArgTypes :: [AST] -> [(String, Type)]
+getAllArgTypes [] = []
+getAllArgTypes ((ArgumentT s1 s2):r) = (s2, getVal s1 typeMap) : (getAllArgTypes r)
+
 
 
 statToString :: AST -> String
