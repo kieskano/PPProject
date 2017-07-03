@@ -1,16 +1,30 @@
 . // <
-    . # a
-    . * b = 'a'
-    . a = ord(b)
-    . b = ord(a)
+    . [#] a = {1,2,3,4,5,6}
+    . # < sum(a)
+    . * < '\n'
+    . # asdf = 3
+    . func1(asdf)
+    . # < asdf
 >
 
-. # ord(*g) <
-    . * a
-    . :: a
+. # sum ([#] a) <
+    . # result = 0
+    . # i = 0
+    . ?^ |i < a| <
+        . result = result + a[i]
+        . i = i + 1
+    >
+    . * < 'a'
+    . :: result
 >
 
-. * chr(#g) <
-    . * a
-    . :: a
+. func1 (# x) <
+    . func2
+        (
+            x
+        )
+>
+
+. func2 (# x) <
+    . x = 50
 >

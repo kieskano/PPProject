@@ -39,7 +39,7 @@ data AST    = ProgT AST [AST]
             | OneOpT String AST
             | TwoOpT AST String AST
             | BracketsT AST
-            | FuncExprT String [AST]
+            | FuncExprT String [AST] -- Could also be a statement
             | EmptyArrayT String -- ArrayInit
             | FillArrayT [AST]
             deriving (Show, Eq)
@@ -81,11 +81,12 @@ parseStattoast (PNode ReadStat [t, PNode Var [v]])                      = ReadSt
 parseStattoast (PNode WriteStat [PNode ArrayType [t], e])               = WriteStatT ("["++(getType t)++"]") (parseExprtoast e)
 parseStattoast (PNode WriteStat [t, e])                                 = WriteStatT (getType t)(parseExprtoast e)
 parseStattoast (PNode Return [e])                                       = ReturnT (parseExprtoast e)
+parseStattoast (PNode FuncExpr (n:r))                                   = FuncExprT (getTokenString n) (map (VarT . getTokenString) r)
 parseStattoast (PNode Function l)                                       = parsetoast (PNode Function l)
 
 getType :: ParseTree -> String
 getType (PNode Type [t]) = getTokenString t
-getType (PNode ArrayType [t]) = getType t
+getType (PNode ArrayType [t]) = "["++(getType t)++"]"
 
 parseExprtoast :: ParseTree -> AST
 parseExprtoast (PNode Expr [l, PNode TwoOp [t], r]) = TwoOpT (parseExprtoast l) (getTokenString t) (parseExprtoast r)

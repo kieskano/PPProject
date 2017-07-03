@@ -1,4 +1,4 @@
-
+module Compiler where
 
 import Parser.Tokenizer
 import Parser.Grammar
@@ -11,7 +11,7 @@ import Checker.TypeChecker
 import Parser.AST.CorrectAST
 import Parser.NewFile
 import Sprockell
-import Generator.Generator
+--import Generator.Generator
 import Generator.VariableOffset
 import Debug.Trace
 import Text.Printf
@@ -26,43 +26,41 @@ test6 = compileDinkie "test/testCodeHan.ding"
 test7 = runDinkie 1 (compileDinkie "test/testCodeHan.ding")
 test8 = progToString testInstrList
 test9 = progToString (compileDinkie "test/testFib.ding")-}
-test10 = runDinkie "test/testThreads.ding"
-test11 = runDinkie "test/testScope.ding"
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 
-compileDinkie :: String -> ([Instruction], Int)
+compileDinkie :: String -> (OffsetMap, OffsetMap)--([Instruction], Int)
 compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
                     | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
-                    | otherwise                 = trace (offsetsToString offsets) (code, threads)
+                    | otherwise                 = offsets--trace (offsetsToString offsets) (code, threads)
                     where
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
-                        ast' = ast correctProg ast
-                        scopeErrors = checkScope ast'
-                        typeErrors = snd $ checkTypes [] ast'
+                        ast' = renameVars 0 $ correctProg ast
+                        scopeErrors = checkScope ast
+                        typeErrors = snd $ checkTypes VoidType [] ast'
                         threads = calculateThreadAmount ast'
                         offsets = calculateVarOffset ast' (threads - 1)
-                        code = generateProgCode ast' threads (offsets,0)
+                        code = []--generateProgCode ast' threads (offsets,0)
 
-runDinkie :: String -> IO ()
-runDinkie file  = trace (progToString prog) (run (replicate threads prog))
-                    where
-                        cmp = compileDinkie file
-                        threads = snd cmp
-                        prog = fst cmp
+-- runDinkie :: String -> IO ()
+-- runDinkie file  = trace (progToString prog) (run (replicate threads prog))
+--                     where
+--                         cmp = compileDinkie file
+--                         threads = snd cmp
+--                         prog = fst cmp
+--
+-- runDinkieDebug :: String -> IO ()
+-- runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimplePrint debugShow') (replicate threads prog))
+--                     where
+--                         cmp = compileDinkie file
+--                         threads = snd cmp
+--                         prog = fst cmp
 
-runDinkieDebug :: String -> IO ()
-runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimplePrint debugShow') (replicate threads prog))
-                    where
-                        cmp = compileDinkie file
-                        threads = snd cmp
-                        prog = fst cmp
-
-offsetsToString :: (OffsetMap, OffsetMap) -> String
-offsetsToString (l, g)  = "\nVariables:\n\nLocal:\n" ++ (unlines $ (showLocalOffsetMap l))
-                            ++ "Global:\n" ++ (unlines $ (showGlobalOffsetMap g))
+-- offsetsToString :: (OffsetMap, OffsetMap) -> String
+-- offsetsToString (l, g)  = "\nVariables:\n\nLocal:\n" ++ (unlines $ (showLocalOffsetMap l))
+--                             ++ "Global:\n" ++ (unlines $ (showGlobalOffsetMap g))
 
 progToString :: [Instruction] -> String
 progToString is = "\nCompiled code:\n\n" ++ (unlines $ (showInstrList is 0))
@@ -70,13 +68,13 @@ progToString is = "\nCompiled code:\n\n" ++ (unlines $ (showInstrList is 0))
 progToStringIO :: [Instruction] -> IO ()
 progToStringIO is = putStr $ unlines $ (showInstrList is 0)
 
-showLocalOffsetMap :: OffsetMap -> [String]
-showLocalOffsetMap []               = []
-showLocalOffsetMap ((s,i):os)       = (s ++ "\t\t" ++ (show i)):(showLocalOffsetMap os)
-
-showGlobalOffsetMap :: OffsetMap -> [String]
-showGlobalOffsetMap []             = []
-showGlobalOffsetMap ((s,i):os)     = ("_" ++ s ++ "\t\t" ++ (show i)):(showGlobalOffsetMap os)
+-- showLocalOffsetMap :: OffsetMap -> [String]
+-- showLocalOffsetMap []               = []
+-- showLocalOffsetMap ((s,i):os)       = (s ++ "\t\t" ++ (show i)):(showLocalOffsetMap os)
+--
+-- showGlobalOffsetMap :: OffsetMap -> [String]
+-- showGlobalOffsetMap []             = []
+-- showGlobalOffsetMap ((s,i):os)     = ("_" ++ s ++ "\t\t" ++ (show i)):(showGlobalOffsetMap os)
 
 showInstrList :: [Instruction] -> Int -> [String]
 showInstrList [] rn         = []

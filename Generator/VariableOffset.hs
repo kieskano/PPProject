@@ -1,16 +1,24 @@
 module Generator.VariableOffset where
 
 import Parser.AST.AST
+import Debug.Trace
 
 type OffsetMap = [(String, Int)]
 
-calculateVarOffset :: AST -> Int -> (OffsetMap, OffsetMap)
-calculateVarOffset ast gOff = let (res,_,_) = calculateVarOffset' (([],[]),0,gOff+1) (getMaxVarSizes [] ast) ast in res
+calculateVarOffset :: AST -> Int -> ((OffsetMap, OffsetMap),OffsetMap)
+calculateVarOffset (ProgT main funcs) gOff = ((lOffMap, gOffMap), fLDataSizes)
+                            where
+                                ((lOffMap, gOffMap),_,_) = calculateVarOffset' (([],[]),0,gOff+1) varSizes (ProgT main funcs)
+                                varSizes            = getMaxVarSizes [] (ProgT main funcs)
+                                fLDataSizes         = funcLocDataSizes (main:funcs) lOffMap varSizes
+
 
 calculateVarOffset' :: ((OffsetMap, OffsetMap), Int, Int) -> [(String, Int)]-> AST -> ((OffsetMap, OffsetMap), Int, Int)
-calculateVarOffset' world varLens (ProgT ast asts)      = calculateVarOffset' (calculateVarOffsetList world varLens asts) varLens ast
+calculateVarOffset' world varLens (ProgT main funcs)    = calculateVarOffsetList (calculateVarOffset' world varLens main) varLens funcs
 calculateVarOffset' world varLens (MainT asts)          = calculateVarOffsetList world varLens asts
-calculateVarOffset' world varLens (FunctionT _ _ asts1 asts2) = calculateVarOffsetList world varLens asts2
+calculateVarOffset' world varLens (FunctionT _ _ asts1 asts2) = calculateVarOffsetList nworld varLens asts2
+                                                        where
+                                                            nworld = let (omaps,_,gOff) = world in (omaps,0,gOff)
 calculateVarOffset' world varLens (WhileT ast asts)     = calculateVarOffsetList world varLens asts
 calculateVarOffset' world varLens (IfOneT ast asts)     = calculateVarOffsetList world varLens asts
 calculateVarOffset' world varLens (IfTwoT ast as1 as2)  = calculateVarOffsetList (calculateVarOffsetList world varLens as1) varLens as2
@@ -117,20 +125,21 @@ calculateThreadAmount' :: [AST] -> Int
 calculateThreadAmount' [] = 1
 calculateThreadAmount' as = maximum (map calculateThreadAmount as)
 
-renameVars :: Int -> AST -> AST
-renameVars n (ProgT a as)              = (ProgT (renameVars 0 a) (map (\(a,b) -> renameVars a b) $ zip [1..] as))
-renameVars n (MainT as)                = (MainT (renameVars' n as))
-renameVars n (FunctionT x y z as)      = (FunctionT x y (renameVars' n z) (renameVars' n as))
-renameVars n (ArgumentT t name)        = (ArgumentT t (name++"#"++(show n)))
+renameVars :: String -> AST -> AST
+renameVars n (ProgT a as)              = (ProgT (renameVars "" a) (renameVars' "" as))
+renameVars n (MainT as)                = (MainT (renameVars' "//" as))
+renameVars n (FunctionT x y z as)      = (FunctionT x y (renameVars' y z) (renameVars' y as))
+renameVars n (ArgumentT t name)        = (ArgumentT t (name++"#"++n))
 -- Statements
-renameVars n (DeclT s s1 s2 a)         = (DeclT s s1 (s2++"#"++(show n)) (renameVars n a))
-renameVars n (AssignT s a)             = (AssignT (s++"#"++(show n)) (renameVars n a))
-renameVars n (ArrayAssignT s a1 a2)    = (ArrayAssignT (s++"#"++(show n)) (renameVars n a1) (renameVars n a2))
+renameVars n (DeclT s s1 s2 a)         = (DeclT s s1 (s2++"#"++n) (renameVars n a))
+renameVars n (AssignT s a)             = (AssignT (s++"#"++n) (renameVars n a))
+renameVars n (ArrayAssignT s a1 a2)    = (ArrayAssignT (s++"#"++n) (renameVars n a1) (renameVars n a2))
 renameVars n (WhileT a as)             = (WhileT (renameVars n a) (renameVars' n as))
 renameVars n (IfOneT a as)             = (IfOneT (renameVars n a) (renameVars' n as))
 renameVars n (IfTwoT a as1 as2)        = (IfTwoT (renameVars n a) (renameVars' n as1) (renameVars' n as2))
-renameVars n (ParallelT s as)          = (ParallelT (s++"#"++(show n)) (renameVars' n as))
-renameVars n (ReadStatT t s)           = (ReadStatT t (s++"#"++(show n)))
+renameVars n (ParallelT s as)          = (ParallelT s (renameVars' n as))
+renameVars n (SyncT s as)              = (SyncT (s++"#"++n) (renameVars' n as))
+renameVars n (ReadStatT t s)           = (ReadStatT t (s++"#"++n))
 renameVars n (WriteStatT t a)          = (WriteStatT t (renameVars n a))
 renameVars n (ReturnT a)               = (ReturnT (renameVars n a))
 --Expressions
@@ -138,9 +147,9 @@ renameVars n EmptyT                    = EmptyT
 renameVars n (IntConstT s)             = (IntConstT s)
 renameVars n (BoolConstT s)            = (BoolConstT s)
 renameVars n (CharConstT s)            = (CharConstT s)
-renameVars n (VarT s)                  = (VarT (s++"#"++(show n)))
+renameVars n (VarT s)                  = (VarT (s++"#"++n))
 renameVars n ThreadIDT                 = ThreadIDT
-renameVars n (ArrayExprT s a)          = (ArrayExprT (s++"#"++(show n)) (renameVars n a))
+renameVars n (ArrayExprT s a)          = (ArrayExprT (s++"#"++n) (renameVars n a))
 renameVars n (FuncExprT s a)           = (FuncExprT s (renameVars' n a))
 renameVars n (OneOpT s a)              = (OneOpT s (renameVars n a))
 renameVars n (TwoOpT a1 s a2)          = (TwoOpT (renameVars n a1) s (renameVars n a2))
@@ -149,11 +158,37 @@ renameVars n (EmptyArrayT s)           = (EmptyArrayT s)
 renameVars n (FillArrayT as)           = (FillArrayT as)
 
 
-renameVars' :: Int -> [AST] -> [AST]
+renameVars' :: String -> [AST] -> [AST]
 renameVars' n as = map (renameVars n) as
 
+--          || ast  || localOffMap|| varSizes  || funcLocDataSizes
+funcLocDataSizes :: [AST] -> OffsetMap -> OffsetMap -> OffsetMap
+funcLocDataSizes [] _ _ = []
+funcLocDataSizes ((MainT _):funcs) lOffMap varSizes
+                    = (if funcVars == []
+                        then ("//", 0)
+                        else ("//", lastVarOffset + lastVarSize))
+                       : (funcLocDataSizes funcs lOffMap varSizes)
+                    where
+                        funcVars = filter (\(a,b) -> hasPostFix a "#//") lOffMap
+                        (lastVarName, lastVarOffset) = head funcVars
+                        lastVarSize   = getVal lastVarName varSizes
+funcLocDataSizes ((FunctionT _ name args _):funcs) lOffMap varSizes
+                    = (if funcVars == []
+                        then (name, 0)
+                        else (name, lastVarOffset + lastVarSize))
+                       : (funcLocDataSizes funcs lOffMap varSizes)
+                    where
+                        postFix = '#':name
+                        funcVars = filter (\(a,b) -> hasPostFix a postFix) lOffMap
+                        (lastVarName, lastVarOffset) = head funcVars
+                        lastVarSize   = getVal lastVarName varSizes
 
-
+hasPostFix :: String -> String -> Bool
+hasPostFix string fix = string' == fix
+                    where
+                        lenDiff = (length string) - (length fix)
+                        string' = drop lenDiff string
 
 
 

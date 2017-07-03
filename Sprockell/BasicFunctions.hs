@@ -11,11 +11,12 @@ regC          = 4    :: Int
 regD          = 5    :: Int
 regE          = 6    :: Int
 regF          = 7    :: Int
+regARP        = 8    :: Int
 regSP         = regbankSize                          -- register for stack pointer
 regPC         = regbankSize + 1                      -- register for program counter
 
 -- defines the number of registers excluding the stack pointer & program counter
-regbankSize   =  8   :: Int
+regbankSize   =  9   :: Int
 localMemSize  =  128 :: Int
 
 shMemSize     =  64  :: Int

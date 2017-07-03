@@ -67,6 +67,7 @@ correctProg (SyncT s asts)          = SyncT s (map correctProg asts)
 correctProg (ReadStatT t s)         = ReadStatT t s
 correctProg (WriteStatT t ast)      = WriteStatT t (correctExpr ast)
 correctProg (ReturnT ast)           = ReturnT (correctExpr ast)
+correctProg (FuncExprT n asts)      = FuncExprT n asts
 
 correctExpr :: AST -> AST
 correctExpr (EmptyArrayT s) = EmptyArrayT s

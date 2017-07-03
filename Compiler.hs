@@ -33,19 +33,18 @@ parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 
 compileDinkie :: String -> ([Instruction], Int)
-compileDinkie file  | length scopeErrors /= 0   = error $ ('\n':) $ unlines scopeErrors
-                    | length typeErrors /= 0    = error $ ('\n':) $ unlines typeErrors
-                    | otherwise                 = trace (offsetsToString offsets) (code, threads)
+compileDinkie file  | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
+                    | typeErrors /= []  = error $ ('\n':) $ unlines typeErrors
+                    | otherwise         = trace (offsetsToString offsets) (code, threads)
                     where
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
-                        ast' = correctProg ast
-                        ast'' = renameVars 0 ast'
+                        ast' = renameVars "" $ correctProg ast
                         scopeErrors = checkScope ast
-                        typeErrors = snd $ checkTypes [] ast'
+                        typeErrors = snd $ checkTypes VoidType [] ast'
                         threads = calculateThreadAmount ast'
-                        offsets = calculateVarOffset ast' (threads - 1)
-                        code = generateProgCode ast' threads (offsets,0)
+                        (offsets,fLocDataSizes) = calculateVarOffset ast' (threads - 1)
+                        code = generateProgCode ast' threads (offsets,fLocDataSizes)
 
 runDinkie :: String -> IO ()
 runDinkie file  = trace (progToString prog) (run (replicate threads prog))
@@ -55,7 +54,7 @@ runDinkie file  = trace (progToString prog) (run (replicate threads prog))
                         prog = fst cmp
 
 runDinkieDebug :: String -> IO ()
-runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimplePrint debugShow') (replicate threads prog))
+runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimplePrintAndWait debugShow') (replicate threads prog))
                     where
                         cmp = compileDinkie file
                         threads = snd cmp
@@ -114,6 +113,7 @@ regMap = [  (0, "reg0"),
             (5, "regD"),
             (6, "regE"),
             (7, "regF"),
+            (8, "regARP"),
             (regbankSize, "regSP"),
             (regbankSize + 1, "regPC")
         ]

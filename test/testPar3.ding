@@ -1,15 +1,21 @@
-. _# account_a = 100
-. _# account_b = 100
-. ~<4>~ <
-    . account_a = account_a + 50
-    . # < 50
->
-. <* account_a
-
-. ~<4>~ <
-    . >~account_b~< <
-        . account_b = account_b + 50
+. // <
+    . _# account_a = 100
+    . _# account_b = 100
+    . ~<4>~ <
+        . account_a = account_a + 50
         . # < 50
+        . * < '\n'
     >
+    . # < account_a
+    . * < '\n'
+
+    . ~<4>~ <
+        . >~account_b~< <
+            . account_b = account_b + 50
+            . # < 50
+            . * < '\n'
+        >
+    >
+    . # < account_b
+    . * < '\n'
 >
-. # < account_b

@@ -28,6 +28,7 @@ grammar nt = case nt of
                         [ dot, ReadStat ],
                         [ dot, WriteStat ],
                         [ dot, Return ],
+                        [ dot, FuncExpr ],
                         [ Function ]]
 
         Decl        -> [[ (?:) [global], Type, name, equalass, Expr ],
@@ -93,13 +94,13 @@ grammar nt = case nt of
 
         CharConst   -> [[ character ]]
 
+        FuncExpr    -> [[ name, leftBr, (?:) [(*:) [name, comma], name], rightBr ]]
+
         Var         -> [[ name ]]
 
         ThreadID    -> [[ threadID ]]
 
         ArrayExpr   -> [[ name, sql, Expr, sqr ]]
-
-        FuncExpr    -> [[ name, leftBr, (*:) [name], rightBr ]]
 
         OneOp       -> [[ minus ],
                         [ notb ]]

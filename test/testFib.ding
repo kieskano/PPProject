@@ -1,12 +1,16 @@
-. # a
-. # b = 1
-. # n $ the n-th fibonacci number $
-. # > n
-. ?^ |n > 0|
-<
-	. # t = b
-	. b = a + b
-	. a = t
+. // <
+	. # a
+	. # b = 1
+	. # n $ the n-th fibonacci number $
+	. # > n
 	. n = n - 1
+	. ?^ |n > 0|
+	<
+		. # t = b
+		. b = a + b
+		. a = t
+		. n = n - 1
+	>
+	. # < b
+	. * < '\n'
 >
-. # < b
