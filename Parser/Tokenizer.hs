@@ -4,12 +4,17 @@ import Parser.ParseBasis
 import System.IO.Unsafe
 import Debug.Trace
 
+--Data type used for FSA nodes/states
 data FAState = S | F Int | Q Int  | E   -- S = Start, F = Final, Q = Normal, E = Error
     deriving (Show, Eq)
 
 isADigit x = elem x "0123456789"
 isALetter x = elem x "abcdefghijklmnopqrstuvwxyz"
 isWhiteSpace x = elem x " \n\t\r"
+
+-- =============== --
+-- == the FSA's == --
+-- =============== --
 
 name :: FAState -> Char -> FAState
 name = \s x -> case s of
@@ -111,11 +116,11 @@ string = \s x -> case s of
 
 comment :: FAState -> Char -> FAState
 comment = \s x -> case s of
-                        S   | x == '$'      -> F 0
+                        S   | x == '$'      -> Q 0
                             | otherwise     -> E
 
-                        F 0 | x == '$'      -> F 1
-                            | otherwise     -> F 0
+                        Q 0 | x == '$'      -> F 0
+                            | otherwise     -> Q 0
 
                         _                   -> E
 
@@ -129,17 +134,21 @@ whitespace = \s x -> case s of
 
                         _                    -> E
 
+--Returns if this character is a valid first input of the given FSA
 isStartOf :: (FAState -> Char -> FAState) -> Char -> Bool
 isStartOf dfa x = dfa S x /= E
 
+--Returns if the given string is recognised by this FSA
 isOfType :: (FAState -> Char -> FAState) -> String -> Bool
 isOfType dfa s = isFinal (foldl dfa S s)
 
+--Returns if the given state is a final state
 isFinal :: FAState -> Bool
 isFinal state = case state of
                     F _     -> True
                     _       -> False
 
+--Returns a list of recognised tokens in the given string
 tokenize :: String -> [String]
 tokenize ""                             = []
 tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S name      in a : tokenize b
@@ -151,6 +160,7 @@ tokenize (x:xs) | isStartOf name x      = let (a, b) = identifyToken (x:xs) S na
                 | isStartOf whitespace x= let (a, b) = identifyToken (x:xs) S whitespace in    tokenize b --rm whitespace
                 | otherwise             = error ("Unrecognized charachter: " ++ show x)
 
+--Identifies a token at the start of the given string. It throws an error if the token could not be tokenized.
 --             ||Sentence||CurState|| (Current FSA               ) || (Token, restOfSentence)||
 identifyToken :: String -> FAState -> (FAState -> Char -> FAState) -> (String, String)
 identifyToken "" s dfa      | isFinal s                     = ("", "")
@@ -163,7 +173,8 @@ identifyToken (x:xs) s dfa  | nextState == E && (isFinal s) = ("", x:xs)
                                 (s1, s2)    = identifyToken xs nextState dfa
 
 
-
+--Returns a tupel for every token string given, with as first element the type of
+--the token and as seccond element just the string of the token
 lexer :: [String] -> [Token]
 lexer []                                = []
 lexer (x:xs)    | isOfType name x       = (Name, x)     : lexer xs
@@ -173,6 +184,10 @@ lexer (x:xs)    | isOfType name x       = (Name, x)     : lexer xs
                 | isOfType string x     = (CharArrInit, x): lexer xs
                 | otherwise             = error ("parse error in lexer on " ++ show x)
 
-
-getFileString :: String -> String -- VERY UNSAFE
+--Returns the contents of the given file as a String.
+--This function uses the 'unsafePerformIO' function from the System.IO.Unsafe haskell
+--library. We use this because we did not find a better option to read a file in a simple
+--String. All the other options used IO monads which would require us to change our whole
+--project structure to fit the IO monads (which is not a true functional programming structure).
+getFileString :: String -> String -- UNSAFE
 getFileString file = unsafePerformIO . readFile $ file

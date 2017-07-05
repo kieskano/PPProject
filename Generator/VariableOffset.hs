@@ -3,8 +3,15 @@ module Generator.VariableOffset where
 import Parser.AST.AST
 import Debug.Trace
 
+--               (varName, offset)
 type OffsetMap = [(String, Int)]
 
+-- Calculates the offset of all the variables of the program with respect to the ARP
+-- Arguments
+--    - The ast
+--    - The ammount of slots in global memory already taken (for slave calling)
+-- returns
+--    - ((localVarOffsets, globalVarOffsets), localDataSizePerFunction)
 calculateVarOffset :: AST -> Int -> ((OffsetMap, OffsetMap),OffsetMap)
 calculateVarOffset (ProgT main funcs) gOff = ((lOffMap, gOffMap), fLDataSizes)
                             where
@@ -12,7 +19,8 @@ calculateVarOffset (ProgT main funcs) gOff = ((lOffMap, gOffMap), fLDataSizes)
                                 varSizes            = getMaxVarSizes [] (ProgT main funcs)
                                 fLDataSizes         = funcLocDataSizes (main:funcs) lOffMap varSizes
 
-
+-- The world in the function below is: ((localVarOffsets, globalVarOffsets), currentLocalOffset, currentGlobalOffset)
+--                  ||           WORLD                    || variableSizes  || ast ||            NEWWORLD
 calculateVarOffset' :: ((OffsetMap, OffsetMap), Int, Int) -> [(String, Int)]-> AST -> ((OffsetMap, OffsetMap), Int, Int)
 calculateVarOffset' world varLens (ProgT main funcs)    = calculateVarOffsetList (calculateVarOffset' world varLens main) varLens funcs
 calculateVarOffset' world varLens (MainT asts)          = calculateVarOffsetList world varLens asts
@@ -38,6 +46,17 @@ calculateVarOffset' world varLens (DeclT SPriv t s ast) | offMapsContains s offm
                                                             size = getVal s varLens
 calculateVarOffset' world varLens _                     = world
 
+--The same as the function above, but for a list of ASTs
+calculateVarOffsetList :: ((OffsetMap, OffsetMap), Int, Int) -> [(String, Int)] -> [AST] -> ((OffsetMap, OffsetMap), Int, Int)
+calculateVarOffsetList world varLens []             = world
+calculateVarOffsetList world varLens (a:as)         = calculateVarOffsetList newworld varLens as
+                                                where
+                                                    newworld = calculateVarOffset' world varLens a
+
+--This function determines what the maximum ammount of slots needed is for a variable.
+--This is needed because a variable could be declared as an integer, goes out of scope
+--and then be declared as an array. Then the offsets need to be calculated with the fact
+--that this variable could be an array.
 getMaxVarSizes :: [(String, Int)] -> AST -> [(String, Int)]
 getMaxVarSizes varMap (ProgT main funcs)    = getMaxVarSizes (getMaxVarSizesList varMap funcs) main
 getMaxVarSizes varMap (MainT asts)          = getMaxVarSizesList varMap asts
@@ -60,37 +79,38 @@ getMaxVarSizes varMap (DeclT SPriv t s ast) | offMapsContains s (varMap,[]) && c
                                                 pVarSize = getVal s varMap
 getMaxVarSizes varMap _                     = varMap
 
+--The same as the function above, but for a list of ASTs
 getMaxVarSizesList :: [(String, Int)] -> [AST] -> [(String, Int)]
 getMaxVarSizesList varMap []        = varMap
 getMaxVarSizesList varMap (a:as)    = getMaxVarSizesList (getMaxVarSizes varMap a) as
 
+--Determines the number of memory slots needed for a variable.
 getDataOffset :: String -> AST -> Int
 getDataOffset "#" _                 = 1
 getDataOffset "?" _                 = 1
 getDataOffset "*" _                 = 1
 getDataOffset ('[':t:']':"") ast    = 1 + (getNumOfElems ast) * (getDataOffset [t] ast)
 
+--Returns the number of elements of the specified array
 getNumOfElems :: AST -> Int
 getNumOfElems (EmptyArrayT s)   = read s
 getNumOfElems (FillArrayT asts) = length asts
 
-calculateVarOffsetList :: ((OffsetMap, OffsetMap), Int, Int) -> [(String, Int)] -> [AST] -> ((OffsetMap, OffsetMap), Int, Int)
-calculateVarOffsetList world varLens []             = world
-calculateVarOffsetList world varLens (a:as)         = calculateVarOffsetList newworld varLens as
-                                                where
-                                                    newworld = calculateVarOffset' world varLens a
 
+-- Gets the value of the corresponding key in the given map
 getVal :: String -> [(String, b)] -> b
 getVal s vmap = case (lookup s vmap) of
                     Just x  -> x
                     _       -> error ("Undefined string '" ++ s ++ "' in map")
 
+-- Returns true if the given variable is in one of the offset maps
 offMapsContains :: String -> (OffsetMap, OffsetMap) -> Bool
 offMapsContains s (m1,m2) = case (lookup s m1, lookup s m2) of
                                 (Just _, _)     -> True
                                 (_, Just _)     -> True
                                 _               -> False
 
+-- This function determines the maximum ammount of threads the program requires
 calculateThreadAmount :: AST -> Int
 calculateThreadAmount (ProgT main funcs)        = calculateThreadAmount main
 calculateThreadAmount (MainT as)                = calculateThreadAmount' as
@@ -120,11 +140,14 @@ calculateThreadAmount (BracketsT a)             = calculateThreadAmount a
 calculateThreadAmount (EmptyArrayT s)           = 1
 calculateThreadAmount (FillArrayT as)           = calculateThreadAmount' as
 
-
+--The same as the function above but for a list of ASTs
 calculateThreadAmount' :: [AST] -> Int
 calculateThreadAmount' [] = 1
 calculateThreadAmount' as = maximum (map calculateThreadAmount as)
 
+--This function just renames all of the variables in the given AST by putting
+-- "#<arg1>" after it. This function is used to rename variables differently between functions.
+--so there is no overlap in variable names between functions
 renameVars :: String -> AST -> AST
 renameVars n (ProgT a as)              = (ProgT (renameVars "" a) (renameVars' "" as))
 renameVars n (MainT as)                = (MainT (renameVars' "//" as))
@@ -157,11 +180,12 @@ renameVars n (BracketsT a)             = (BracketsT (renameVars n a))
 renameVars n (EmptyArrayT s)           = (EmptyArrayT s)
 renameVars n (FillArrayT as)           = (FillArrayT as)
 
-
+--The same as the function above but for a list of ASTs
 renameVars' :: String -> [AST] -> [AST]
 renameVars' n as = map (renameVars n) as
 
---          || ast  || localOffMap|| varSizes  || funcLocDataSizes
+--Returns a map of the function name to the size of the local data of that function in its Activation Record
+--                || ast  || localOffMap|| varSizes  || funcLocDataSizes
 funcLocDataSizes :: [AST] -> OffsetMap -> OffsetMap -> OffsetMap
 funcLocDataSizes [] _ _ = []
 funcLocDataSizes ((MainT _):funcs) lOffMap varSizes
@@ -184,6 +208,7 @@ funcLocDataSizes ((FunctionT _ name args _):funcs) lOffMap varSizes
                         (lastVarName, lastVarOffset) = head funcVars
                         lastVarSize   = getVal lastVarName varSizes
 
+--Returns true if argument two is a substring at the end of argument one
 hasPostFix :: String -> String -> Bool
 hasPostFix string fix = string' == fix
                     where

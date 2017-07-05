@@ -81,6 +81,7 @@ parseStattoast (PNode ReadStat [t, PNode Var [v]])                      = ReadSt
 parseStattoast (PNode WriteStat [PNode ArrayType [t], e])               = WriteStatT ("["++(getType t)++"]") (parseExprtoast e)
 parseStattoast (PNode WriteStat [t, e])                                 = WriteStatT (getType t)(parseExprtoast e)
 parseStattoast (PNode Return [e])                                       = ReturnT (parseExprtoast e)
+parseStattoast (PNode Return [])                                        = ReturnT EmptyT
 parseStattoast (PNode FuncExpr (n:r))                                   = FuncExprT (getTokenString n) (map (VarT . getTokenString) r)
 parseStattoast (PNode Function l)                                       = parsetoast (PNode Function l)
 

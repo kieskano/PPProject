@@ -67,7 +67,8 @@ grammar nt = case nt of
         WriteStat   -> [[ Type, writestat, Expr ],
                         [ ArrayType, writestat, Expr ]]
 
-        Return      -> [[ returnstat, Expr ]]
+        Return      -> [[ returnstat, Expr ],
+                        [ returnstat ]]
 
         Block       -> [[ c, (*:) [Stat], g ]]
 

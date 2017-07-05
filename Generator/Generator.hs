@@ -5,6 +5,7 @@ import Generator.VariableOffset
 import Sprockell
 import Debug.Trace
 import Data.Char
+import Optimizer.StackOptimizer
 
 preProg = [Debug "Pre-program - set up slaves",
            Branch regSprID (Rel 2),
@@ -176,6 +177,9 @@ generateCode (WriteStatT ('[':t:r) (VarT v)) ((l,g),i,fs,ar,fn)
                                                            ++ pCode ++ [Compute Add regB regD regB, Jump (Rel ((length pCode + 5)*(-1))), ReadInstr (IndAddr regB), Receive regF] ++ pCode' ++ (if t /= '*' then [Load (ImmValue (ord ']')) regC, WriteInstr regC charIO] else [] )
                                                 args = map fst ar
                                                 argNr = getOffset v ar
+generateCode (ReturnT EmptyT) ((l,g),i,fs,ar,fn)= jump
+                                            where
+                                                jump = [Load (ImmValue (length ar * 2 + 2)) regB, Compute Sub regARP regB regB, Load (IndAddr regB) regA, Jump (Ind regA)]
 generateCode (ReturnT a) ((l,g),i,fs,ar,fn)     = eCode ++ writeToAR ++ jump
                                             where
                                                 eCode = generateCode a ((l,g),i,fs,ar,fn)
@@ -197,7 +201,7 @@ generateCode (VarT v) ((l,g),i,fs,ar,fn)| elem v args = [Load (ImmValue (argNr*2
                                                 args = map fst ar
                                                 argNr = getOffset v ar
 generateCode (FuncExprT n fa) ((l,g),i,fs,ar,fn) = setupARCode++[Load (ImmValue (cLDSize+3+(length fa * 2))) regA, Compute Add regARP regA regARP, Debug ("#JUMP:"++n)]
-                                                    ++ (trace (show i ++" "++  (show returnAddr)) returnCode)
+                                                    ++ returnCode
                                             where
                                                 cLDSize = getVal fn fs
                                                 returnAddr = length argsToARCode + 12 + i
@@ -224,22 +228,27 @@ generateCode (ArrayExprT v a) ((l,g),i,fs,ar,fn)
                                                 args = map fst ar
                                                 argNr = getOffset v ar
 generateCode (OneOpT o a) ((l,g),i,fs,ar,fn)
-                                        | o == "-"      = (generateCode a ((l,g),i,fs,ar,fn))++[Pop regA, Load (ImmValue (-1)) regB, Compute Mul regA regB regA, Push regA]
-                                        | o == "!"      = (generateCode a ((l,g),i,fs,ar,fn))++[Pop regA, Load (ImmValue 1) regB, Compute Xor regA regB regA, Push regA]
+                                        | o == "-"      = aCode ++ [Load (ImmValue (-1)) regB, Compute Mul regA regB regA, Push regA]
+                                        | o == "!"      = aCode ++ [Load (ImmValue 1) regB, Compute Xor regA regB regA, Push regA]
+                                        where
+                                            aCode = opti $ (generateCode a ((l,g),i,fs,ar,fn))++[Pop regA]
+                                            opti = (if exprContainsFuncCall (OneOpT o a) then ([]++) else optimizeStack)
 generateCode (TwoOpT a1 o a2) ((l,g),i,fs,ar,fn)
-                                        | o == "*"      = generateTwoOpCode a1 a2 Mul ((l,g),i,fs,ar,fn)
-                                        | o == "%"      = generateTwoOpCode a1 a2 Div ((l,g),i,fs,ar,fn)
-                                        | o == "+"      = generateTwoOpCode a1 a2 Add ((l,g),i,fs,ar,fn)
-                                        | o == "-"      = generateTwoOpCode a1 a2 Sub ((l,g),i,fs,ar,fn)
-                                        | o == "=="     = generateTwoOpCode a1 a2 Equal ((l,g),i,fs,ar,fn)
-                                        | o == ">"      = generateTwoOpCode a1 a2 Gt ((l,g),i,fs,ar,fn)
-                                        | o == "<"      = generateTwoOpCode a1 a2 Lt ((l,g),i,fs,ar,fn)
-                                        | o == ">="     = generateTwoOpCode a1 a2 GtE ((l,g),i,fs,ar,fn)
-                                        | o == "<="     = generateTwoOpCode a1 a2 LtE ((l,g),i,fs,ar,fn)
-                                        | o == "!="     = generateTwoOpCode a1 a2 NEq ((l,g),i,fs,ar,fn)
-                                        | o == "||"     = generateTwoOpCode a1 a2 Or ((l,g),i,fs,ar,fn)
-                                        | o == "&&"     = generateTwoOpCode a1 a2 And ((l,g),i,fs,ar,fn)
-                                        | o == "+|"     = generateTwoOpCode a1 a2 Xor ((l,g),i,fs,ar,fn)
+                                        | o == "*"      = opti $ generateTwoOpCode a1 a2 Mul ((l,g),i,fs,ar,fn)
+                                        | o == "%"      = opti $ generateTwoOpCode a1 a2 Div ((l,g),i,fs,ar,fn)
+                                        | o == "+"      = opti $ generateTwoOpCode a1 a2 Add ((l,g),i,fs,ar,fn)
+                                        | o == "-"      = opti $ generateTwoOpCode a1 a2 Sub ((l,g),i,fs,ar,fn)
+                                        | o == "=="     = opti $ generateTwoOpCode a1 a2 Equal ((l,g),i,fs,ar,fn)
+                                        | o == ">"      = opti $ generateTwoOpCode a1 a2 Gt ((l,g),i,fs,ar,fn)
+                                        | o == "<"      = opti $ generateTwoOpCode a1 a2 Lt ((l,g),i,fs,ar,fn)
+                                        | o == ">="     = opti $ generateTwoOpCode a1 a2 GtE ((l,g),i,fs,ar,fn)
+                                        | o == "<="     = opti $ generateTwoOpCode a1 a2 LtE ((l,g),i,fs,ar,fn)
+                                        | o == "!="     = opti $ generateTwoOpCode a1 a2 NEq ((l,g),i,fs,ar,fn)
+                                        | o == "||"     = opti $ generateTwoOpCode a1 a2 Or ((l,g),i,fs,ar,fn)
+                                        | o == "&&"     = opti $ generateTwoOpCode a1 a2 And ((l,g),i,fs,ar,fn)
+                                        | o == "+|"     = opti $ generateTwoOpCode a1 a2 Xor ((l,g),i,fs,ar,fn)
+                                        where
+                                            opti = (if exprContainsFuncCall (TwoOpT a1 o a2) then ([]++) else optimizeStack)
 generateCode (BracketsT a) ((l,g),i,fs,ar,fn)    = generateCode a ((l,g),i,fs,ar,fn)
 generateCode (EmptyArrayT s) ((l,g),i,fs,ar,fn)  = []
 generateCode (FillArrayT a) ((l,g),i,fs,ar,fn)   = []
@@ -305,9 +314,10 @@ generateArrayDeclaration as (o, (-1)) ((l,g),i,fs,ar,fn) le =  aCode ++ eCode ++
 generateTwoOpCode :: AST -> AST -> Operator -> ((OffsetMap, OffsetMap),Int,OffsetMap,OffsetMap,String) -> [Instruction]
 generateTwoOpCode a1 a2 o ((l,g),i,fs,ar,fn) = a1Code++a2Code++[Pop regB, Pop regA, Compute o regA regB regA, Push regA]
                                           where
-                                              a1Code = generateCode a1 ((l,g),i,fs,ar,fn)
-                                              a2Code = generateCode a2 ((l,g),i+(length a1Code),fs,ar,fn)
-
+                                              a1Code = opti1 $ generateCode a1 ((l,g),i,fs,ar,fn)
+                                              a2Code = opti2 $ generateCode a2 ((l,g),i+(length a1Code),fs,ar,fn)
+                                              opti1 = (if exprContainsFuncCall a1 then ([]++) else optimizeStack)
+                                              opti2 = (if exprContainsFuncCall a2 then ([]++) else optimizeStack)
 generateCallSlaves :: Int -> [Instruction]
 generateCallSlaves 0 = []
 generateCallSlaves n = (generateCallSlaves (n-1)) ++ [WriteInstr regA (DirAddr (n-1))]

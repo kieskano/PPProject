@@ -4,14 +4,15 @@ import Parser.AST.AST
 import Data.List
 import Debug.Trace
 
+--Possible types in the language
 data Type   = IntType
             | BoolType
             | CharType
             | ArrayType Type
             | VoidType
             | FuncType Type [Type]
-            | Or [Type]
-            deriving (Eq)
+            | Or [Type]     -- <-- This type is only used for compare functions like
+            deriving (Eq)   --     '==', '<=', '>', etc.
 
 instance Show Type where
     show IntType = "#"
@@ -40,9 +41,9 @@ oneOpRetTypeMap :: [(String, Type)]
 oneOpRetTypeMap =  [("-", IntType),
                     ("!", BoolType)]
 
-twoOpArgTypeMap :: [(String, (Type, Type))]
-twoOpArgTypeMap =  [("||", (BoolType, BoolType)),
-                    ("&&", (BoolType, BoolType)),
+twoOpArgTypeMap :: [(String, (Type, Type))]       -- If 2 arguments are applied to a two argument
+twoOpArgTypeMap =  [("||", (BoolType, BoolType)), -- operator with an 'Or' type, the typing is only
+                    ("&&", (BoolType, BoolType)), -- correct if the two arguments have the same type.
                     ("+|", (BoolType, BoolType)),
                     ("==", (Or [BoolType, IntType, CharType], Or [BoolType, IntType, CharType])),
                     ("!=", (Or [BoolType, IntType, CharType], Or [BoolType, IntType, CharType])),
@@ -70,16 +71,19 @@ twoOpRetTypeMap =  [("||", BoolType),
                     ("*", IntType),
                     ("%", IntType)]
 
+--Returns the value of the corresponding key in the given map
 getVal :: String -> [(String, b)] -> b
 getVal s vmap = case (lookup s vmap) of
                     Just x  -> x
-                    _       -> error ("Undefined type string '" ++ s ++ "' in typeMap")
+                    _       -> error ("Undefined key string '" ++ s ++ "' in map")
 
---         ||  map Var:Type    || AST || (map Var:Type    , errors  )||
+--This function is the main type checker function and returns errors as strings
+--if there are statements wich contain incorrect typing.
+--      curFuncType||  map Var:Type    || AST || (map Var:Type    , errors  )||
 checkTypes :: Type -> [(String, Type)] -> AST -> ([(String, Type)], [String])
 checkTypes t varMap (ProgT main funcs)          = let (a,b) = checkTypes t nVarMap main in (a,b++errors)
                                         where
-                                            (nVarMap, errors) = checkTypesBlock t (trace (show $ getAllFuncTypes funcs) (getAllFuncTypes funcs)) funcs
+                                            (nVarMap, errors) = checkTypesBlock t (getAllFuncTypes funcs) funcs
 checkTypes t varMap (MainT sts)                 = checkTypesBlock t varMap sts
 checkTypes t varMap (FunctionT s1 s2 args sts)  = let (_,b) = checkTypesBlock fType (varMap++argTypes) sts in (varMap,b)
                                         where
@@ -185,7 +189,7 @@ checkTypes t varMap (IfTwoT expr as1 as2)| eType == BoolType = let (x, y) = chec
                                             err = "Could not match expected type '" ++ (show BoolType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
-checkTypes t varMap (ParallelT num as)  | (read (trace ("DINKIE "++(show num)) num)) > 1    = (nVarMap, errors)
+checkTypes t varMap (ParallelT num as)  | (read num) > 1    = (nVarMap, errors)
                                         | otherwise         = (nVarMap, err:errors)
                                         where
                                             (nVarMap, errors) = checkTypesBlock t varMap as
@@ -202,6 +206,16 @@ checkTypes t varMap (ReadStatT x var)   | vType == rType    = (varMap, [])
                                             err = "Could not match expected type '" ++ (show rType)
                                                 ++ "' with actual type '" ++ (show vType) ++ "' of variable '"
                                                 ++ var ++ "' in statement '" ++ statString ++ "'"
+checkTypes t varMap (WriteStatT ('[':x) (VarT v))
+                                        | eType == wType    = (varMap, [])
+                                        | otherwise         = (varMap, [err])
+                                        where
+                                            wType = getVal ('[':x) typeMap
+                                            eType = getVal v varMap
+                                            statString = statToString (WriteStatT ('[':x) (VarT v))
+                                            err = "Could not match expected type '" ++ (show wType)
+                                                ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
+                                                ++ "statement '" ++ statString ++ "'"
 checkTypes t varMap (WriteStatT x expr) | eType == wType    = (varMap, errors')
                                         | otherwise         = (varMap, err:errors')
                                         where
@@ -211,6 +225,13 @@ checkTypes t varMap (WriteStatT x expr) | eType == wType    = (varMap, errors')
                                             statString = statToString (WriteStatT x expr)
                                             err = "Could not match expected type '" ++ (show wType)
                                                 ++ "' with actual type '" ++ (show eType) ++ "' of the expression in "
+                                                ++ "statement '" ++ statString ++ "'"
+checkTypes t varMap (ReturnT EmptyT)    | VoidType == t = (varMap, [])
+                                        | otherwise     = (varMap, [err])
+                                        where
+                                            statString = statToString (ReturnT EmptyT)
+                                            err = "Could not match expected type '" ++ (show t)
+                                                ++ "' with actual type '" ++ (show VoidType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
 checkTypes t varMap (ReturnT expr)      | eType == t    = (varMap, errors')
                                         | otherwise     = (varMap, err:errors')
@@ -285,18 +306,18 @@ checkExprType varMap (OneOpT s e)       | eType == opArgType = (opRetType, error
 checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                         (Or tas, Or tbs)
                                             | elem e1Type tas && elem e2Type tbs
-                                                 && e1Type == e2Type        ->
+                                                 && e1Type == e2Type            ->
                                                     (opRetType, errors)
-                                            | otherwise                     ->
+                                            | otherwise                         ->
                                                     (opRetType, err1:errors)
                                         (ta, tb)
                                             | (e1Type == ta) && (e2Type == tb)  ->
                                                     (opRetType, errors)
                                             | (e1Type /= ta) && (e2Type /= tb)  ->
                                                     (opRetType, err2:err3:errors)
-                                            | e1Type /= ta                  ->
+                                            | e1Type /= ta                      ->
                                                     (opRetType, err2:errors)
-                                            | otherwise                     ->
+                                            | otherwise                         ->
                                                     (opRetType, err3:errors)
                                         where
                                             (e1Type, errors1) = checkExprType varMap e1
@@ -317,6 +338,7 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                                 ++ s ++ "'"
 checkExprType _ x = error (show x)
 
+--Checks if the expected arguments of a function match with the actual given arguments of a function expression
 checkArgTypes :: Int -> [(String, Type)] -> [Type] -> [AST] -> [String]
 checkArgTypes n varMap [] _                 = []
 checkArgTypes n varMap (t:ts) ((VarT v):vs) | t == vt   = checkArgTypes (n+1) varMap ts vs
@@ -328,47 +350,52 @@ checkArgTypes n varMap (t:ts) ((VarT v):vs) | t == vt   = checkArgTypes (n+1) va
                                                     ++ " of argument number " ++ (show n)
 
 
+--Returns a map of function name to type of the function of the given list
 getAllFuncTypes :: [AST] -> [(String, Type)]
 getAllFuncTypes [] = []
 getAllFuncTypes ((FunctionT s1 s2 args _):r) = (s2, FuncType (getVal s1 typeMap) (map snd $ getAllArgTypes args)) : (getAllFuncTypes r)
 
+--Returns a map of variable name to type of the argument of the given list
 getAllArgTypes :: [AST] -> [(String, Type)]
 getAllArgTypes [] = []
 getAllArgTypes ((ArgumentT s1 s2):r) = (s2, getVal s1 typeMap) : (getAllArgTypes r)
 
 
-
+--Returns a string representation of the given statement
 statToString :: AST -> String
-statToString (DeclT SGlob s1 s2 EmptyT) = ". _" ++ s1 ++ ' ':(rmVarNr s2)
-statToString (DeclT SGlob s1 s2 a)      = ". _" ++ s1 ++ ' ':(rmVarNr s2) ++ " = " ++ (exprToString a)
-statToString (DeclT SPriv s1 s2 EmptyT) = ". " ++ s1 ++ ' ':(rmVarNr s2)
-statToString (DeclT SPriv s1 s2 a)      = ". " ++ s1 ++ ' ':(rmVarNr s2) ++ " = " ++ (exprToString a)
-statToString (AssignT s a)              = ". " ++ (rmVarNr s) ++ " = " ++ (exprToString a)
+statToString (DeclT SGlob s1 s2 EmptyT) = ". _" ++ s1 ++ ' ':(rmVarLabel s2)
+statToString (DeclT SGlob s1 s2 a)      = ". _" ++ s1 ++ ' ':(rmVarLabel s2) ++ " = " ++ (exprToString a)
+statToString (DeclT SPriv s1 s2 EmptyT) = ". " ++ s1 ++ ' ':(rmVarLabel s2)
+statToString (DeclT SPriv s1 s2 a)      = ". " ++ s1 ++ ' ':(rmVarLabel s2) ++ " = " ++ (exprToString a)
+statToString (AssignT s a)              = ". " ++ (rmVarLabel s) ++ " = " ++ (exprToString a)
 statToString (WhileT a _)               = ". ?^ |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfOneT a _)               = ". ?- |" ++ (exprToString a) ++ "| < ... >"
 statToString (IfTwoT a _ _)             = ". ?< |" ++ (exprToString a) ++ "| < ... > < ... >"
 statToString (ParallelT s _)            = ". -<" ++ s ++ ">- < ... >"
-statToString (SyncT s _)                = ". >~" ++ (rmVarNr s) ++ "~< < ... >"
-statToString (ReadStatT t s)            = ". "++t++"> " ++ (rmVarNr s)
+statToString (SyncT s _)                = ". >~" ++ (rmVarLabel s) ++ "~< < ... >"
+statToString (ReadStatT t s)            = ". "++t++"> " ++ (rmVarLabel s)
 statToString (WriteStatT t a)           = ". "++t++"< " ++ (exprToString a)
+statToString (ReturnT EmptyT)           = ". ::"
 statToString (ReturnT a)                = ". :: " ++ (exprToString a)
 
+--Returns a string representation of the given expression
 exprToString :: AST -> String
 exprToString (IntConstT s)      = s
 exprToString (BoolConstT s)     = s
 exprToString (CharConstT s)     = '\'':s:'\'':""
-exprToString (ArrayExprT s i)   = (rmVarNr s)++"["++(exprToString i)++"]"
+exprToString (ArrayExprT s i)   = (rmVarLabel s)++"["++(exprToString i)++"]"
 exprToString (FuncExprT s [])   = s++"()"
 exprToString (FuncExprT s (a:as)) = s++"("++(exprToString a)++ (concat $ map ((","++) . exprToString) as) ++")"
-exprToString (VarT s)           = (rmVarNr s)
+exprToString (VarT s)           = (rmVarLabel s)
 exprToString (OneOpT s a)       = s ++ (exprToString a)
 exprToString (TwoOpT a1 s a2)   = (exprToString a1) ++ " " ++ s ++ " " ++ (exprToString a2)
 exprToString (BracketsT a)      = "(" ++ (exprToString a) ++ ")"
 exprToString x = error (show x)
 
-rmVarNr :: String -> String
-rmVarNr s   | elem '#' s = rmVarNr (init s)
-            | otherwise  = s
+--Removes the rename label at the end of the string
+rmVarLabel :: String -> String
+rmVarLabel s    | elem '#' s = rmVarLabel (init s)
+                | otherwise  = s
 
 
 

@@ -8,6 +8,7 @@ import FPPrac.Trees
 import Parser.AST.AST
 import Checker.ScopeChecker
 import Checker.TypeChecker
+import Checker.ReturnChecker
 import Parser.AST.CorrectAST
 import Parser.NewFile
 import Sprockell
@@ -33,14 +34,16 @@ parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 
 compileDinkie :: String -> ([Instruction], Int)
-compileDinkie file  | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
+compileDinkie file  -- | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
+                    | retErrors /= []   = error $ ('\n':) $ unlines retErrors
                     | typeErrors /= []  = error $ ('\n':) $ unlines typeErrors
-                    | otherwise         = trace (offsetsToString offsets) (code, threads)
+                    | otherwise         = trace ('\n':(unlines retWarnings) ++ (offsetsToString offsets)) (code, threads)
                     where
                         parseTree = parseDinkie file
                         ast = parsetoast parseTree
                         ast' = renameVars "" $ correctProg ast
                         scopeErrors = checkScope ast
+                        (retErrors,retWarnings) = checkReturnsProg ast
                         typeErrors = snd $ checkTypes VoidType [] ast'
                         threads = calculateThreadAmount ast'
                         (offsets,fLocDataSizes) = calculateVarOffset ast' (threads - 1)
@@ -48,6 +51,13 @@ compileDinkie file  | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
 
 runDinkie :: String -> IO ()
 runDinkie file  = trace (progToString prog) (run (replicate threads prog))
+                    where
+                        cmp = compileDinkie file
+                        threads = snd cmp
+                        prog = fst cmp
+
+runDinkieNoPrint :: String -> IO ()
+runDinkieNoPrint file  = run (replicate threads prog)
                     where
                         cmp = compileDinkie file
                         threads = snd cmp
@@ -61,7 +71,7 @@ runDinkieDebug file  = trace (progToString prog) (runWithDebugger (debuggerSimpl
                         prog = fst cmp
 
 offsetsToString :: (OffsetMap, OffsetMap) -> String
-offsetsToString (l, g)  = "\nVariables:\n\nLocal:\n" ++ (unlines $ (showLocalOffsetMap l))
+offsetsToString (l, g)  = "Variables:\n\nLocal:\n" ++ (unlines $ (showLocalOffsetMap l))
                             ++ "Global:\n" ++ (unlines $ (showGlobalOffsetMap g))
 
 progToString :: [Instruction] -> String
