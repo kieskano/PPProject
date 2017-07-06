@@ -26,7 +26,13 @@ afterPar = [Debug "Post-parallel - slaves terminate and master joins",
            Jump (Abs 5)]
 
 
---               || ast||threads||((locOffMap, globOffMap),lineNr,fLocDatas)||prog
+--This function initializes the code generation and calls the main code generation function
+--Arguments
+--  - AST
+--  - Maximum number of threads needed in this program
+--  - ((localVariableOffsetMap, globalVariableOffsetMap), funcLocalDataSizesMap)
+--Returns
+--  - The generated SprIll code
 generateProgCode :: AST -> Int -> ((OffsetMap, OffsetMap), OffsetMap) -> [Instruction]
 generateProgCode (ProgT main funcs) n ((l,g),fs) = fixJumps totalCode funcJmpLines
                                             where
@@ -36,8 +42,10 @@ generateProgCode (ProgT main funcs) n ((l,g),fs) = fixJumps totalCode funcJmpLin
                                                 (funcJmpLines,funcsCode) = generateFuncsCode funcs ((l,g), (length preProg)+2,fs,[])
                                                 totalCode = preProg++[Jump (Rel (length funcsCode + 2)), Debug "Functions"]++funcsCode++[Debug "Start of program", Load (ImmValue 0) regARP]
                                                             ++mainCode++[Debug "Post-program - kill slaves", Load (ImmValue endLine) regA]++killSlavesCode++[EndProg]
-                                                -- TODO replace correct debugs in program with jump instructions
 
+
+--Returns the code generated for the functions and also a map of function name to
+--the line number where that function starts.
 generateFuncsCode :: [AST] -> ((OffsetMap, OffsetMap), Int, OffsetMap, OffsetMap) -> (OffsetMap, [Instruction])
 generateFuncsCode [] _ = ([],[])
 generateFuncsCode ((FunctionT t n args sts):funcs) (offMaps,i,fs,ar)
@@ -46,14 +54,28 @@ generateFuncsCode ((FunctionT t n args sts):funcs) (offMaps,i,fs,ar)
                                                 fCode = generateCode (FunctionT t n args sts) (offMaps,i,fs,ar,"")
                                                 (fLMap, fsCode) = generateFuncsCode funcs (offMaps,i+(length fCode),fs,ar)
 
+
+--Searches for Debug instructions with the string "#JUMP:<funcName>" and replaces those
+--instructions with Jump instructions with the right line number to jump to corresponding
+--to the funcName
 fixJumps :: [Instruction] -> OffsetMap -> [Instruction]
 fixJumps [] _ = []
 fixJumps ((Debug s):rest) x | take 6 s == "#JUMP:" = (Jump (Abs $ getOffset (drop 6 s) x)) : (fixJumps rest x)
                             | otherwise            = (Debug s) : (fixJumps rest x)
 fixJumps (i:rest) x = i : (fixJumps rest x)
 
--- Statements
---           || ast||curFuncName||((globalVars,localVars),line, funcARSizes, curArgs) || prog
+
+--This function is the main function that generates SprIll code from the AST
+--Arguments
+--  - AST
+--  - The data needed to generate code, a tuple consisting of
+--      - (localVariableOffsetMap, globalVariableOffsetMap)
+--      - current SprIll line number
+--      - a map of function name to the size of the local data of that function in its activation record
+--      - a map of argument name to argument number (if the code generator is now generating code for a function)
+--      - the name of the function currently generating code for
+--Returns
+--  - The generater SprIll code
 generateCode :: AST -> ((OffsetMap, OffsetMap), Int, OffsetMap, OffsetMap, String) -> [Instruction]
 generateCode (MainT sts) ((l,g),i,fs,ar,fn) = generateCode' sts ((l,g),i,fs,ar,"//")
 generateCode (FunctionT t n args sts) ((l,g),i,fs,ar,fn)
@@ -269,6 +291,7 @@ generateCode' (a:as) (vm,i,fs,ar,fn)= code++(generateCode' as (vm,i+(length code
                                             code = generateCode a (vm,i,fs,ar,fn)
 
 
+--Returns the code needed to check if the index of an array expression is out of the bounds of that array
 --                || loc || glob|| arg || prog
 generateIOOBCheck :: Int -> Int -> Int -> [Instruction]
 generateIOOBCheck (-1) (-1) x = [Pop regA, Push regA, Compute Lt regA reg0 regB, Branch regB (Rel 14),
@@ -299,6 +322,7 @@ generateArgsToAR ((VarT v):vars) (l,g,a)
                                         argNr = getOffset v a
                                         rest = generateArgsToAR vars (l,g,a)
 
+
 --Returns the code needed to print an element of a list of the given types (with a comma printed after it)
 generatePrintElemCode :: Char -> [Instruction]
 generatePrintElemCode '#' = [WriteInstr regF numberIO, Load (ImmValue (ord ',')) regF, WriteInstr regF charIO]
@@ -312,6 +336,8 @@ generatePrintElemCode' '*' = [WriteInstr regF charIO]
 generatePrintElemCode' '?' = [Branch regF (Rel 4), Load (ImmValue (ord '\\')) regF, WriteInstr regF charIO, Jump (Rel 3), Load (ImmValue (ord '/')) regF, WriteInstr regF charIO]
 
 
+--Returns the code needed for an array declaration without a list of expressions.
+--(eg.   ". [#] array = [4]")
 generateEmptyArrayDeclaration :: Int -> (Int, Int) -> Int -> [Instruction]
 generateEmptyArrayDeclaration 0 ((-1), o) le    = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
 generateEmptyArrayDeclaration i ((-1), o) le    = (generateEmptyArrayDeclaration (i-1) ((-1), o) le) ++ [WriteInstr reg0 (DirAddr ad)]
@@ -320,6 +346,9 @@ generateEmptyArrayDeclaration i ((-1), o) le    = (generateEmptyArrayDeclaration
 generateEmptyArrayDeclaration 0 (o, (-1)) le    = [Load (ImmValue o) regB, Load (ImmValue 1) regC, Compute Add regARP regB regB, Load (ImmValue le) regA, Store regA (IndAddr regB)]
 generateEmptyArrayDeclaration i (o, (-1)) le    = (generateEmptyArrayDeclaration (i-1) (o, (-1)) le) ++ [Compute Add regB regC regB, Store reg0 (IndAddr regB)]
 
+
+--Returns the code needed for an array declaration with a list of expressions.
+--(eg.   ". [#] array = {1,2,3,4-5,2*8}")
 generateArrayDeclaration :: [AST] -> (Int, Int) -> ((OffsetMap, OffsetMap), Int, OffsetMap, OffsetMap, String) -> Int -> [Instruction]
 generateArrayDeclaration [] ((-1), o) w le              = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
 generateArrayDeclaration as ((-1), o) ((l,g),i,fs,ar,fn) le = aCode ++ eCode ++ [Pop regA, WriteInstr regA (DirAddr ad)]
@@ -335,7 +364,8 @@ generateArrayDeclaration as (o, (-1)) ((l,g),i,fs,ar,fn) le =  aCode ++ eCode ++
                                                                 eCode = generateCode (last as) ((l,g),i + (length aCode),fs,ar,fn)
 
 
-
+--Returns the code needed to evalate 'expression1 operator expression2'
+--(Also adds check for divide by zero code if the operator is 'devide')
 generateTwoOpCode :: AST -> AST -> Operator -> ((OffsetMap, OffsetMap),Int,OffsetMap,OffsetMap,String) -> [Instruction]
 generateTwoOpCode a1 a2 Div ((l,g),i,fs,ar,fn) = a1Code++a2Code++[Pop regB, Compute NEq reg0 regB regC, Branch regC (Rel (length errFuncCode + 1))]++errFuncCode++[Pop regA, Compute Div regA regB regA, Push regA]
                                           where
@@ -350,10 +380,14 @@ generateTwoOpCode a1 a2 o ((l,g),i,fs,ar,fn) = a1Code++a2Code++[Pop regB, Pop re
                                               a2Code = opti2 $ generateCode a2 ((l,g),i+(length a1Code),fs,ar,fn)
                                               opti1 = (if exprContainsFuncCall a1 then ([]++) else optimizeStack)
                                               opti2 = (if exprContainsFuncCall a2 then ([]++) else optimizeStack)
+
+--Returns the code for calling the given ammount of slaves (ASSUMPTION: where the slaves
+--need to jump to is already in regA)
 generateCallSlaves :: Int -> [Instruction]
 generateCallSlaves 0 = []
 generateCallSlaves n = (generateCallSlaves (n-1)) ++ [WriteInstr regA (DirAddr (n-1))]
 
+--Returns the code needed for joining the given ammount of slaves.
 generateJoinSlaves :: Int -> [Instruction]
 generateJoinSlaves 0 = []
 generateJoinSlaves n = generateJoinSlaves (n-1) ++ [ReadInstr (DirAddr (n-1)), Receive regA, Branch regA (Rel (-2))]

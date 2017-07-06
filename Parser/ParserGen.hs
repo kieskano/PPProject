@@ -98,7 +98,7 @@ finalPError (nt0,ts) (PError t rule nt str k) = PError (PNode nt0 (ts++[t])) rul
 parse :: Grammar -> Alphabet -> [Token] -> ParseTree
 
 parse gr s tokens | null correctParses = maximum $ map fst parses
-                  | not $ null rest    = error ("ParseError Expected "++ (show s) ++" at: V" ++ (printProg $ map snd rest))
+                  | not $ null rest    = error ("\n\nPARSE ERROR: Could not parse:\n" ++ (printProg $ map snd rest) ++ "\n")
                   | otherwise          = final
           where
             parses = [ (t,rem) | r <- gr s

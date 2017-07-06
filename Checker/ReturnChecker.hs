@@ -82,3 +82,7 @@ exprToString (VarT s)           = s
 exprToString (OneOpT s a)       = s ++ (exprToString a)
 exprToString (TwoOpT a1 s a2)   = (exprToString a1) ++ " " ++ s ++ " " ++ (exprToString a2)
 exprToString (BracketsT a)      = "(" ++ (exprToString a) ++ ")"
+exprToString (EmptyArrayT s)    = "["++s++"]"
+exprToString (FillArrayT (a:as))= "{"++(exprToString a)++elemStrings++"}"
+                                where
+                                    elemStrings = concat $ map ((","++) . exprToString) as
