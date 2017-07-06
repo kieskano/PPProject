@@ -10,7 +10,6 @@ import Checker.ScopeChecker
 import Checker.TypeChecker
 import Checker.ReturnChecker
 import Parser.AST.CorrectAST
-import Parser.NewFile
 import Sprockell
 import Generator.Generator
 import Generator.VariableOffset

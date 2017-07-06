@@ -11,9 +11,6 @@ import GHC.Generics
 import FPPrac.Trees
 
 -- ===================================================================
--- Example Alphabet
--- - Extend, adapt, change the non-terminals to your own needs
--- - Do NOT change the first two groups of constructors (Terminal ... Rep1)
 
 data Alphabet = Terminal String               -- Terminal: WILL be included in parseTree
               | Symbol String                 -- Symbol: WILL NOT be included in parseTree
@@ -24,7 +21,6 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Rep0  [Alphabet]              -- Zero or more repetitions
               | Rep1  [Alphabet]              -- One or more repetitions
 
-              -- | <... define your own non-terminals ...>
               | Prog
               | Main
               | Function
