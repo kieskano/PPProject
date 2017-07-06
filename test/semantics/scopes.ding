@@ -1,0 +1,93 @@
+$ Tested differently. This file tests ScopeChecker.hs and the errors it generates $
+
+. // <
+
+$
+    Local variable scope errors
+
+    Cannot use undeclared variable ?a at position V in < i V >
+    Cannot use undeclared variable ?a at position V in < i V >
+    Cannot redeclare i at position V in < i < V > >
+    Cannot use undeclared variable ?a at position V in < i < V > >
+    Cannot use undeclared variable ?b at position V in < i V >
+    Cannot use undeclared variable ?a at position V in < i V >
+    Cannot use undeclared variable ?b at position V in < i < V > >
+    Cannot use undeclared variable ?c at position V in < i < < V > > >
+    Cannot use undeclared variable ?b at position V in < i < V > >
+$
+    . # i = 1
+    . a = 1
+    . ?- |a| <
+        . # i = 1
+        . a = c
+        . # b
+    >
+    . b = 1
+    . ?< |a| <
+        . ?^ |b| <
+            . c = d
+        >
+    > <
+        . b = 1
+    >
+$
+    Parallel and synchronized scope errors
+
+    Cannot use undeclared variable ?pl at position V in < ?= _pg /i /pl < V > >
+    Cannot redeclare pg at position V in < ?= _pg /i /pl < V > >
+    Cannot redeclare pl at position V in < ?= _pg /i /pl < V > >
+    Cannot use variable _pl at position V in < ?= _pg /i /pl < V > >
+    Cannot use variable _pl at position V in < ?= _pg /i /pl < V > >
+    Cannot synchronize on "pl" when already synchronizing on that variable
+    Cannot synchronize on "pg" when already synchronizing on that variable
+    Cannot open new parallel scope within a parallel scope
+    Cannot declare synchronized block outside parallel block
+$
+    . # pl
+    . _# pg
+    . ~<2>~ <
+        . pl = 1
+        . pg = 1
+        . # pg
+        . # pl
+        . >~pl~< <
+            . >~pl~< <>
+        >
+        . >~pg~< <
+            . >~pg~< <>
+        >
+        . ~<2>~ <>
+    >
+    . >~pg~< <>
+$
+    Function scope errors
+
+    Cannot use undeclared variable ?notafunction at position V in < ::function < i pl _pg lf _gf arg1 _arg2 V > >
+    Cannot declare a return outside a function
+    Cannot have duplicate argument names: [arg1,arg1]
+    Cannot use undeclared variable ?lf at position V in < ?: arg1 arg1 ::function V >
+    Cannot use undeclared variable ?gf at position V in < ?: arg1 arg1 ::function V >
+    Cannot redeclare arg1 at position V in < ?: arg1 arg1 ::function V >
+    Cannot declare global variable "ng" in a function
+    Cannot open new parallel scope within a function
+    Cannot use undeclared variable ?notafunction at position V in < ?: arg1 arg1 ::function V >
+    Cannot use undeclared variable ?arg2 at position V in < ?: arg1 arg1 ::function V >
+$
+
+    . # lf
+    . _# gf
+    . # arg1
+    . _# arg2
+    . notafunction (arg1, arg2)
+    . function (arg1, arg2)
+    . ::
+>
+
+. function (# arg1, # arg1) <
+    . lf = 1
+    . gf = 1
+    . # arg1
+    . _# ng
+    . ~<2>~ <>
+    . notafunction (arg1, arg2)
+>

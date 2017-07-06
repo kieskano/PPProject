@@ -37,15 +37,15 @@ checkScope' (ProgT a as) (x,z)          | fc        = (x, (snd ca) ++ (snd cs))
                                         | otherwise = (x, ["Cannot have duplicate function names: " ++ (show gf)]
                                                     ++ (snd ca) ++ (snd cs))
                                             where
-                                                ca = checkScope' a (x, z)
                                                 gf = getFunctions as
                                                 fc = (length gf) == (length (nub gf))
+                                                ca = checkScope' a ((x ++ [gf]), z)
                                                 cs = checkScope'' as ((x ++ [gf]),z)
 checkScope' (MainT as) (x,z)            = checkScope'' as ((x ++ [[]]),z)
-checkScope' (FunctionT t f ar as) (x,z) | elem (Unknown "::") (trace ("1" ++ (show x) ++ " " ++ f) (head x)) = (x,
+checkScope' (FunctionT t f ar as) (x,z) | elem (Unknown "::") (head x) = (x,
                                             ["Cannot declare a new function within a function"]
                                             ++ (snd cs1))
-                                        | elem (Unknown ":") (trace ("2" ++ (show x)) (head x)) = (x,
+                                        | elem (Unknown ":") (head x) = (x,
                                             ["Cannot declare a new function within a function"]
                                             ++ (snd cs2))
                                         | ac && t /= "" = (x, snd cs1)
@@ -55,8 +55,8 @@ checkScope' (FunctionT t f ar as) (x,z) | elem (Unknown "::") (trace ("1" ++ (sh
                                             where
                                                 ga = getArguments ar
                                                 ac = (length ga) == (length (nub ga))
-                                                y1 = [[Unknown "::"] ++ ga ++ (trace ("3" ++ (show x)) (head x))]
-                                                y2 = [[Unknown ":"] ++ ga ++ (trace ("4" ++ (show x)) (head x))]
+                                                y1 = [[Unknown "::"] ++ ga ++ (head x)]
+                                                y2 = [[Unknown ":"] ++ ga ++ (head x)]
                                                 cs1 = checkScope'' as (y1,z)
                                                 cs2 = checkScope'' as (y2,z)
 checkScope' (ArgumentT t v) (x,z)       = (x, [])
@@ -155,7 +155,7 @@ checkScope' (TwoOpT ast1 o ast2) (x,z)  = (x, (snd ca1) ++ (snd ca2))
 checkScope' (BracketsT ast) (x,z)       = (x, snd ca)
                                             where
                                                 ca = checkScope' ast (x,z)
-checkScope' (FuncExprT f as) (x,z)      = (x, snd cs)
+checkScope' (FuncExprT f as) (x,z)      = (x, (snd cu) ++ (snd cs))
                                             where
                                                 cu = checkUse (Unknown f) x
                                                 cs = checkScope'' as (x,z)
@@ -206,7 +206,7 @@ checkSyncUse s x                | (syncElem s lx) || (fst cix)        = (True, [
                                         cix = checkSyncUse s ix
 
 checkSyncNesting :: String -> [String] -> (Bool, [String])
-checkSyncNesting s ss   | trace (s ++ " " ++ (show ss) ++ " " ++ (show(not (elem s ss)))) (not (elem s ss)) = (True, [])
+checkSyncNesting s ss   | {-trace (s ++ " " ++ (show ss) ++ " " ++ (show(not (elem s ss))))-} (not (elem s ss)) = (True, [])
                         | otherwise = (False, ["Cannot synchronize on " ++ (show s) ++ " when already synchronizing on that variable"])
 
 

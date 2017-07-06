@@ -2,10 +2,17 @@ $ For the assignment construction:    . v = expr $
 
 . // <
 
+$ --    v is of type #, ?, *, _#, _? or _* $
+    $ N.T. $
+
 $ --    expr is an expression with the same type as v. $
-$ --    var is of type # or ? $
---    A value can be assigned to a variable.
---    A new value can always be assigned to any variable that is
-declared.
+    . # a
+    . _? b
+    . a = / $ ERROR: Could not match expected type '#' with actual type '?' of the expression in statement '. a = /' $
+    . b = 'b' $ ERROR: Could not match expected type '?' with actual type '*' of the expression in statement '. b = 'b'' $
+
+$ --    A new value can always be assigned to any variable that is
+        declared. $
+    $ N.T. $
 
 >
