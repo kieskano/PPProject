@@ -340,7 +340,7 @@ checkExprType varMap (TwoOpT e1 s e2)  = case opArgType of
                                             opRetType = getVal s twoOpRetTypeMap
                                             opArgType = getVal s twoOpArgTypeMap
                                             err1 = "Can not apply operation '" ++ s
-                                                ++ "' on agrument of type '" ++ (show e1Type)
+                                                ++ "' on argument of type '" ++ (show e1Type)
                                                 ++ "' and argument of type '" ++ (show e2Type) ++ "'"
                                             err2 = "Could not match expected type '"
                                                 ++ (show $ fst opArgType) ++ "' with actual type '"
