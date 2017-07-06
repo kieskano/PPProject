@@ -126,7 +126,7 @@ checkScope' (ReadStatT t v) (x,z)       = (x, snd cu)
 checkScope' (WriteStatT t a) (x,z)      = (x, snd ca)
                                             where
                                                 ca = checkScope' a (x,z)
-checkScope' (ReturnT a) (x,z)           | not (elem (Unknown "::") (head x)) = (x,
+checkScope' (ReturnT a) (x,z)           | not (elem (Unknown "::") (head x)) || not (elem (Unknown ":") (head x)) = (x,
                                             ["Cannot declare a return outside a function with a type"]
                                             ++ (snd ca))
                                         | otherwise = (x, snd ca)
