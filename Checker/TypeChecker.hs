@@ -108,7 +108,7 @@ checkTypes t varMap (DeclT SGlob s1 s2 (FillArrayT exprs))
                                                 ++ "' with actual type '" ++ (show aType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
 checkTypes t varMap (DeclT SGlob s1 s2 expr) | eType == varType  = ((s2, varType):varMap, errors')
-                                        | otherwise         = ((s2, varType):varMap, errors')
+                                        | otherwise         = ((s2, varType):varMap, err:errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             varType = getVal s1 typeMap
@@ -131,7 +131,7 @@ checkTypes t varMap (DeclT SPriv s1 s2 (FillArrayT exprs))
                                                 ++ "' with actual type '" ++ (show aType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
 checkTypes t varMap (DeclT SPriv s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
-                                        | otherwise         = ((s2, varType):varMap, errors')
+                                        | otherwise         = ((s2, varType):varMap, err:errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
                                             varType = getVal s1 typeMap
