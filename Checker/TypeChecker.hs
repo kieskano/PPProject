@@ -107,7 +107,7 @@ checkTypes t varMap (DeclT SGlob s1 s2 (FillArrayT exprs))
                                             err = "Could not match expected type '" ++ (show varType)
                                                 ++ "' with actual type '" ++ (show aType) ++ "' of the expression in "
                                                 ++ "statement '" ++ statString ++ "'"
-checkTypes t varMap (DeclT SGlob s1 s2 expr)    | eType == varType  = ((s2, varType):varMap, errors')
+checkTypes t varMap (DeclT SGlob s1 s2 expr) | eType == varType  = ((s2, varType):varMap, errors')
                                         | otherwise         = ((s2, varType):varMap, errors')
                                         where
                                             (eType, errors) = checkExprType varMap expr
@@ -405,7 +405,7 @@ exprToString (OneOpT s a)       = s ++ (exprToString a)
 exprToString (TwoOpT a1 s a2)   = (exprToString a1) ++ " " ++ s ++ " " ++ (exprToString a2)
 exprToString (BracketsT a)      = "(" ++ (exprToString a) ++ ")"
 exprToString (EmptyArrayT s)    = "["++s++"]"
-exprToString (FillArrayT (a:as))= "{"++(exprToString a)++elemStrings"}"
+exprToString (FillArrayT (a:as))= "{"++(exprToString a)++elemStrings++"}"
                                 where
                                     elemStrings = concat $ map ((","++) . exprToString) as
 

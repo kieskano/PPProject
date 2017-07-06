@@ -166,6 +166,6 @@ argsToString (a:as) = a ++ " " ++ (argsToString as)
 --  - ParseTree     the parse tree (leaf) of which the token is to be returned
 -- Returns:         the token corresponding to the leaf in the argument
 getTokenString :: ParseTree -> String
-getTokenString pt   = case (trace (show pt) pt) of
+getTokenString pt   = case pt of
     PLeaf (a, s)-> s
     otherwise   -> error "IN getTokenString : is not a leaf"
