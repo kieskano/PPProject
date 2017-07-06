@@ -1,0 +1,11 @@
+$ For the assignment construction:    . v = expr $
+
+. // <
+
+$ --    expr is an expression with the same type as v. $
+$ --    var is of type # or ? $
+--    A value can be assigned to a variable.
+--    A new value can always be assigned to any variable that is
+declared.
+
+>

@@ -19,7 +19,7 @@ $ --     if-else statements $
     . ?< |b[0] > a| <> <>
 
 $ --     while statements $
-    . ?^ |a >= b[0]| <>
+    . ?^ |a <= b[0]| <>
 
 $ --     concurrent statements only in main function! $
     . ~<3>~ <>
@@ -27,6 +27,7 @@ $ --     concurrent statements only in main function! $
 $ --     read/write statements $
     . # > a
     . [#] < b
+    . * < '\n'
 
 $ --     synchronized statements only in parallel blocks! $
     . ~<3>~ < . >~c~< <> >

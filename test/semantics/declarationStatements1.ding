@@ -22,9 +22,9 @@ $ --    var has type t $
 
 $ --    expr has to be an expression of type t (see TYPE
         SPECIFICATION). $
-    . # m = / $ ERROR: ... $
-    . ? n = 1 $ ERROR: ... $
-    . [#] o = {/,\,\,/} $ ERROR: ... $
+    . # m = / $ ERROR: Could not match expected type '#' with actual type '?' of the expression in statement '. # m = /' $
+    . ? n = 1 $ ERROR: Could not match expected type '?' with actual type '#' of the expression in statement '. ? n = 1' $
+    . [#] o = {/,\,\,/} $ ERROR: Could not match expected type '[#]' with actual type '[?]' of the expression in statement '. [#] o = {/,\,\,/}' $
 
 $ --    A variable of type #, ?, *, _#, _? or _* can be declared with
         and without immediate assignment of a value. If no value is
@@ -37,22 +37,12 @@ $ --    A variable of type #, ?, *, _#, _? or _* can be declared with
         _# (#)      0
         _? (?)      \
         _* (*)      '\NUL' $
-    . # p
-    . ? q
-    . * r
-    . # < p $ PRINT: ... $
-    . ? < q $ PRINT: ... $
-    . * < r $ PRINT: ... $
+    $ O.F. $
 
 $ --    An array can be declared without explicitly indicating the
         values (see Arrays). In this case, every variable in the
         array is set to the default value of its type. $
-    . [#] s = [3]
-    . [?] t = [3]
-    . [*] u = [3]
-    . [#] < s $ PRINT: ... $
-    . [?] < t $ PRINT: ... $
-    . [*] < u $ PRINT: ... $
+    $ O.F. $
 
 $ --    The declaration type has to be explicitly indicated in the
         declaration statement. $
