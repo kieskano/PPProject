@@ -54,7 +54,7 @@ data AST    = ProgT AST [AST]
 --  - ParseTree     the parse tree that is to be converted.
 -- Returns:         the converted parse tree as AST
 parsetoast :: ParseTree -> AST
-parsetoast (PNode Prog (main:functions)) = ProgT (parsetoast main) (map parsetoast functions)
+parsetoast (PNode Prog (main:functions)) = ProgT (parsetoast main) (iobFunc:divZeroFunc:(map parsetoast functions))
 parsetoast (PNode Main [PNode Block st]) = MainT (map parsetoast st)
 parsetoast (PNode Function [t, n, PNode Arguments args, PNode Block st]) = FunctionT (getType t) (getTokenString n) (map parsetoast args) (map parsetoast st)
 parsetoast (PNode Function [n, PNode Arguments args, PNode Block st])    = FunctionT "" (getTokenString n) (map parsetoast args) (map parsetoast st)
@@ -169,3 +169,13 @@ getTokenString :: ParseTree -> String
 getTokenString pt   = case pt of
     PLeaf (a, s)-> s
     otherwise   -> error "IN getTokenString : is not a leaf"
+
+
+
+
+
+iobFunc :: AST
+iobFunc = FunctionT "" "<>iob_error" [] [DeclT SPriv "[*]" "err" (FillArrayT [CharConstT '\n',CharConstT 'E',CharConstT 'R',CharConstT 'R',CharConstT 'O',CharConstT 'R',CharConstT ':',CharConstT ' ',CharConstT 'A',CharConstT 'r',CharConstT 'r',CharConstT 'a',CharConstT 'y',CharConstT ' ',CharConstT 'i',CharConstT 'n',CharConstT 'd',CharConstT 'e',CharConstT 'x',CharConstT ' ',CharConstT 'o',CharConstT 'u',CharConstT 't',CharConstT ' ',CharConstT 'o',CharConstT 'f',CharConstT ' ',CharConstT 'b',CharConstT 'o',CharConstT 'u',CharConstT 'n',CharConstT 'd',CharConstT 's',CharConstT '!',CharConstT '\n']),WriteStatT "[*]" (VarT "err"),ReturnT EmptyT]
+
+divZeroFunc :: AST
+divZeroFunc = FunctionT "" "<>div_zero_error" [] [DeclT SPriv "[*]" "err" (FillArrayT [CharConstT '\n',CharConstT 'E',CharConstT 'R',CharConstT 'R',CharConstT 'O',CharConstT 'R',CharConstT ':',CharConstT ' ',CharConstT 'C',CharConstT 'a',CharConstT 'n',CharConstT ' ',CharConstT 'n',CharConstT 'o',CharConstT 't',CharConstT ' ',CharConstT 'd',CharConstT 'e',CharConstT 'v',CharConstT 'i',CharConstT 'd',CharConstT 'e',CharConstT ' ',CharConstT 'b',CharConstT 'y',CharConstT ' ',CharConstT 'z',CharConstT 'e',CharConstT 'r',CharConstT 'o',CharConstT '!',CharConstT '\n']),WriteStatT "[*]" (VarT "err"),ReturnT EmptyT]

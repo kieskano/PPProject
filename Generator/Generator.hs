@@ -89,18 +89,23 @@ generateCode (AssignT v a) ((l,g),i,fs,ar,fn)
                                                     args = map fst ar
                                                     argNr = getOffset v ar
 generateCode (ArrayAssignT v a1 a2) ((l,g),i,fs,ar,fn)
-                                            | elem v args   = eCode ++ iCode ++ [Pop regC, Load (ImmValue (argNr*2+1)) regA, Compute Sub regARP regA regA, Load (ImmValue 1) regB, Compute Add regC regB regC,
+                                            | elem v args   = eCode ++ iCode ++ iobCheck ++ [Pop regA, Branch regA (Rel 2), Jump (Rel (length errFuncCode + 1))] ++ errFuncCode
+                                                            ++ [Pop regC, Load (ImmValue (argNr*2+1)) regA, Compute Sub regARP regA regA, Load (ImmValue 1) regB, Compute Add regC regB regC,
                                                             Compute Sub regA regB regB, Load (IndAddr regB) regB, Load (IndAddr regA) regA, Compute Add regA regC regA, Pop regC, Branch regB (Rel 3),
                                                             Store regC (IndAddr regA), Jump (Rel 2), WriteInstr regC (IndAddr regA)]
-                                            | ol /= -1      = eCode ++ iCode ++ [Pop regA, Load (ImmValue ol) regB, Compute Add regARP regB regB, Compute Add regA regB regB,
+                                            | ol /= -1      = eCode ++ iCode ++ iobCheck ++ [Pop regA, Branch regA (Rel 2), Jump (Rel (length errFuncCode + 1))] ++ errFuncCode
+                                                            ++ [Pop regA, Load (ImmValue (ol+1)) regB, Compute Add regARP regB regB, Compute Add regA regB regB,
                                                             Pop regA, Store regA (IndAddr regB)]
-                                            | otherwise     = eCode ++ iCode ++ [Pop regA, Load (ImmValue og) regB, Compute Add regA regB regB,
+                                            | otherwise     = eCode ++ iCode ++ iobCheck ++ [Pop regA, Branch regA (Rel 2), Jump (Rel (length errFuncCode + 1))] ++ errFuncCode
+                                                            ++ [Pop regA, Load (ImmValue (og+1)) regB, Compute Add regA regB regB,
                                                             Pop regA, WriteInstr regA (IndAddr regB)]
                                                 where
-                                                    ol = (getOffset v l) +1
+                                                    ol = (getOffset v l)
                                                     og = (getOffset v g)
                                                     iCode = generateCode a1 ((l,g), i + (length eCode),fs,ar,fn)
                                                     eCode = generateCode a2 ((l,g), i,fs,ar,fn)
+                                                    iobCheck = generateIOOBCheck ol og argNr
+                                                    errFuncCode = generateCode (FuncExprT "<>iob_error" []) ((l,g),i+(length eCode)+(length iCode)+(length iobCheck)+3,fs,ar,fn)  ++ [EndProg]
                                                     args = map fst ar
                                                     argNr = getOffset v ar
 generateCode (WhileT a as) ((l,g),i,fs,ar,fn) = bCode ++ [Pop regA, Branch regA (Rel 2), Jump (Rel jumpOver)] ++ wCode ++ [Jump (Rel jumpBack)]
@@ -211,18 +216,21 @@ generateCode (FuncExprT n fa) ((l,g),i,fs,ar,fn) = setupARCode++[Load (ImmValue 
                                                 returnCode = [Load (ImmValue (length fa * 2 + 3)) regA, Compute Sub regARP regA regA, Load (IndAddr regA) regA, Push regA, Load (ImmValue (length fa * 2 + 1)) regA, Compute Sub regARP regA regA, Load (IndAddr regA) regARP]
 generateCode ThreadIDT ((l,g),i,fs,ar,fn)  = [Push regSprID]
 generateCode (ArrayExprT v a) ((l,g),i,fs,ar,fn)
-                                        | elem v args = iCode ++ [Pop regC, Load (ImmValue (argNr*2+1)) regA, Compute Sub regARP regA regA, Load (ImmValue 1) regB,
+                                        | elem v args = iCode ++ iobCheck ++ [Pop regA, Branch regA (Rel 2), Jump (Rel (length errFuncCode + 1))] ++ errFuncCode
+                                                        ++ [Pop regC, Load (ImmValue (argNr*2+1)) regA, Compute Sub regARP regA regA, Load (ImmValue 1) regB,
                                                         Compute Add regC regB regC, Compute Sub regA regB regB, Load (IndAddr regB) regB, Load (IndAddr regA) regA,
                                                         Compute Add regC regA regA, Branch regB (Rel 3), Load (IndAddr regA) regA, Jump (Rel 3), ReadInstr (IndAddr regA),
                                                         Receive regA, Push regA]
-                                        | ol /= -1  = iCode ++ [Pop regA, Load (ImmValue (ol + 1)) regB, Compute Add regA regB regA,
+                                        | ol /= -1  = iCode ++ iobCheck ++ [Pop regA, Branch regA (Rel 2), Jump (Rel (length errFuncCode + 1))] ++ errFuncCode
+                                                        ++ [Pop regA, Load (ImmValue (ol + 1)) regB, Compute Add regA regB regA,
                                                         Compute Add regA regARP regA, Load (IndAddr regA) regA, Push regA]
-                                        | otherwise = iCode ++ [Pop regA, Load (ImmValue (og + 1)) regB, Compute Add regA regB regA,
+                                        | otherwise = iCode ++ iobCheck ++ [Pop regA, Branch regA (Rel 2), Jump (Rel (length errFuncCode + 1))] ++ errFuncCode
+                                                        ++ [Pop regA, Load (ImmValue (og + 1)) regB, Compute Add regA regB regA,
                                                         ReadInstr (IndAddr regA), Receive regA, Push regA]
                                             where
                                                 iCode = generateCode a ((l,g),i,fs,ar,fn)
-                                                -- apCode = generateIOOB SPriv ol
-                                                -- agCode = generateIOOB SGlob og
+                                                iobCheck = generateIOOBCheck ol og argNr
+                                                errFuncCode = generateCode (FuncExprT "<>iob_error" []) ((l,g),i+(length iCode)+(length iobCheck)+3,fs,ar,fn)  ++ [EndProg]
                                                 ol = getOffset v l
                                                 og = getOffset v g
                                                 args = map fst ar
@@ -253,6 +261,29 @@ generateCode (BracketsT a) ((l,g),i,fs,ar,fn)    = generateCode a ((l,g),i,fs,ar
 generateCode (EmptyArrayT s) ((l,g),i,fs,ar,fn)  = []
 generateCode (FillArrayT a) ((l,g),i,fs,ar,fn)   = []
 
+--The same as the function above but for a list of ASTs
+generateCode' :: [AST] -> ((OffsetMap, OffsetMap), Int, OffsetMap, OffsetMap, String) -> [Instruction]
+generateCode' [] vm                 = []
+generateCode' (a:as) (vm,i,fs,ar,fn)= code++(generateCode' as (vm,i+(length code),fs,ar,fn))
+                                        where
+                                            code = generateCode a (vm,i,fs,ar,fn)
+
+
+--                || loc || glob|| arg || prog
+generateIOOBCheck :: Int -> Int -> Int -> [Instruction]
+generateIOOBCheck (-1) (-1) x = [Pop regA, Push regA, Compute Lt regA reg0 regB, Branch regB (Rel 14),
+                                Load (ImmValue (x*2+1)) regB, Compute Sub regARP regB regB, Load (ImmValue 1) regC, Compute Sub regB regC regC, Load (IndAddr regB) regB, Load (IndAddr regC) regC, Branch regC (Rel 4),
+                                Load (IndAddr regB) regB, Compute GtE regA regB regB, Jump (Rel 4),
+                                ReadInstr (IndAddr regB), Receive regB, Compute GtE regA regB regB, Push regB]
+generateIOOBCheck (-1) x (-1) = [Pop regA, Push regA, Compute Lt regA reg0 regB, Branch regB (Rel 4),
+                                Load (ImmValue x) regB, ReadInstr (IndAddr regB), Receive regB, Compute GtE regA regB regB, Push regB]
+generateIOOBCheck x (-1) (-1) = [Pop regA, Push regA, Compute Lt regA reg0 regB, Branch regB (Rel 4),
+                                Load (ImmValue x) regB, Compute Add regARP regB regB, Load (IndAddr regB) regB, Compute GtE regA regB regB, Push regB]
+generateIOOBCheck x y z = error $ "Error in generateIOOBCheck: "++(show x)++" "++(show y)++" "++(show z)
+
+
+--This function generates the code needed to write the pointers of the variable (given as arguments
+--to a function expression) to the created activation record.
 --               || ast   || (local    , global   , funcArgs )
 generateArgsToAR :: [AST] -> (OffsetMap, OffsetMap, OffsetMap) -> [Instruction]
 generateArgsToAR [] _ = []
@@ -268,24 +299,18 @@ generateArgsToAR ((VarT v):vars) (l,g,a)
                                         argNr = getOffset v a
                                         rest = generateArgsToAR vars (l,g,a)
 
+--Returns the code needed to print an element of a list of the given types (with a comma printed after it)
 generatePrintElemCode :: Char -> [Instruction]
 generatePrintElemCode '#' = [WriteInstr regF numberIO, Load (ImmValue (ord ',')) regF, WriteInstr regF charIO]
 generatePrintElemCode '*' = [WriteInstr regF charIO]
 generatePrintElemCode '?' = [Branch regF (Rel 4), Load (ImmValue (ord '\\')) regF, WriteInstr regF charIO, Jump (Rel 3), Load (ImmValue (ord '/')) regF, WriteInstr regF charIO, Load (ImmValue (ord ',')) regF, WriteInstr regF charIO]
 
+--Returns the code needed to print an element of a list of the given types (without a comma printed after it)
 generatePrintElemCode' :: Char -> [Instruction]
 generatePrintElemCode' '#' = [WriteInstr regF numberIO]
 generatePrintElemCode' '*' = [WriteInstr regF charIO]
 generatePrintElemCode' '?' = [Branch regF (Rel 4), Load (ImmValue (ord '\\')) regF, WriteInstr regF charIO, Jump (Rel 3), Load (ImmValue (ord '/')) regF, WriteInstr regF charIO]
 
-
--- generateIOOB :: VScope -> Int -> [Instruction]
--- generateIOOB SPriv addr     = [Pop regA, Compute GtE regA reg0 regB, Branch regB (Rel 3), Load (ImmValue 999) regB,
---                             WriteInstr regB numberIO, Load (DirAddr addr) regB, Compute Lt regA regB regB,
---                             Branch regB (Rel 3), Load (ImmValue 888) regB, WriteInstr regB numberIO, Push regA]
--- generateIOOB SGlob addr     = [Pop regA, Compute GtE regA reg0 regB, Branch regB (Rel 3), Load (ImmValue 999) regB,
---                             WriteInstr regB numberIO, ReadInstr (DirAddr addr), Receive regB, Compute Lt regA regB regB,
---                             Branch regB (Rel 3), Load (ImmValue 888) regB, WriteInstr regB numberIO, Push regA]
 
 generateEmptyArrayDeclaration :: Int -> (Int, Int) -> Int -> [Instruction]
 generateEmptyArrayDeclaration 0 ((-1), o) le    = [Load (ImmValue le) regA, WriteInstr regA (DirAddr o)]
@@ -312,6 +337,13 @@ generateArrayDeclaration as (o, (-1)) ((l,g),i,fs,ar,fn) le =  aCode ++ eCode ++
 
 
 generateTwoOpCode :: AST -> AST -> Operator -> ((OffsetMap, OffsetMap),Int,OffsetMap,OffsetMap,String) -> [Instruction]
+generateTwoOpCode a1 a2 Div ((l,g),i,fs,ar,fn) = a1Code++a2Code++[Pop regB, Compute NEq reg0 regB regC, Branch regC (Rel (length errFuncCode + 1))]++errFuncCode++[Pop regA, Compute Div regA regB regA, Push regA]
+                                          where
+                                              a1Code = opti1 $ generateCode a1 ((l,g),i,fs,ar,fn)
+                                              a2Code = opti2 $ generateCode a2 ((l,g),i+(length a1Code),fs,ar,fn)
+                                              errFuncCode = generateCode (FuncExprT "<>div_zero_error" []) ((l,g),i+(length a1Code)+(length a2Code)+3,fs,ar,fn) ++ [EndProg]
+                                              opti1 = (if exprContainsFuncCall a1 then ([]++) else optimizeStack)
+                                              opti2 = (if exprContainsFuncCall a2 then ([]++) else optimizeStack)
 generateTwoOpCode a1 a2 o ((l,g),i,fs,ar,fn) = a1Code++a2Code++[Pop regB, Pop regA, Compute o regA regB regA, Push regA]
                                           where
                                               a1Code = opti1 $ generateCode a1 ((l,g),i,fs,ar,fn)
@@ -326,13 +358,9 @@ generateJoinSlaves :: Int -> [Instruction]
 generateJoinSlaves 0 = []
 generateJoinSlaves n = generateJoinSlaves (n-1) ++ [ReadInstr (DirAddr (n-1)), Receive regA, Branch regA (Rel (-2))]
 
-generateCode' :: [AST] -> ((OffsetMap, OffsetMap), Int, OffsetMap, OffsetMap, String) -> [Instruction]
-generateCode' [] vm                 = []
-generateCode' (a:as) (vm,i,fs,ar,fn)= code++(generateCode' as (vm,i+(length code),fs,ar,fn))
-                                        where
-                                            code = generateCode a (vm,i,fs,ar,fn)
 
 
+--Returns the offset of the given variable specified in the given offset map
 getOffset :: String -> OffsetMap -> Int
 getOffset s []          = -1
 getOffset s (o:os)      | fst o == s        = snd o
@@ -342,6 +370,7 @@ getOffset s (o:os)      | fst o == s        = snd o
 readBoolToInt :: String -> Int
 readBoolToInt s | s == "\\"     = 0
                 | s == "/"      = 1
+                | otherwise     = error (s++" is not a boolean")
 
 
 
