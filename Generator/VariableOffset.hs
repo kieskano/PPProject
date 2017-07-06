@@ -125,6 +125,7 @@ calculateThreadAmount (IfTwoT a as1 as2)        = maximum [calculateThreadAmount
 calculateThreadAmount (ParallelT s as)          = read s
 calculateThreadAmount (ReadStatT t s)           = 1
 calculateThreadAmount (WriteStatT t a)          = calculateThreadAmount a
+calculateThreadAmount (ReuturnT a)              = 1
 --Expressions
 calculateThreadAmount EmptyT                    = 1
 calculateThreadAmount (IntConstT s)             = 1

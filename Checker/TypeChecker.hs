@@ -81,7 +81,9 @@ getVal s vmap = case (lookup s vmap) of
 --if there are statements wich contain incorrect typing.
 --Arguments
 --  - The type of the function currently being type checked (needed for return statements)
---  - 
+--  - A map of variable name to type of that variable
+--  - The AST
+--
 checkTypes :: Type -> [(String, Type)] -> AST -> ([(String, Type)], [String])
 checkTypes t varMap (ProgT main funcs)          = let (a,b) = checkTypes t nVarMap main in (a,b++errors)
                                         where
