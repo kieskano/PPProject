@@ -27,9 +27,9 @@ $ --    A variable of type #, ?, *, _#, _? or _* can be declared with
     . # p
     . ? q
     . * r
-    . # < p . * < '\n'$ PRINT: 0 $
-    . ? < q . * < '\n'$ PRINT: \ $
-    . * < r . * < '\n'$ PRINT:  $
+    . # < p . * < '\n' $ PRINT: 0 $
+    . ? < q . * < '\n' $ PRINT: \ $
+    . * < r . * < '\n' $ PRINT:  $
 
 $ --    An array can be declared without explicitly indicating the
         values (see Arrays). In this case, every variable in the
@@ -37,9 +37,9 @@ $ --    An array can be declared without explicitly indicating the
     . [#] s = [3]
     . [?] t = [3]
     . [*] u = [3]
-    . [#] < s . * < '\n'$ PRINT: [0,0,0] $
-    . [?] < t . * < '\n'$ PRINT: ... $
-    . [*] < u . * < '\n'$ PRINT: ... $
+    . [#] < s . * < '\n' $ PRINT: [0,0,0] $
+    . [?] < t . * < '\n' $ PRINT: [\,\,\] $
+    . [*] < u . * < '\n' $ PRINT:  $
 
 $ --    The declaration type has to be explicitly indicated in the
         declaration statement. $

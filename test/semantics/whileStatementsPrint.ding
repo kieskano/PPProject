@@ -1,0 +1,27 @@
+$ For the while-construction:    . ?^ |b_e| < w_st > $
+
+. // <
+
+$ --    b_e is a boolean expression. $
+    $ O.F. $
+
+$ --    w_st contains statements. $
+    $ N.T. $
+
+$ --    The scope containing the statements in w_st is nested in the
+        scope containing ?^ $
+    . # i = 0
+    . * a = 'c'
+    . ?^ |i < 1| < . * < a . i = i + 1 > . * < '\n' $ PRINT: c $
+
+$ --    If b_e is / (true) the statements in w_st are executed and
+        b_e is reassessed. $
+    . i = 0
+    . ?^ |i < 1| < . ? < / . i = i + 1 > . * < '\n' $ PRINT: / $
+
+$ --    If b_e is \ (false) the statements in w_st are skipped and
+        the next statement after ?^ is executed. $
+    . i = 0
+    . ?^ |i < 0| < . ? < / . i = i + 1 > $ PRINT NOTHING $
+    . ? < \ . * < '\n' $ PRINT: \ $
+>
