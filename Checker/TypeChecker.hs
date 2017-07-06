@@ -202,7 +202,8 @@ checkTypes t varMap (ParallelT num as)  | (read num) > 1    = (varMap, errors)
                                             err = "Number of threads must be larger than 1, but it was " ++ num
                                                 ++ " in statement '" ++ statString ++ "'"
 checkTypes t varMap (SyncT var as)      = let (a,b) = checkTypesBlock t varMap as in (varMap,b)
-checkTypes t varMap (ReadStatT x var)   | vType == rType    = (varMap, [])
+checkTypes t varMap (ReadStatT x var)   | x == "?"          = (varMap, [err2])
+                                        | vType == rType    = (varMap, [])
                                         | otherwise         = (varMap, [err])
                                         where
                                             rType = getVal x typeMap
@@ -211,6 +212,7 @@ checkTypes t varMap (ReadStatT x var)   | vType == rType    = (varMap, [])
                                             err = "Could not match expected type '" ++ (show rType)
                                                 ++ "' with actual type '" ++ (show vType) ++ "' of variable '"
                                                 ++ var ++ "' in statement '" ++ statString ++ "'"
+                                            err2 = "Can not read a '?'. Occurs in statement '"++ statString ++ "'"
 checkTypes t varMap (WriteStatT ('[':x) (VarT v))
                                         | eType == wType    = (varMap, [])
                                         | otherwise         = (varMap, [err])
