@@ -105,6 +105,7 @@ parseExprtoast (PNode Val [PNode ThreadID []])      = ThreadIDT
 parseExprtoast (PNode Val [PNode ArrayExpr [n, e]]) = ArrayExprT (getTokenString n) (parseExprtoast e)
 parseExprtoast (PNode Val [PNode FuncExpr (n:r)])   = FuncExprT (getTokenString n) (map (VarT . getTokenString) r)
 parseExprtoast (PNode ArrayInit [PNode IntConst [i]]) = EmptyArrayT (getTokenString i)
+parseExprtoast (PNode ArrayInit [PNode Expr e])     = FillArrayT [parseExprtoast (PNode Expr e)]
 parseExprtoast (PNode ArrayInit [s])                = FillArrayT (stringToCharConstArray string)
                                                     where
                                                         string = drop 1 $ take (length (getTokenString s) -1) (getTokenString s)
