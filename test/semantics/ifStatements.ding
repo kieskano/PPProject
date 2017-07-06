@@ -5,39 +5,43 @@ $ There are two kinds of if statements: ?- and ?< $
 $ For the if-construction:        . ?- |b_e| < t_st > $
 
 $ --    b_e is a boolean expression. $
-    . ?- |1 + 2| <> $ ERROR: Could not match expected type '?' with actual type '#' of the expression in statement '. ?- |1 + 2| < ... >' $
+    $ types.ding $
 
 $ --    t_st contains statements. $
     $ N.T. $
 
 $ --    The scope containing the statements in t_st is nested in the
         scope containing ?- $
-    $ O.F. $
+    . * a = 'c'
+    . ?- |/| < . * < a > . * < '\n' $ PRINT: c $
 
 $ --    If b_e is / (true) the statements in t_st are executed. $
-    $ O.F. $
+    . ?- |/| < . ? < / > . * < '\n' $ PRINT: / $
 
 $ --    If b_e is \ (false) the statements in t_st are skipped. $
-    $ O.F. $
+    . ?- |\| < . ? < / > $ PRINTS NOTHING $
 
 $ For the if-else-construction:     . ?< |b_e| < t_st > < e_st > $
 
 $ --    b_e is a boolean expression. $
-    . ?< |1 + 2| <> <> $ ERROR: Could not match expected type '?' with actual type '#' of the expression in statement '. ?< |1 + 2| < ... > < ... >' $
+    $ types.ding $
 
 $ --    t_st and e_st contain statements. $
     $ N.T. $
 
 $ --    The scopes containing the statements in t_st and e_st are
         both nested in the scope containing ?< $
-    $ O.F.$
+    . * b = 'c'
+    . ?< |/| < . * < b > <> . * < '\n' $ PRINT: c $
+    . * c = 'c'
+    . ?< |\| <> < . * < c > . * < '\n' $ PRINT: c $
 
 $ --    If b_e is / (true) the statements in t_st are executed and
         the statements in e_st are skipped. $
-    $ O.F.$
+    . ?< |/| < . ? < / > <> . * < '\n' $ PRINT: / $
 
 $ --    If b_e is \ (false) the statements in t_st are skipped and
         the statements in e_st are executed. $
-    $ O.F.$
+    . ?< |\| <> < . ? < / > . * < '\n' $ PRINT: / $
 
 >

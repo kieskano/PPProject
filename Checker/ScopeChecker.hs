@@ -197,9 +197,9 @@ checkUse s x                    | (parVarElem s lx) && (not (parVarElem (Forbidd
                                         cix = checkUse s ix
 
 checkSyncUse :: ScopeVar -> [[ScopeVar]] -> (Bool, [String])
-checkSyncUse s []               = (False, ["Cannot use undeclared variable " ++ (show s) ++ " at position V in" ++ (showScopes [])])
+checkSyncUse s []               = (False, ["Cannot use undeclared variable " ++ (show s) ++ " in synchronization at position V in" ++ (showScopes [])])
 checkSyncUse s x                | (syncElem s lx) || (fst cix)        = (True, [])
-                                | otherwise = (False, ["Cannot use variable " ++ (show s) ++ " at position V in" ++ (showScopes x)])
+                                | otherwise = (False, ["Cannot use variable " ++ (show s) ++ " in synchronization at position V in" ++ (showScopes x)])
                                     where
                                         lx = last x
                                         ix = init x

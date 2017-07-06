@@ -72,8 +72,8 @@ $
     Cannot open new parallel scope within a function
     Cannot use undeclared variable ?notafunction at position V in < ?: arg1 arg1 ::function V >
     Cannot use undeclared variable ?arg2 at position V in < ?: arg1 arg1 ::function V >
+    Cannot declare a new function within a function
 $
-
     . # lf
     . _# gf
     . # arg1
@@ -81,6 +81,7 @@ $
     . notafunction (arg1, arg2)
     . function (arg1, arg2)
     . ::
+    . nestedfunction () <>
 >
 
 . function (# arg1, # arg1) <
@@ -90,4 +91,6 @@ $
     . _# ng
     . ~<2>~ <>
     . notafunction (arg1, arg2)
+    . nestedfunction () <>
+    . ::
 >

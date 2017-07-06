@@ -1,1 +1,68 @@
-$ Tested differently. All possible errors are generated $
+$ Tested differently. This file tests ScopeChecker.hs and the errors it generates $
+$if while
+operators
+functies
+read write
+array
+globals$
+
+. // <
+
+$
+    General errors
+
+    Could not match expected type '#' with actual type '?' of the expression in statement '. # a = /'
+    Could not match expected type '?' with actual type '*' of the expression in statement '. ? b = 'c''
+    Could not match expected type '*' with actual type '#' of the expression in statement '. * c = 1 + 2'
+    Could not match expected type '#' with actual type '?' of the expression in statement '. _# d = b'
+    Could not match expected type '?' with actual type '*' of the expression in statement '. _? e = c'
+    Could not match expected type '*' with actual type '#' of the expression in statement '. _* f = a'
+$
+    . # a = /
+    . ? b = 'c'
+    . * c = 1 + 2
+    . _# d = b
+    . _? e = c
+    . _* f = a
+$
+    If, if-else and while errors
+
+    Could not match expected type '?' with actual type '#' of the expression in statement '. ?- |1 + 2| < ... >'
+    Could not match expected type '?' with actual type '#' of the expression in statement '. ?< |arr[1]| < ... > < ... >'
+    Could not match expected type '?' with actual type '*' of the expression in statement '. ?^ |f| < ... >'
+$
+    . ?- |1 + 2| <>
+    . [#] arr = [4]
+    . ?< |arr[1]| <> <>
+    . ?^ |f| <>
+$
+    Operator errors
+$
+    . 
+
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$$

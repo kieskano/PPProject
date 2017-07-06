@@ -3,21 +3,25 @@ $ For the while-construction:    . ?^ |b_e| < w_st > $
 . // <
 
 $ --    b_e is a boolean expression. $
-    . ?^ |1 + 2| <> $ ERROR: Could not match expected type '?' with actual type '#' of the expression in statement '. ?^ |1 + 2| < ... >' $
+    $ types.ding $
 
 $ --    w_st contains statements. $
     $ N.T. $
 
 $ --    The scope containing the statements in w_st is nested in the
         scope containing ?^ $
-    $ O.F. $
+    . # i = 0
+    . * a = 'c'
+    . ?^ |i < 1| < . * < a . i = i + 1 > . * < '\n' $ PRINT: c $
 
 $ --    If b_e is / (true) the statements in w_st are executed and
         b_e is reassessed. $
-    $ O.F. $
+    . i = 0
+    . ?^ |i < 1| < . ? < / . i = i + 1 > . * < '\n' $ PRINT: / $
 
 $ --    If b_e is \ (false) the statements in w_st are skipped and
         the next statement after ?^ is executed. $
-    $ O.F. $
-
+    . i = 0
+    . ?^ |i < 0| < . ? < / . i = i + 1 > $ PRINT NOTHING $
+    . ? < \ . * < '\n' $ PRINT: \ $
 >
