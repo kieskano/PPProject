@@ -1,0 +1,61 @@
+$ For the declaration construction:     . t v = expr $
+
+. // <
+
+$ --    t can be type #, ?, *, _#, _?, _*, [#], [?], [*], _[#], _[?]
+        and _[*] (see TYPE SPECIFICATION). $
+    . # a = 0
+    . ? b = \
+    . * c = '0'
+    . _# d = 0
+    . _? e = \
+    . _* f = '0'
+    . [#] g = [1]
+    . [?] h = [2]
+    . [*] i = [3]
+    . _[#] j = {0}
+    . _[?] k = {\,\}
+    . _[*] l = {'0','0','0'}
+
+$ --    var has type t $
+    $ N.T. $
+
+$ --    expr has to be an expression of type t (see TYPE
+        SPECIFICATION). $
+    . # m = / $ ERROR: ... $
+    . ? n = 1 $ ERROR: ... $
+    . [#] o = {/,\,\,/} $ ERROR: ... $
+
+$ --    A variable of type #, ?, *, _#, _? or _* can be declared with
+        and without immediate assignment of a value. If no value is
+        given, the variable will automatically be assigned the
+        default value associated with its declaration type:
+        TYPE        DEFAULT VALUE
+        #           0
+        ?           \
+        *           '\NUL'
+        _# (#)      0
+        _? (?)      \
+        _* (*)      '\NUL' $
+    . # p
+    . ? q
+    . * r
+    . # < p $ PRINT: ... $
+    . ? < q $ PRINT: ... $
+    . * < r $ PRINT: ... $
+
+$ --    An array can be declared without explicitly indicating the
+        values (see Arrays). In this case, every variable in the
+        array is set to the default value of its type. $
+    . [#] s = [3]
+    . [?] t = [3]
+    . [*] u = [3]
+    . [#] < s $ PRINT: ... $
+    . [?] < t $ PRINT: ... $
+    . [*] < u $ PRINT: ... $
+
+$ --    The declaration type has to be explicitly indicated in the
+        declaration statement. $
+    $ N.T. $
+
+>

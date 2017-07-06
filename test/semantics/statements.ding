@@ -1,0 +1,41 @@
+$ Possible statements are: $
+
+. // <
+
+$ --     declarations (of variables, arrays and functions) $
+    . # a = 1
+    . [#] b = [3]
+    . _# c = 0
+    $ function declaration outside main function $
+
+$ --     assignments $
+    . a = 2
+    . b[2] = 3
+
+$ --     if statements $
+    . ?- |a == b[1]| <>
+
+$ --     if-else statements $
+    . ?< |b[0] > a| <> <>
+
+$ --     while statements $
+    . ?^ |a >= b[0]| <>
+
+$ --     concurrent statements only in main function! $
+    . ~<3>~ <>
+
+$ --     read/write statements $
+    . # > a
+    . [#] < b
+
+$ --     synchronized statements only in parallel blocks! $
+    . ~<3>~ < . >~c~< <> >
+
+>
+
+. f () <
+
+$ --    return statements only in functions! $
+    . ::
+
+>
