@@ -12,14 +12,13 @@ $ --    t_st contains statements. $
 
 $ --    The scope containing the statements in t_st is nested in the
         scope containing ?- $
-    . * a = 'c'
-    . ?- |/| < . * < a > . * < '\n' $ PRINT: c $
+    $ scopes.ding $
 
 $ --    If b_e is / (true) the statements in t_st are executed. $
     . ?- |/| < . ? < / > . * < '\n' $ PRINT: / $
 
 $ --    If b_e is \ (false) the statements in t_st are skipped. $
-    . ?- |\| < . ? < / > $ PRINTS NOTHING $
+    . ?- |\| < . ? < / > $ PRINT NOTHING $
 
 $ For the if-else-construction:     . ?< |b_e| < t_st > < e_st > $
 
@@ -31,10 +30,7 @@ $ --    t_st and e_st contain statements. $
 
 $ --    The scopes containing the statements in t_st and e_st are
         both nested in the scope containing ?< $
-    . * b = 'c'
-    . ?< |/| < . * < b > <> . * < '\n' $ PRINT: c $
-    . * c = 'c'
-    . ?< |\| <> < . * < c > . * < '\n' $ PRINT: c $
+    $ scopes.ding $
 
 $ --    If b_e is / (true) the statements in t_st are executed and
         the statements in e_st are skipped. $

@@ -10,9 +10,7 @@ $ --    w_st contains statements. $
 
 $ --    The scope containing the statements in w_st is nested in the
         scope containing ?^ $
-    . # i = 0
-    . * a = 'c'
-    . ?^ |i < 1| < . * < a . i = i + 1 > . * < '\n' $ PRINT: c $
+    $ scopes.ding $
 
 $ --    If b_e is / (true) the statements in w_st are executed and
         b_e is reassessed. $

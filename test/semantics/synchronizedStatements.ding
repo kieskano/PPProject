@@ -1,0 +1,46 @@
+$ For the synchronized construction:     . >~g_v~< < sts > $
+
+. // <
+
+$ --    g_v is a global variable in the current scope. $
+    $ scopes.ding $
+
+$ --    sts contains statements that are executed by the current
+        thread synchronized on g_v $
+$ --    When synchronizing on g_v, the thread obtains a 'lock' on
+        that variable. Any other thread trying to obtain the lock on
+        g_v will be waiting for the lock until it is released. $
+    . _# g_v
+    . ~<2>~ <
+        . # wait_b = 200
+        . >~g_v~< <
+            . [*] out1 = " says: got lock\n"
+            . # < @
+            . [*] < out1
+            . wait(wait_b)
+            . [*] out2 = " says: releasing lock\n"
+            . # < @
+            . [*] < out2
+        >
+    >
+
+$ --    Synchronized statements can only be declared within a
+        concurrent block. $
+    $ scopes.ding $
+
+$ --    Nested synchronized statements are allowed, but a nested
+        statement can not lock on the same variable as its 'ancestor'.
+        Locking on a global variable is not reentrant: trying to lock
+        twice on the same variable will result in a deadlock for that
+        thread.$
+    $ scopes.ding $
+
+>
+
+. wait (# cycles) <
+    . # i = 0
+    . ?^ |i < cycles| < . i = i + 1 >
+    . [*] out = " says: waiting done\n"
+    . # < @
+    . [*] < out
+>

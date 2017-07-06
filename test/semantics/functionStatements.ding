@@ -1,0 +1,63 @@
+. // <
+
+$ For the main function construction:     . // < sts >
+
+$ --    sts is a list of statements that get executed on execution of
+        the program. $
+    $ N.T. $
+
+$ --    The return statement can not be in sts $
+    $ scopes.ding $
+
+$ --    The main function has no arguments. $
+    $ N.T. $
+
+$ --    The main function can not be called. $
+    $ N.T. $
+
+$ For the regular function construction with return value:
+                                . t f (t1 v1, t2 v2, ...) < sts >  $
+$ AND For the regular function construction without return value:
+                                . f (t1 v1, t2 v2, ...) < sts >  $
+
+$ --    sts is a list of statements that get executed on the call of
+        function f $
+    $ N.T. $
+
+$ ONLY FOR FUNCTION WITH RETURN VALUE $
+$ --    t is the return type of the function. This can be used in
+        assignments or declarations of the return value to variables
+        of the same type as t. t can have the types #, ? and * $
+    . # a = ret_int()
+    . ? b = ret_bool()
+    . * c = ret_char()
+
+$ --    There can be any number of arguments (>= 0) of the form type
+        argument where argument is a variable expression (local or
+        global) and type is the type of this expression. So only
+        VARIABLES can be used as arguments to a function. $
+    $ N.T. $
+
+$ --    There can be no declarations of global variables in sts $
+    $ scopes.ding $
+
+$ --    There can be no concurrent statements in sts $
+    $ scopes.ding $
+
+$ --    There can be no declarations of new functions in sts $
+    $ scopes.ding $
+
+$ --    f must be in the language of the RE (a..z)((a..z)|_|(0..9))* $
+    $ N.T. $
+
+$ --    The scope at the start of the function only contains all
+        other functions and the arguments of this function. $
+    $ N.T. $
+
+
+
+>
+
+. ret_int() < . :: 0 >
+. ret_bool() < . :: / >
+. ret_char() < . :: 'c' >

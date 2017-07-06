@@ -242,7 +242,7 @@ getArguments (a:as)                     = error ((show a) ++ " not an argument i
 
 
 getParallelScope :: [[ScopeVar]] -> [[ScopeVar]]
-getParallelScope x = [[Unknown "="] ++ [(Global v) | (Global v) <- (concat x)] ++ [(Forbidden v) | (Private v) <- (concat x)], []]
+getParallelScope x = [[Unknown "="] ++ (head x) ++ [(Global v) | (Global v) <- (concat x)] ++ [(Forbidden v) | (Private v) <- (concat x)], []]
 
 getFunctionScope x = [[Unknown "::"]]
 

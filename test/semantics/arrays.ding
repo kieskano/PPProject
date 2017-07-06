@@ -1,0 +1,32 @@
+. // <
+
+$ --    Arrays that are declared as a global variable have a lock
+        associated to them. The elements of this array (also in
+        global memory) do NOT. $
+    . _[#] ia = [4]
+    . ~<2>~ < . >~ia~< <> >
+
+$ --    Arrays contain values, not pointers to values. $
+    $ N.T. $
+
+$ --    Arrays always have a fixed length, either explicitly
+        indicated at the declaration or inferred by the number of
+        elements in the declaration. $
+    $ N.T. $
+$ --    Arrays can only be declared, not assigned. To change an array
+        its elements can be assigned a new value. $
+    $ N.T. $
+$ --    Array length must be larger or equal to 1. Empty array is not
+        allowed. $
+    $ N.T. $
+$ --    The first element of the array has index 0. $
+    . ia[0] = 1
+    . [#] < ia $ PRINT: [1,0,0,0] $
+    . * < '\n'
+
+$ --    When getting an element of the array, the index in the
+        statement has to be greater or equal to 0 and smaller than
+        the length of the array. $
+    $ RUNTIME $
+
+>

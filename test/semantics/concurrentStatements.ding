@@ -1,0 +1,56 @@
+$ For the concurrency construction: . ~<int>~ < sts > $
+
+. // <
+
+$ --    int is an integer constant value that indicates the static
+        amount of threads that execute the code in the sts block,
+        including the master thread. $
+    $ N.T. $
+
+$ --    sts contains statements that are executed by the concurrent
+        threads in parallel. $
+    $ N.T. $
+
+$ --    In a concurrent/main scope the symbol @ can be used to get
+        the thread id of the current thread. The id of the "master"
+        thread (the thread that invokes the concurrency statement) is
+        always 0. Any created thread gets an id starting at 1. $
+    . ~<2>~ < . # < @ . * < '\n' > $ PRINT: 0 1 $
+
+$ --     No global variables can be declared in a block of a
+        concurrency statement or its nested scopes. $
+    $ scopes.ding $
+
+$ --    No concurrency statements can be declared in a block of a
+        concurrency statement or its nested scopes (no nested
+        concurrency is possible). $
+    $ scopes.ding $
+
+$ --    Any local variables used in a block of a concurrency
+        statement must be declared in the same block. No local
+        variables declared outside that block can be used inside it. $
+    $ scopes.ding $
+
+$ --     Local variables declared inside a block of a concurrency
+        statement cannot be used outside that block. $
+    $ scopes.ding $
+
+$ --     Global variables can be used anywhere in the main function.
+    $ scopes.ding $
+
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$$

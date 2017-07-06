@@ -4,7 +4,8 @@ operators
 functies
 read write
 array
-globals$
+globals
+concurrent$
 
 . // <
 
@@ -36,12 +37,67 @@ $
     . ?< |arr[1]| <> <>
     . ?^ |f| <>
 $
-    Operator errors
+    Operator errors (only a selection, but the rest is comparable)
+
+    Could not match expected type '?' with actual type '#' of the expression in statement '. ? g = 1 + /'
+    Could not match expected type '#' with actual type '?' as second argument of operator '+' in statement '. ? g = 1 + /'
+    Could not match expected type '*' with actual type '?' of the expression in statement '. * h = / == 'c''
+    Can not apply operation '==' on agrument of type '?' and argument of type '*' in statement '. * h = / == 'c''
+    Could not match expected type '#' with actual type '*' as second argument of operator '*' in statement '. # i = 3 + (5 - 3 * h)'
 $
-    . 
+    . ? g = 1 + /
+    . * h = / == 'c'
+    . # i = 3 + (5 - 3 * h)
+$
+    Read/write statement errors
+
+    Could not match expected type '*' with actual type '#' of the expression in statement '. *< 22'
+    Could not match expected type '[*]' with actual type '[#]' of the expression in statement '. [*]< parr'
+    Can not read a '?'. Occurs in statement '. ?> a'
+    Can not read a '?'. Occurs in statement '. ?> b'
+    Could not match expected type '#' with actual type '?' of variable 'b#//' in statement '. #> b'
+$
+    . * < 22
+    . [#] parr = [9]
+    . [*] < parr
+    . ? > a
+    . ? > b
+    . # > b
+$
+    Array errors
+
+    Array declaration contains multiple types, but only one is allowed in statement '. [#] intarr = {1,/,'c'}'
+    Could not match expected type '[?]' with actual type '[#]' of the expression in statement '. [?] boolarr = {1,1,1}'
+    Could not match expected type '[*]' with actual type '[#]' of the expression in statement '. [*] chararr = {1,/,'c'}'
+    Array declaration contains multiple types, but only one is allowed in statement '. [*] chararr = {1,/,'c'}'
+    Could not match expected type '#' with actual type '?' as index of array 'boolarr#//' in statement '. b = boolarr[/]'
+$
+    . [#] intarr = {1,/,'c'}
+    . [?] boolarr = {1,1,1}
+    . [*] chararr = {1,/,'c'}
+    . b = boolarr[1]
+$
+     Function errors
+
+     Could not match expected type '?' with actual type '#' of the expression in statement '. ? res = plus_one(b)'
+     Could not match expected type '#' with actual type '? of argument number 1 of function plus_one in statement '. ? res = plus_one(b)'
+     Could not match expected type '?' with actual type '#' of the expression in statement '. ? b = i'
+     Could not match expected type '#' with actual type '?' of the expression in statement '. :: res'
+     Could not match expected type 'VOID' with actual type '#' of the expression in statement '. :: 1'
+$
+    . ? res = plus_one(b)
 
 >
 
+. # plus_one (# i) <
+    . ? b = i
+    . ? res = /
+    . :: res
+>
+
+. func () <
+    . :: 1
+>
 
 
 

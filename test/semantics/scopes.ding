@@ -5,15 +5,19 @@ $ Tested differently. This file tests ScopeChecker.hs and the errors it generate
 $
     Local variable scope errors
 
-    Cannot use undeclared variable ?a at position V in < i V >
-    Cannot use undeclared variable ?a at position V in < i V >
-    Cannot redeclare i at position V in < i < V > >
-    Cannot use undeclared variable ?a at position V in < i < V > >
-    Cannot use undeclared variable ?b at position V in < i V >
-    Cannot use undeclared variable ?a at position V in < i V >
-    Cannot use undeclared variable ?b at position V in < i < V > >
-    Cannot use undeclared variable ?c at position V in < i < < V > > >
-    Cannot use undeclared variable ?b at position V in < i < V > >
+    Cannot use undeclared variable ?a at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i V > >
+    Cannot use undeclared variable ?a at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i V > >
+    Cannot redeclare i at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i < V > > >
+    Cannot use undeclared variable ?a at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i < V > > >
+    Cannot use undeclared variable ?c at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i < V > > >
+    Cannot use undeclared variable ?b at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i V > >
+    Cannot use undeclared variable ?a at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i V > >
+    Cannot use undeclared variable ?b at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i < V > > >
+    Cannot use undeclared variable ?c at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i < < V > > > >
+    Cannot use undeclared variable ?d at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i < < V > > > >
+    Cannot use undeclared variable ?b at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i < V > > >
+    Cannot use undeclared variable ?c at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i V > >
+
 $
     . # i = 1
     . a = 1
@@ -30,18 +34,20 @@ $
     > <
         . b = 1
     >
+    . # > c
 $
     Parallel and synchronized scope errors
 
-    Cannot use undeclared variable ?pl at position V in < ?= _pg /i /pl < V > >
-    Cannot redeclare pg at position V in < ?= _pg /i /pl < V > >
-    Cannot redeclare pl at position V in < ?= _pg /i /pl < V > >
-    Cannot use variable _pl at position V in < ?= _pg /i /pl < V > >
-    Cannot use variable _pl at position V in < ?= _pg /i /pl < V > >
+    Cannot use undeclared variable ?pl at position V in < ?= ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc _pg /i /pl < V > >
+    Cannot redeclare pg at position V in < ?= ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc _pg /i /pl < V > >
+    Cannot redeclare pl at position V in < ?= ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc _pg /i /pl < V > >
+    Cannot use variable _pl in synchronization at position V in < ?= ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc _pg /i /pl < V > >
+    Cannot use variable _pl in synchronization at position V in < ?= ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc _pg /i /pl < V > >
     Cannot synchronize on "pl" when already synchronizing on that variable
     Cannot synchronize on "pg" when already synchronizing on that variable
     Cannot open new parallel scope within a parallel scope
     Cannot declare synchronized block outside parallel block
+
 $
     . # pl
     . _# pg
@@ -62,16 +68,19 @@ $
 $
     Function scope errors
 
-    Cannot use undeclared variable ?notafunction at position V in < ::function < i pl _pg lf _gf arg1 _arg2 V > >
+    Cannot have duplicate function names: [::<>iob_error,::<>div_zero_error,::function,::function,::gfunc]
+    ...
+    Cannot use undeclared variable ?notafunction at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i pl _pg lf _gf arg1 _arg2 V > >
     Cannot declare a return outside a function
+    Cannot redeclare _gfunc at position V in < ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc < i pl _pg lf _gf arg1 _arg2 V > >
     Cannot have duplicate argument names: [arg1,arg1]
-    Cannot use undeclared variable ?lf at position V in < ?: arg1 arg1 ::function V >
-    Cannot use undeclared variable ?gf at position V in < ?: arg1 arg1 ::function V >
-    Cannot redeclare arg1 at position V in < ?: arg1 arg1 ::function V >
+    Cannot use undeclared variable ?lf at position V in < ?: arg1 arg1 ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc V >
+    Cannot use undeclared variable ?gf at position V in < ?: arg1 arg1 ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc V >
+    Cannot redeclare arg1 at position V in < ?: arg1 arg1 ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc V >
     Cannot declare global variable "ng" in a function
     Cannot open new parallel scope within a function
-    Cannot use undeclared variable ?notafunction at position V in < ?: arg1 arg1 ::function V >
-    Cannot use undeclared variable ?arg2 at position V in < ?: arg1 arg1 ::function V >
+    Cannot use undeclared variable ?notafunction at position V in < ?: arg1 arg1 ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc V >
+    Cannot use undeclared variable ?arg2 at position V in < ?: arg1 arg1 ::<>iob_error ::<>div_zero_error ::function ::function ::gfunc V >
     Cannot declare a new function within a function
 $
     . # lf
@@ -82,6 +91,7 @@ $
     . function (arg1, arg2)
     . ::
     . nestedfunction () <>
+    . _? gfunc
 >
 
 . function (# arg1, # arg1) <
@@ -94,3 +104,6 @@ $
     . nestedfunction () <>
     . ::
 >
+
+. function () <>
+. gfunc () <>

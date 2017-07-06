@@ -1,0 +1,55 @@
+. // <
+
+    . # a
+    . _# b
+    . ? c
+    . _? d
+    . * e
+    . _* f
+    . [#] g = [1]
+    . _[#] h = [1]
+    . [?] i = [1]
+    . _[?] j = [1]
+    . [*] k = [1]
+    . _[*] l = [1]
+
+    . [*] out = "USER MUST PROVIDE INPUT (\"1\" will suffice, ENTER to confirm each entry)\n"
+    . [*] < out
+
+$ For the input/read construction:       . t > var $
+
+$ --   t is of type # or *(see TYPE SPECIFICATION). $
+    . # > a
+    . # > b
+    . * > e
+    . * > e
+    $ USER MUST TYPE $
+
+$ --    var is a variable of type t (or its global variant) $
+    $ types.ding $
+
+$ --    a read is seen as an assignment of the user input to var.
+        This means that var has to be in scope (already declared). $
+    $ scopes.ding $
+
+$ For the output/write construction:    . t < expr $
+
+$ --    t can be type #, ?, €, [#], [?] and [€] (see TYPE SPECIFICATION). $
+    . # < a
+    . # < b
+    . ? < c
+    . ? < d
+    . * < e
+    . * < f
+    . [#] < g
+    . [#] < h
+    . [?] < i
+    . [?] < j
+    . [*] < k
+    . [*] < l
+    . * < '\n'
+
+$ --    expr is an expression of type t (or its global variant) $
+    $ types.ding $
+
+>
