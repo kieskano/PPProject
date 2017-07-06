@@ -34,7 +34,7 @@ parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
 
 compileDinkie :: String -> ([Instruction], Int)
-compileDinkie file  -- | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
+compileDinkie file  | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
                     | retErrors /= []   = error $ ('\n':) $ unlines retErrors
                     | typeErrors /= []  = error $ ('\n':) $ unlines typeErrors
                     | otherwise         = trace ('\n':(unlines retWarnings) ++ (offsetsToString offsets)) (code, threads)

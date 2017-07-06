@@ -83,7 +83,8 @@ getVal s vmap = case (lookup s vmap) of
 --  - The type of the function currently being type checked (needed for return statements)
 --  - A map of variable name to type of that variable
 --  - The AST
---
+--Returns
+--  - (VariableTypeMap, errors)
 checkTypes :: Type -> [(String, Type)] -> AST -> ([(String, Type)], [String])
 checkTypes t varMap (ProgT main funcs)          = let (a,b) = checkTypes t nVarMap main in (a,b++errors)
                                         where
@@ -256,13 +257,19 @@ checkTypes t varMap (FuncExprT s args)  | length argTypes == length args = (varM
                                                 ++ " with actual number of arguments " ++ (show $ length args) ++ " in statement "
                                                 ++ "'. " ++ statString ++ "'"
 
-
+--Does the same as the function above but for a list of ASTs
 checkTypesBlock :: Type -> [(String, Type)] -> [AST] -> ([(String, Type)], [String])
 checkTypesBlock t varMap []       = (varMap, [])
 checkTypesBlock t varMap (a:as)   = let (x, y) = checkTypesBlock t newVarMap as in (x, errors ++ y)
                                 where
                                     (newVarMap, errors) = checkTypes t varMap a
 
+--This function checks the type of the given Array Initialisation list.
+--Arguments
+--  - Variable type map
+--  - A list of expressions (which are the elements of a list)
+--Returns
+--  - (The ArrayType, errors)
 checkArrayType :: [(String, Type)] -> [AST] -> (Type, [String])
 checkArrayType varMap as | length types == 1    = (ArrayType (types!!0), errors)
                          | otherwise            = (ArrayType (types!!0), err:errors)
@@ -270,8 +277,11 @@ checkArrayType varMap as | length types == 1    = (ArrayType (types!!0), errors)
                             results = map (checkExprType varMap) as
                             types   = nub $ map (fst) results
                             errors  = concat $ map (snd) results
-                            err = "Array declaration contains multiple typee, but only one is allowed"
+                            err = "Array declaration contains multiple types, but only one is allowed"
 
+--This function checks the typing of the given expression and returns also the type
+--that this expression returns (eg. in "1+2" the operator '+' requires 2 expressions
+--                              of type Int and returns an expression of type Int)
 checkExprType :: [(String, Type)] -> AST -> (Type, [String])
 checkExprType varMap (VarT s)           = case (getVal s varMap) of
                                             ArrayType t -> (IntType,[])

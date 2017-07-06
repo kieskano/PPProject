@@ -61,7 +61,8 @@ parsetoast (PNode Function [n, PNode Arguments args, PNode Block st])    = Funct
 parsetoast (PNode Argument [t, n]) = ArgumentT (getType t) (getTokenString n)
 parsetoast (PNode Stat [stat]) = parseStattoast stat
 parsetoast (PNode Expr nodes)  = parseExprtoast (PNode Expr nodes)
-parsetoast x = error $ show x
+parsetoast (PError tr rule nt str k) = error ("\n\nPARSE ERROR\n\tExpected:  "++(show nt)
+                                        ++"\n\tFound:     "++str++"\n\tAt token:  "++(show k)++"\n")
 
 parseStattoast :: ParseTree -> AST
 parseStattoast (PNode Decl [PNode Type [t], n])            = DeclT SPriv (getTokenString t) (getTokenString n) EmptyT
@@ -164,6 +165,6 @@ argsToString (a:as) = a ++ " " ++ (argsToString as)
 --  - ParseTree     the parse tree (leaf) of which the token is to be returned
 -- Returns:         the token corresponding to the leaf in the argument
 getTokenString :: ParseTree -> String
-getTokenString pt   = case pt of
+getTokenString pt   = case (trace (show pt) pt) of
     PLeaf (a, s)-> s
     otherwise   -> error "IN getTokenString : is not a leaf"
