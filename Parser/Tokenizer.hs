@@ -110,7 +110,10 @@ string = \s x -> case s of
                             | otherwise     -> E
 
                         Q 0 | x == '\"'     -> F 0
+                            | x == '\\'     -> Q 1
                             | otherwise     -> Q 0
+
+                        Q 1                 -> Q 0
 
                         _                   -> E
 

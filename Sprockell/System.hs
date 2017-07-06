@@ -29,7 +29,7 @@ shMem sharedMem (i,req)
         reply <- case req of
                     NoRequest     -> return Nothing
                     ReadReq a     -> do
-                        let prompt = printf "%i? " i
+                        let prompt = printf "#? "
                         fmap Just (promptForRead prompt)
                     WriteReq v a  -> do
                         printf "%i" v
@@ -41,7 +41,7 @@ shMem sharedMem (i,req)
                     NoRequest     -> return Nothing
                     ReadReq a     -> do
                         --mChar :: Maybe Char
-                        let prompt = printf "%i? " i
+                        let prompt = printf "*? "
                         fmap Just (promptForChar prompt)
                     WriteReq v a  -> do
                         putChar $ chr v
@@ -83,7 +83,7 @@ promptForRead prompt = do
             putStr prompt
             l <- getLine
             case readMaybe l of
-                Nothing -> do putStrLn "Invalid input"
+                Nothing -> do putStrLn "ERROR: Invalid input"
                               promptForRead'
                 Just x  -> return x
 
@@ -99,7 +99,7 @@ promptForChar prompt = do
             putStr prompt
             l <- getLine
             case readLitChar l of
-                []        -> do putStrLn "Invalid input"
+                []        -> do putStrLn "ERROR: Invalid input"
                                 promptForChar'
                 [(c, "")] -> return (ord c)
                 [(c, _)]  -> do putStrLn "Invalid input"
