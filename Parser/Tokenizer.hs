@@ -11,6 +11,7 @@ data FAState = S | F Int | Q Int  | E   -- S = Start, F = Final, Q = Normal, E =
 isADigit x = elem x "0123456789"
 isALetter x = elem x "abcdefghijklmnopqrstuvwxyz"
 isWhiteSpace x = elem x " \n\t\r"
+isSingleEscapeChar x = elem x "0abfnrtv\"&'\\"
 
 -- =============== --
 -- == the FSA's == --
@@ -96,7 +97,7 @@ character = \s x -> case s of
                         Q 0 | x == '\\'     -> Q 1
                             | otherwise     -> Q 2
 
-                        Q 1 | x /= '\'' && x /= '\\' -> Q 2
+                        Q 1 | isSingleEscapeChar x -> Q 2
                             | otherwise     -> E
 
                         Q 2 | x == '\''     -> F 0
@@ -113,7 +114,8 @@ string = \s x -> case s of
                             | x == '\\'     -> Q 1
                             | otherwise     -> Q 0
 
-                        Q 1                 -> Q 0
+                        Q 1 | isSingleEscapeChar x -> Q 0
+                            | otherwise     -> E
 
                         _                   -> E
 
@@ -169,7 +171,7 @@ identifyToken :: String -> FAState -> (FAState -> Char -> FAState) -> (String, S
 identifyToken "" s dfa      | isFinal s                     = ("", "")
                             | otherwise                     = error "parse error in identifyToken at empty string"
 identifyToken (x:xs) s dfa  | nextState == E && (isFinal s) = ("", x:xs)
-                            | nextState == E                = error ("parse error in identifyToken at " ++ (show x) ++ (show s))
+                            | nextState == E                = error ("\n\nPARSE ERROR in identifyToken at:\n" ++ (x:xs))
                             | otherwise                     = (x:s1, s2)
                             where
                                 nextState   = dfa s x
