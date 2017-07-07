@@ -1,0 +1,17 @@
+. // <
+    . # n
+    . # > n $ the n-th fibonacci number $
+    . # r = fib (n)
+    . # < r
+    . * < '\n'
+>
+
+. # fib (# n) <
+    . ?- |n <= 1| <
+        . :: n
+    >
+    . # arg1 = n - 1
+    . # arg2 = n - 2
+    . # r = fib(arg1) + fib(arg2)
+    . :: r
+>

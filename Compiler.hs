@@ -16,16 +16,19 @@ import Generator.VariableOffset
 import Debug.Trace
 import Text.Printf
 
+testAll :: IO ()
+testAll = test testFiles
+
 test :: [String] -> IO ()
 test []         = do
                     putStr ""
 test (p:ps)     = do
-                    putStr("\n------------------------------------------------------------------------------\n" ++
-                             "------------------------------------------------------------------------------\n")
-                    putStr("=======> NOW TESTING: " ++ p ++ " <=======")
-                    putStr("\n------------------------------------------------------------------------------\n" ++
-                             "------------------------------------------------------------------------------\n")
-                    runDinkieNoPrint p
+                    putStr("\n-------------------------------------------------------------\n" ++
+                             "-------------------------------------------------------------\n")
+                    putStr("> NOW TESTING: " ++ p ++ " <")
+                    putStr("\n-------------------------------------------------------------\n" ++
+                             "-------------------------------------------------------------\n\n")
+                    runDinkieTest p
                     test ps
 
 parseDinkie :: String -> ParseTree
@@ -47,6 +50,22 @@ compileDinkie file  | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
                         (offsets,fLocDataSizes) = calculateVarOffset ast' (threads - 1)
                         code = generateProgCode ast' threads (offsets,fLocDataSizes)
 
+compileDinkieTest :: String -> ([Instruction], Int)
+compileDinkieTest file  | scopeErrors /= [] = trace (('\n':) $ unlines scopeErrors) ([EndProg], 1)
+                        | retErrors /= []   = trace (('\n':) $ unlines retErrors) ([EndProg], 1)
+                        | typeErrors /= []  = trace (('\n':) $ unlines typeErrors) ([EndProg], 1)
+                        | otherwise         = trace ('\n':(unlines retWarnings) ++ (offsetsToString offsets)) (code, threads)
+                        where
+                            parseTree = parseDinkie file
+                            ast = parsetoast parseTree
+                            ast' = renameVars "" $ correctProg ast
+                            scopeErrors = checkScope ast
+                            (retErrors,retWarnings) = checkReturnsProg ast
+                            typeErrors = snd $ checkTypes VoidType [] ast'
+                            threads = calculateThreadAmount ast'
+                            (offsets,fLocDataSizes) = calculateVarOffset ast' (threads - 1)
+                            code = generateProgCode ast' threads (offsets,fLocDataSizes)
+
 runDinkie :: String -> IO ()
 runDinkie file  = trace (progToString prog) (run (replicate threads prog))
                     where
@@ -65,6 +84,13 @@ runDinkieNoPrint :: String -> IO ()
 runDinkieNoPrint file  = run (replicate threads prog)
                     where
                         cmp = compileDinkie file
+                        threads = snd cmp
+                        prog = fst cmp
+
+runDinkieTest :: String -> IO ()
+runDinkieTest file  = run (replicate threads prog)
+                    where
+                        cmp = compileDinkieTest file
                         threads = snd cmp
                         prog = fst cmp
 

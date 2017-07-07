@@ -1,0 +1,14 @@
+. // <
+	. # a
+	. # b = 1
+	. # n
+	. # > n $ the n-th fibonacci number $
+	. ?^ |n > 1| <
+	    . # t = b
+	    . b = a + b
+	    . a = t
+	    . n = n - 1
+	>
+	. # < b
+	. * < '\n'
+>
