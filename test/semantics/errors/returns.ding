@@ -1,0 +1,60 @@
+$ Tests function return errors $
+
+$
+    Function 'func_c' does not always return something
+    Function 'func_d' does not always return something
+    Function 'func_d' does not always return something
+$
+. // <
+
+>
+
+. # func_a() <
+    . :: 1
+>
+
+. # func_b(? bool) <
+    . ?< |bool| <
+        . :: 1
+    > <
+        . :: 1
+    >
+>
+
+. # func_c() <
+    . # r = 0
+>
+
+. # func_d(? bool) <
+    . ?< |bool| <
+        . :: 1
+    > <
+        . # r = 0
+    >
+>
+
+. # func_e(? bool) <
+    . ?- |bool| <
+        . :: 1
+    >
+>
+
+. func_a() <
+    . # a = 999
+    . # < a
+    . ::
+>
+
+. func_b() <
+    . # a = 999
+    . # < a
+    . ::
+    . [*] string = "This is never printed.\n"
+    . [*] < string
+>
+
+. func_c() <
+    . # a = 999
+    . # < a
+
+>
