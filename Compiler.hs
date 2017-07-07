@@ -184,7 +184,12 @@ testFiles = [   "test/semantics/errors/arrayIndexOutOfBounds.ding",
                 "test/semantics/statements/returnStatements.ding",
                 "test/semantics/statements/statements.ding",
                 "test/semantics/statements/synchronizedStatements.ding",
-                "test/semantics/statements/whileStatements.ding"
+                "test/semantics/statements/whileStatements.ding",
+                "test/examples/bankAccount.ding",
+                "test/examples/fibNonRec.ding",
+                "test/examples/fibRec.ding",
+                "test/examples/peterson.ding",
+                "test/semantics/warnings/deadcode.ding"
         ]
 
 debugShow :: DbgInput -> String
