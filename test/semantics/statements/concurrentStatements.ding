@@ -35,7 +35,7 @@ $ --     Local variables declared inside a block of a concurrency
         statement cannot be used outside that block. $
     $ scopes.ding $
 
-$ --     Global variables can be used anywhere in the main function.
+$ --     Global variables can be used anywhere in the main function. $
     $ scopes.ding $
 
 >

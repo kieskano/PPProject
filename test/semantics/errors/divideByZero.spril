@@ -1,0 +1,1105 @@
+Debug "Pre-program - set up slaves"
+Branch 1 (Rel 2)
+Jump (Rel 7)
+Load (ImmValue 1) 2
+Compute Sub 1 2 2
+ReadInstr (IndAddr 2)
+Receive 3
+Branch 3 (Ind 3)
+Jump (Rel (-3))
+Jump (Rel 460)
+Debug "Functions"
+Debug "FUNCTION: <>iob_error"
+Load (ImmValue 0) 3
+Compute Add 8 3 3
+Load (ImmValue 35) 2
+Store 2 (IndAddr 3)
+Load (ImmValue 10) 2
+Push 2
+Load (ImmValue 1) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 69) 2
+Push 2
+Load (ImmValue 2) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 82) 2
+Push 2
+Load (ImmValue 3) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 82) 2
+Push 2
+Load (ImmValue 4) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 79) 2
+Push 2
+Load (ImmValue 5) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 82) 2
+Push 2
+Load (ImmValue 6) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 58) 2
+Push 2
+Load (ImmValue 7) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 8) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 65) 2
+Push 2
+Load (ImmValue 9) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 114) 2
+Push 2
+Load (ImmValue 10) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 114) 2
+Push 2
+Load (ImmValue 11) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 97) 2
+Push 2
+Load (ImmValue 12) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 121) 2
+Push 2
+Load (ImmValue 13) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 14) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 105) 2
+Push 2
+Load (ImmValue 15) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 110) 2
+Push 2
+Load (ImmValue 16) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 100) 2
+Push 2
+Load (ImmValue 17) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 101) 2
+Push 2
+Load (ImmValue 18) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 120) 2
+Push 2
+Load (ImmValue 19) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 20) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 111) 2
+Push 2
+Load (ImmValue 21) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 117) 2
+Push 2
+Load (ImmValue 22) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 116) 2
+Push 2
+Load (ImmValue 23) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 24) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 111) 2
+Push 2
+Load (ImmValue 25) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 102) 2
+Push 2
+Load (ImmValue 26) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 27) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 98) 2
+Push 2
+Load (ImmValue 28) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 111) 2
+Push 2
+Load (ImmValue 29) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 117) 2
+Push 2
+Load (ImmValue 30) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 110) 2
+Push 2
+Load (ImmValue 31) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 100) 2
+Push 2
+Load (ImmValue 32) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 115) 2
+Push 2
+Load (ImmValue 33) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 33) 2
+Push 2
+Load (ImmValue 34) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 10) 2
+Push 2
+Load (ImmValue 35) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 0) 6
+Compute Add 8 6 6
+Load (ImmValue 1) 5
+Load (IndAddr 6) 2
+Compute Add 2 6 2
+Load (ImmValue 1) 3
+Compute Add 3 6 3
+Compute GtE 3 2 4
+Branch 4 (Rel 5)
+Load (IndAddr 3) 7
+WriteInstr 7 (DirAddr 65537)
+Compute Add 3 5 3
+Jump (Rel (-5))
+Load (IndAddr 3) 7
+WriteInstr 7 (DirAddr 65537)
+Load (ImmValue 2) 3
+Compute Sub 8 3 3
+Load (IndAddr 3) 2
+Jump (Ind 2)
+Load (ImmValue 2) 2
+Compute Sub 8 2 2
+Load (IndAddr 2) 2
+Jump (Ind 2)
+Debug "FUNCTION: <>div_zero_error"
+Load (ImmValue 0) 3
+Compute Add 8 3 3
+Load (ImmValue 32) 2
+Store 2 (IndAddr 3)
+Load (ImmValue 10) 2
+Push 2
+Load (ImmValue 1) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 69) 2
+Push 2
+Load (ImmValue 2) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 82) 2
+Push 2
+Load (ImmValue 3) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 82) 2
+Push 2
+Load (ImmValue 4) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 79) 2
+Push 2
+Load (ImmValue 5) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 82) 2
+Push 2
+Load (ImmValue 6) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 58) 2
+Push 2
+Load (ImmValue 7) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 8) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 67) 2
+Push 2
+Load (ImmValue 9) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 97) 2
+Push 2
+Load (ImmValue 10) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 110) 2
+Push 2
+Load (ImmValue 11) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 12) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 110) 2
+Push 2
+Load (ImmValue 13) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 111) 2
+Push 2
+Load (ImmValue 14) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 116) 2
+Push 2
+Load (ImmValue 15) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 16) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 100) 2
+Push 2
+Load (ImmValue 17) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 105) 2
+Push 2
+Load (ImmValue 18) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 118) 2
+Push 2
+Load (ImmValue 19) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 105) 2
+Push 2
+Load (ImmValue 20) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 100) 2
+Push 2
+Load (ImmValue 21) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 101) 2
+Push 2
+Load (ImmValue 22) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 23) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 98) 2
+Push 2
+Load (ImmValue 24) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 121) 2
+Push 2
+Load (ImmValue 25) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 32) 2
+Push 2
+Load (ImmValue 26) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 122) 2
+Push 2
+Load (ImmValue 27) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 101) 2
+Push 2
+Load (ImmValue 28) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 114) 2
+Push 2
+Load (ImmValue 29) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 111) 2
+Push 2
+Load (ImmValue 30) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 33) 2
+Push 2
+Load (ImmValue 31) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 10) 2
+Push 2
+Load (ImmValue 32) 3
+Compute Add 8 3 3
+Pop 2
+Store 2 (IndAddr 3)
+Load (ImmValue 0) 6
+Compute Add 8 6 6
+Load (ImmValue 1) 5
+Load (IndAddr 6) 2
+Compute Add 2 6 2
+Load (ImmValue 1) 3
+Compute Add 3 6 3
+Compute GtE 3 2 4
+Branch 4 (Rel 5)
+Load (IndAddr 3) 7
+WriteInstr 7 (DirAddr 65537)
+Compute Add 3 5 3
+Jump (Rel (-5))
+Load (IndAddr 3) 7
+WriteInstr 7 (DirAddr 65537)
+Load (ImmValue 2) 3
+Compute Sub 8 3 3
+Load (IndAddr 3) 2
+Jump (Ind 2)
+Load (ImmValue 2) 2
+Compute Sub 8 2 2
+Load (IndAddr 2) 2
+Jump (Ind 2)
+Debug "Start of program"
+Load (ImmValue 0) 8
+Load (ImmValue 10) 2
+Push 2
+Pop 2
+Load (ImmValue 0) 3
+Compute Add 8 3 3
+Store 2 (IndAddr 3)
+Load (ImmValue 0) 2
+Compute Add 2 8 2
+Load (IndAddr 2) 2
+Push 2
+Load (ImmValue 0) 3
+Pop 2
+Compute GtE 2 3 2
+Push 2
+Pop 2
+Branch 2 (Rel 2)
+Jump (Rel 52)
+Load (ImmValue 1000) 2
+Push 2
+Load (ImmValue 0) 2
+Compute Add 2 8 2
+Load (IndAddr 2) 2
+Push 2
+Pop 3
+Compute NEq 0 3 4
+Branch 4 (Rel 21)
+Load (ImmValue 1) 3
+Load (ImmValue 1) 2
+Compute Add 8 2 2
+Store 0 (IndAddr 2)
+Compute Add 2 3 2
+Load (ImmValue 509) 4
+Store 4 (IndAddr 2)
+Compute Add 2 3 2
+Store 8 (IndAddr 2)
+Load (ImmValue 4) 2
+Compute Add 8 2 8
+Jump (Abs 249)
+Load (ImmValue 3) 2
+Compute Sub 8 2 2
+Load (IndAddr 2) 2
+Push 2
+Load (ImmValue 1) 2
+Compute Sub 8 2 2
+Load (IndAddr 2) 8
+EndProg
+Pop 2
+Compute Div 2 3 2
+Push 2
+Pop 2
+WriteInstr 2 (DirAddr 65536)
+Load (ImmValue 10) 2
+Push 2
+Pop 2
+WriteInstr 2 (DirAddr 65537)
+Load (ImmValue 0) 2
+Compute Add 2 8 2
+Load (IndAddr 2) 2
+Push 2
+Load (ImmValue 1) 3
+Pop 2
+Compute Sub 2 3 2
+Push 2
+Pop 2
+Load (ImmValue 0) 3
+Compute Add 8 3 3
+Store 2 (IndAddr 3)
+Jump (Rel (-61))
+Debug "Post-program - kill slaves"
+Load (ImmValue 541) 2
+EndProg
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+Variables:
+
+Local:
+err#<>div_zero_error		0
+err#<>iob_error		0
+i#//		0
+Global:
+
+
+Compiled code:
+
+0 ==>	Pre-program - set up slaves
+1	Branch		regSprID		-> Rel 2
+2	Jump				-> Rel 7
+3	Load		1		=> regA
+4	Compute Sub	regSprID, regA	=> regA
+5	ReadInstr	regA
+6	Receive				-> regB
+7	Branch		regB		-> Ind regB
+8	Jump				-> Rel (-3)
+9	Jump				-> Rel 460
+10 ==>	Functions
+11 ==>	FUNCTION: <>iob_error
+12	Load		0		=> regB
+13	Compute Add	regARP, regB	=> regB
+14	Load		35		=> regA
+15	Store		regA		=> regB
+16	Load		10		=> regA
+17	Push		regA
+18	Load		1		=> regB
+19	Compute Add	regARP, regB	=> regB
+20	Pop				=> regA
+21	Store		regA		=> regB
+22	Load		69		=> regA
+23	Push		regA
+24	Load		2		=> regB
+25	Compute Add	regARP, regB	=> regB
+26	Pop				=> regA
+27	Store		regA		=> regB
+28	Load		82		=> regA
+29	Push		regA
+30	Load		3		=> regB
+31	Compute Add	regARP, regB	=> regB
+32	Pop				=> regA
+33	Store		regA		=> regB
+34	Load		82		=> regA
+35	Push		regA
+36	Load		4		=> regB
+37	Compute Add	regARP, regB	=> regB
+38	Pop				=> regA
+39	Store		regA		=> regB
+40	Load		79		=> regA
+41	Push		regA
+42	Load		5		=> regB
+43	Compute Add	regARP, regB	=> regB
+44	Pop				=> regA
+45	Store		regA		=> regB
+46	Load		82		=> regA
+47	Push		regA
+48	Load		6		=> regB
+49	Compute Add	regARP, regB	=> regB
+50	Pop				=> regA
+51	Store		regA		=> regB
+52	Load		58		=> regA
+53	Push		regA
+54	Load		7		=> regB
+55	Compute Add	regARP, regB	=> regB
+56	Pop				=> regA
+57	Store		regA		=> regB
+58	Load		32		=> regA
+59	Push		regA
+60	Load		8		=> regB
+61	Compute Add	regARP, regB	=> regB
+62	Pop				=> regA
+63	Store		regA		=> regB
+64	Load		65		=> regA
+65	Push		regA
+66	Load		9		=> regB
+67	Compute Add	regARP, regB	=> regB
+68	Pop				=> regA
+69	Store		regA		=> regB
+70	Load		114		=> regA
+71	Push		regA
+72	Load		10		=> regB
+73	Compute Add	regARP, regB	=> regB
+74	Pop				=> regA
+75	Store		regA		=> regB
+76	Load		114		=> regA
+77	Push		regA
+78	Load		11		=> regB
+79	Compute Add	regARP, regB	=> regB
+80	Pop				=> regA
+81	Store		regA		=> regB
+82	Load		97		=> regA
+83	Push		regA
+84	Load		12		=> regB
+85	Compute Add	regARP, regB	=> regB
+86	Pop				=> regA
+87	Store		regA		=> regB
+88	Load		121		=> regA
+89	Push		regA
+90	Load		13		=> regB
+91	Compute Add	regARP, regB	=> regB
+92	Pop				=> regA
+93	Store		regA		=> regB
+94	Load		32		=> regA
+95	Push		regA
+96	Load		14		=> regB
+97	Compute Add	regARP, regB	=> regB
+98	Pop				=> regA
+99	Store		regA		=> regB
+100	Load		105		=> regA
+101	Push		regA
+102	Load		15		=> regB
+103	Compute Add	regARP, regB	=> regB
+104	Pop				=> regA
+105	Store		regA		=> regB
+106	Load		110		=> regA
+107	Push		regA
+108	Load		16		=> regB
+109	Compute Add	regARP, regB	=> regB
+110	Pop				=> regA
+111	Store		regA		=> regB
+112	Load		100		=> regA
+113	Push		regA
+114	Load		17		=> regB
+115	Compute Add	regARP, regB	=> regB
+116	Pop				=> regA
+117	Store		regA		=> regB
+118	Load		101		=> regA
+119	Push		regA
+120	Load		18		=> regB
+121	Compute Add	regARP, regB	=> regB
+122	Pop				=> regA
+123	Store		regA		=> regB
+124	Load		120		=> regA
+125	Push		regA
+126	Load		19		=> regB
+127	Compute Add	regARP, regB	=> regB
+128	Pop				=> regA
+129	Store		regA		=> regB
+130	Load		32		=> regA
+131	Push		regA
+132	Load		20		=> regB
+133	Compute Add	regARP, regB	=> regB
+134	Pop				=> regA
+135	Store		regA		=> regB
+136	Load		111		=> regA
+137	Push		regA
+138	Load		21		=> regB
+139	Compute Add	regARP, regB	=> regB
+140	Pop				=> regA
+141	Store		regA		=> regB
+142	Load		117		=> regA
+143	Push		regA
+144	Load		22		=> regB
+145	Compute Add	regARP, regB	=> regB
+146	Pop				=> regA
+147	Store		regA		=> regB
+148	Load		116		=> regA
+149	Push		regA
+150	Load		23		=> regB
+151	Compute Add	regARP, regB	=> regB
+152	Pop				=> regA
+153	Store		regA		=> regB
+154	Load		32		=> regA
+155	Push		regA
+156	Load		24		=> regB
+157	Compute Add	regARP, regB	=> regB
+158	Pop				=> regA
+159	Store		regA		=> regB
+160	Load		111		=> regA
+161	Push		regA
+162	Load		25		=> regB
+163	Compute Add	regARP, regB	=> regB
+164	Pop				=> regA
+165	Store		regA		=> regB
+166	Load		102		=> regA
+167	Push		regA
+168	Load		26		=> regB
+169	Compute Add	regARP, regB	=> regB
+170	Pop				=> regA
+171	Store		regA		=> regB
+172	Load		32		=> regA
+173	Push		regA
+174	Load		27		=> regB
+175	Compute Add	regARP, regB	=> regB
+176	Pop				=> regA
+177	Store		regA		=> regB
+178	Load		98		=> regA
+179	Push		regA
+180	Load		28		=> regB
+181	Compute Add	regARP, regB	=> regB
+182	Pop				=> regA
+183	Store		regA		=> regB
+184	Load		111		=> regA
+185	Push		regA
+186	Load		29		=> regB
+187	Compute Add	regARP, regB	=> regB
+188	Pop				=> regA
+189	Store		regA		=> regB
+190	Load		117		=> regA
+191	Push		regA
+192	Load		30		=> regB
+193	Compute Add	regARP, regB	=> regB
+194	Pop				=> regA
+195	Store		regA		=> regB
+196	Load		110		=> regA
+197	Push		regA
+198	Load		31		=> regB
+199	Compute Add	regARP, regB	=> regB
+200	Pop				=> regA
+201	Store		regA		=> regB
+202	Load		100		=> regA
+203	Push		regA
+204	Load		32		=> regB
+205	Compute Add	regARP, regB	=> regB
+206	Pop				=> regA
+207	Store		regA		=> regB
+208	Load		115		=> regA
+209	Push		regA
+210	Load		33		=> regB
+211	Compute Add	regARP, regB	=> regB
+212	Pop				=> regA
+213	Store		regA		=> regB
+214	Load		33		=> regA
+215	Push		regA
+216	Load		34		=> regB
+217	Compute Add	regARP, regB	=> regB
+218	Pop				=> regA
+219	Store		regA		=> regB
+220	Load		10		=> regA
+221	Push		regA
+222	Load		35		=> regB
+223	Compute Add	regARP, regB	=> regB
+224	Pop				=> regA
+225	Store		regA		=> regB
+226	Load		0		=> regE
+227	Compute Add	regARP, regE	=> regE
+228	Load		1		=> regD
+229	Load		regE		=> regA
+230	Compute Add	regA, regE	=> regA
+231	Load		1		=> regB
+232	Compute Add	regB, regE	=> regB
+233	Compute GtE	regB, regA	=> regC
+234	Branch		regC		-> Rel 5
+235	Load		regB		=> regF
+236	WriteInstr	regF		=> 65537
+237	Compute Add	regB, regD	=> regB
+238	Jump				-> Rel (-5)
+239	Load		regB		=> regF
+240	WriteInstr	regF		=> 65537
+241	Load		2		=> regB
+242	Compute Sub	regARP, regB	=> regB
+243	Load		regB		=> regA
+244	Jump				-> Ind regA
+245	Load		2		=> regA
+246	Compute Sub	regARP, regA	=> regA
+247	Load		regA		=> regA
+248	Jump				-> Ind regA
+249 ==>	FUNCTION: <>div_zero_error
+250	Load		0		=> regB
+251	Compute Add	regARP, regB	=> regB
+252	Load		32		=> regA
+253	Store		regA		=> regB
+254	Load		10		=> regA
+255	Push		regA
+256	Load		1		=> regB
+257	Compute Add	regARP, regB	=> regB
+258	Pop				=> regA
+259	Store		regA		=> regB
+260	Load		69		=> regA
+261	Push		regA
+262	Load		2		=> regB
+263	Compute Add	regARP, regB	=> regB
+264	Pop				=> regA
+265	Store		regA		=> regB
+266	Load		82		=> regA
+267	Push		regA
+268	Load		3		=> regB
+269	Compute Add	regARP, regB	=> regB
+270	Pop				=> regA
+271	Store		regA		=> regB
+272	Load		82		=> regA
+273	Push		regA
+274	Load		4		=> regB
+275	Compute Add	regARP, regB	=> regB
+276	Pop				=> regA
+277	Store		regA		=> regB
+278	Load		79		=> regA
+279	Push		regA
+280	Load		5		=> regB
+281	Compute Add	regARP, regB	=> regB
+282	Pop				=> regA
+283	Store		regA		=> regB
+284	Load		82		=> regA
+285	Push		regA
+286	Load		6		=> regB
+287	Compute Add	regARP, regB	=> regB
+288	Pop				=> regA
+289	Store		regA		=> regB
+290	Load		58		=> regA
+291	Push		regA
+292	Load		7		=> regB
+293	Compute Add	regARP, regB	=> regB
+294	Pop				=> regA
+295	Store		regA		=> regB
+296	Load		32		=> regA
+297	Push		regA
+298	Load		8		=> regB
+299	Compute Add	regARP, regB	=> regB
+300	Pop				=> regA
+301	Store		regA		=> regB
+302	Load		67		=> regA
+303	Push		regA
+304	Load		9		=> regB
+305	Compute Add	regARP, regB	=> regB
+306	Pop				=> regA
+307	Store		regA		=> regB
+308	Load		97		=> regA
+309	Push		regA
+310	Load		10		=> regB
+311	Compute Add	regARP, regB	=> regB
+312	Pop				=> regA
+313	Store		regA		=> regB
+314	Load		110		=> regA
+315	Push		regA
+316	Load		11		=> regB
+317	Compute Add	regARP, regB	=> regB
+318	Pop				=> regA
+319	Store		regA		=> regB
+320	Load		32		=> regA
+321	Push		regA
+322	Load		12		=> regB
+323	Compute Add	regARP, regB	=> regB
+324	Pop				=> regA
+325	Store		regA		=> regB
+326	Load		110		=> regA
+327	Push		regA
+328	Load		13		=> regB
+329	Compute Add	regARP, regB	=> regB
+330	Pop				=> regA
+331	Store		regA		=> regB
+332	Load		111		=> regA
+333	Push		regA
+334	Load		14		=> regB
+335	Compute Add	regARP, regB	=> regB
+336	Pop				=> regA
+337	Store		regA		=> regB
+338	Load		116		=> regA
+339	Push		regA
+340	Load		15		=> regB
+341	Compute Add	regARP, regB	=> regB
+342	Pop				=> regA
+343	Store		regA		=> regB
+344	Load		32		=> regA
+345	Push		regA
+346	Load		16		=> regB
+347	Compute Add	regARP, regB	=> regB
+348	Pop				=> regA
+349	Store		regA		=> regB
+350	Load		100		=> regA
+351	Push		regA
+352	Load		17		=> regB
+353	Compute Add	regARP, regB	=> regB
+354	Pop				=> regA
+355	Store		regA		=> regB
+356	Load		105		=> regA
+357	Push		regA
+358	Load		18		=> regB
+359	Compute Add	regARP, regB	=> regB
+360	Pop				=> regA
+361	Store		regA		=> regB
+362	Load		118		=> regA
+363	Push		regA
+364	Load		19		=> regB
+365	Compute Add	regARP, regB	=> regB
+366	Pop				=> regA
+367	Store		regA		=> regB
+368	Load		105		=> regA
+369	Push		regA
+370	Load		20		=> regB
+371	Compute Add	regARP, regB	=> regB
+372	Pop				=> regA
+373	Store		regA		=> regB
+374	Load		100		=> regA
+375	Push		regA
+376	Load		21		=> regB
+377	Compute Add	regARP, regB	=> regB
+378	Pop				=> regA
+379	Store		regA		=> regB
+380	Load		101		=> regA
+381	Push		regA
+382	Load		22		=> regB
+383	Compute Add	regARP, regB	=> regB
+384	Pop				=> regA
+385	Store		regA		=> regB
+386	Load		32		=> regA
+387	Push		regA
+388	Load		23		=> regB
+389	Compute Add	regARP, regB	=> regB
+390	Pop				=> regA
+391	Store		regA		=> regB
+392	Load		98		=> regA
+393	Push		regA
+394	Load		24		=> regB
+395	Compute Add	regARP, regB	=> regB
+396	Pop				=> regA
+397	Store		regA		=> regB
+398	Load		121		=> regA
+399	Push		regA
+400	Load		25		=> regB
+401	Compute Add	regARP, regB	=> regB
+402	Pop				=> regA
+403	Store		regA		=> regB
+404	Load		32		=> regA
+405	Push		regA
+406	Load		26		=> regB
+407	Compute Add	regARP, regB	=> regB
+408	Pop				=> regA
+409	Store		regA		=> regB
+410	Load		122		=> regA
+411	Push		regA
+412	Load		27		=> regB
+413	Compute Add	regARP, regB	=> regB
+414	Pop				=> regA
+415	Store		regA		=> regB
+416	Load		101		=> regA
+417	Push		regA
+418	Load		28		=> regB
+419	Compute Add	regARP, regB	=> regB
+420	Pop				=> regA
+421	Store		regA		=> regB
+422	Load		114		=> regA
+423	Push		regA
+424	Load		29		=> regB
+425	Compute Add	regARP, regB	=> regB
+426	Pop				=> regA
+427	Store		regA		=> regB
+428	Load		111		=> regA
+429	Push		regA
+430	Load		30		=> regB
+431	Compute Add	regARP, regB	=> regB
+432	Pop				=> regA
+433	Store		regA		=> regB
+434	Load		33		=> regA
+435	Push		regA
+436	Load		31		=> regB
+437	Compute Add	regARP, regB	=> regB
+438	Pop				=> regA
+439	Store		regA		=> regB
+440	Load		10		=> regA
+441	Push		regA
+442	Load		32		=> regB
+443	Compute Add	regARP, regB	=> regB
+444	Pop				=> regA
+445	Store		regA		=> regB
+446	Load		0		=> regE
+447	Compute Add	regARP, regE	=> regE
+448	Load		1		=> regD
+449	Load		regE		=> regA
+450	Compute Add	regA, regE	=> regA
+451	Load		1		=> regB
+452	Compute Add	regB, regE	=> regB
+453	Compute GtE	regB, regA	=> regC
+454	Branch		regC		-> Rel 5
+455	Load		regB		=> regF
+456	WriteInstr	regF		=> 65537
+457	Compute Add	regB, regD	=> regB
+458	Jump				-> Rel (-5)
+459	Load		regB		=> regF
+460	WriteInstr	regF		=> 65537
+461	Load		2		=> regB
+462	Compute Sub	regARP, regB	=> regB
+463	Load		regB		=> regA
+464	Jump				-> Ind regA
+465	Load		2		=> regA
+466	Compute Sub	regARP, regA	=> regA
+467	Load		regA		=> regA
+468	Jump				-> Ind regA
+469 ==>	Start of program
+470	Load		0		=> regARP
+471	Load		10		=> regA
+472	Push		regA
+473	Pop				=> regA
+474	Load		0		=> regB
+475	Compute Add	regARP, regB	=> regB
+476	Store		regA		=> regB
+477	Load		0		=> regA
+478	Compute Add	regA, regARP	=> regA
+479	Load		regA		=> regA
+480	Push		regA
+481	Load		0		=> regB
+482	Pop				=> regA
+483	Compute GtE	regA, regB	=> regA
+484	Push		regA
+485	Pop				=> regA
+486	Branch		regA		-> Rel 2
+487	Jump				-> Rel 52
+488	Load		1000		=> regA
+489	Push		regA
+490	Load		0		=> regA
+491	Compute Add	regA, regARP	=> regA
+492	Load		regA		=> regA
+493	Push		regA
+494	Pop				=> regB
+495	Compute NEq	reg0, regB	=> regC
+496	Branch		regC		-> Rel 21
+497	Load		1		=> regB
+498	Load		1		=> regA
+499	Compute Add	regARP, regA	=> regA
+500	Store		reg0		=> regA
+501	Compute Add	regA, regB	=> regA
+502	Load		509		=> regC
+503	Store		regC		=> regA
+504	Compute Add	regA, regB	=> regA
+505	Store		regARP		=> regA
+506	Load		4		=> regA
+507	Compute Add	regARP, regA	=> regARP
+508	Jump				-> Abs 249
+509	Load		3		=> regA
+510	Compute Sub	regARP, regA	=> regA
+511	Load		regA		=> regA
+512	Push		regA
+513	Load		1		=> regA
+514	Compute Sub	regARP, regA	=> regA
+515	Load		regA		=> regARP
+516	EndProg
+517	Pop				=> regA
+518	Compute Div	regA, regB	=> regA
+519	Push		regA
+520	Pop				=> regA
+521	WriteInstr	regA		=> 65536
+522	Load		10		=> regA
+523	Push		regA
+524	Pop				=> regA
+525	WriteInstr	regA		=> 65537
+526	Load		0		=> regA
+527	Compute Add	regA, regARP	=> regA
+528	Load		regA		=> regA
+529	Push		regA
+530	Load		1		=> regB
+531	Pop				=> regA
+532	Compute Sub	regA, regB	=> regA
+533	Push		regA
+534	Pop				=> regA
+535	Load		0		=> regB
+536	Compute Add	regARP, regB	=> regB
+537	Store		regA		=> regB
+538	Jump				-> Rel (-61)
+539 ==>	Post-program - kill slaves
+540	Load		541		=> regA
+541	EndProg

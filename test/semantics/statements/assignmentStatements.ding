@@ -8,8 +8,8 @@ $ --    v is of type #, ?, *, _#, _? or _* $
 $ --    expr is an expression with the same type as v. $
     . # a
     . _? b
-    . a = / $ ERROR: Could not match expected type '#' with actual type '?' of the expression in statement '. a = /' $
-    . b = 'b' $ ERROR: Could not match expected type '?' with actual type '*' of the expression in statement '. b = 'b'' $
+    . a = 1
+    . b = /
 
 $ --    A new value can always be assigned to any variable that is
         declared. $

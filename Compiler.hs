@@ -16,18 +16,17 @@ import Generator.VariableOffset
 import Debug.Trace
 import Text.Printf
 
-{-test1 = showRoseTree (toRoseTree (parseDinkie "test/testSmall.ding"))
-test = showRoseTree (asttorose (parsetoast (parseDinkie "test/testScope2.ding")))
-test2 = checkScope (parsetoast (parseDinkie "test/testScope2.ding"))
-test3 = compileDinkie "test/testScope.ding"
-test4 = compileDinkie "test/testType.ding"
-test5 = compileDinkie "test/testCodeGen.ding"
-test6 = compileDinkie "test/testCodeHan.ding"
-test7 = runDinkie 1 (compileDinkie "test/testCodeHan.ding")
-test8 = progToString testInstrList
-test9 = progToString (compileDinkie "test/testFib.ding")-}
-test10 = runDinkie "test/testThreads.ding"
-test11 = runDinkie "test/testScope.ding"
+test :: [String] -> IO ()
+test []         = do
+                    putStr ""
+test (p:ps)     = do
+                    putStr("\n------------------------------------------------------------------------------\n" ++
+                             "------------------------------------------------------------------------------\n")
+                    putStr("=======> NOW TESTING: " ++ p ++ " <=======")
+                    putStr("\n------------------------------------------------------------------------------\n" ++
+                             "------------------------------------------------------------------------------\n")
+                    runDinkieNoPrint p
+                    test ps
 
 parseDinkie :: String -> ParseTree
 parseDinkie file = parse grammar Prog $ lexer $ tokenize $ getFileString file
@@ -50,6 +49,13 @@ compileDinkie file  | scopeErrors /= [] = error $ ('\n':) $ unlines scopeErrors
 
 runDinkie :: String -> IO ()
 runDinkie file  = trace (progToString prog) (run (replicate threads prog))
+                    where
+                        cmp = compileDinkie file
+                        threads = snd cmp
+                        prog = fst cmp
+
+runDinkieRawPrint :: String -> IO ()
+runDinkieRawPrint file  = trace ((unlines(map show prog))) (run (replicate threads prog))
                     where
                         cmp = compileDinkie file
                         threads = snd cmp
@@ -136,7 +142,24 @@ showAddrImmDI (ImmValue i)  = show i
 showAddrImmDI (DirAddr m) = show m
 showAddrImmDI (IndAddr r) = showReg r regMap
 
-
+testFiles :: [String]
+testFiles = [   "test/semantics/errors/arrayIndexOutOfBounds.ding",
+                "test/semantics/errors/divideByZero.ding",
+                {-"test/semantics/errors/returns.ding",-}
+                "test/semantics/errors/scopes.ding",
+                "test/semantics/errors/types.ding",
+                "test/semantics/statements/arrayStatements.ding",
+                "test/semantics/statements/assignmentStatements.ding",
+                "test/semantics/statements/concurrentStatements.ding",
+                "test/semantics/statements/declarationStatements.ding",
+                "test/semantics/statements/functionStatements.ding",
+                "test/semantics/statements/ifStatements.ding",
+                "test/semantics/statements/inputOutputStatements.ding",
+                "test/semantics/statements/returnStatements.ding",
+                "test/semantics/statements/statements.ding",
+                "test/semantics/statements/synchronizedStatements.ding",
+                "test/semantics/statements/whileStatements.ding"
+        ]
 
 debugShow :: DbgInput -> String
 debugShow (instrs,s) = printf "instrs: %s\nsprStates:\n%s\nrequests: %s\nreplies: %s\nrequestFifo: %s\nsharedMem: %s\n"
@@ -149,38 +172,3 @@ debugShow (instrs,s) = printf "instrs: %s\nsprStates:\n%s\nrequests: %s\nreplies
 
 debugShow' (instrs,s) = show instrs ++ "\n"
                      ++ (unlines $ map show $ sprStates s)
-
-
-
-
-
-
-
-
-
---
--- testInstrList :: [Instruction]
--- testInstrList = [Compute Add 2 3 2,
---                 Jump (Ind 4),
---                 Jump (Rel 5),
---                 Branch 3 (Ind 5),
---                 Branch 3 (Rel 4),
---                 Load (DirAddr 3) 2,
---                 Load (IndAddr 3) 4,
---                 Store 2 (DirAddr 3),
---                 Store 3 (IndAddr 4),
---                 Push 3,
---                 Pop 4,
---                 ReadInstr (DirAddr 3),
---                 ReadInstr (IndAddr 6),
---                 Receive 8,
---                 WriteInstr 3 (DirAddr 3),
---                 WriteInstr 4 (IndAddr 5),
---                 TestAndSet (DirAddr 43),
---                 TestAndSet (IndAddr 5),
---                 EndProg,
---                 Nop,
---                 Debug "dinkie"]
-
-
---

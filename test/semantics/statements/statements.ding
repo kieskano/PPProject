@@ -25,6 +25,8 @@ $ --     concurrent statements only in main function! $
     . ~<3>~ <>
 
 $ --     read/write statements $
+    . [*] out = "USER type an integer:\n"
+    . [*] < out
     . # > a
     . [#] < b
     . * < '\n'
