@@ -1,0 +1,10 @@
+$ Tests runtime error: Divide by zero $
+
+. // <
+    . # i = 10
+    . ?^ |i >= 0| <
+        . # < 1000 % i
+        . * < '\n'
+        . i = i - 1
+    >
+>

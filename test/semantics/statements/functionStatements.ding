@@ -1,6 +1,6 @@
 . // <
 
-$ For the main function construction:     . // < sts >
+$ For the main function construction:     . // < sts > $
 
 $ --    sts is a list of statements that get executed on execution of
         the program. $
@@ -54,10 +54,8 @@ $ --    The scope at the start of the function only contains all
         other functions and the arguments of this function. $
     $ N.T. $
 
-
-
 >
 
-. ret_int() < . :: 0 >
-. ret_bool() < . :: / >
-. ret_char() < . :: 'c' >
+. # ret_int() < . :: 0 >
+. ? ret_bool() < . :: / >
+. * ret_char() < . :: 'c' >

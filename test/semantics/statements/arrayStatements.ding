@@ -28,5 +28,5 @@ $ --    When getting an element of the array, the index in the
         statement has to be greater or equal to 0 and smaller than
         the length of the array. $
     $ RUNTIME $
-
+    
 >

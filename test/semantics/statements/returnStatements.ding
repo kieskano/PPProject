@@ -1,0 +1,18 @@
+$ For the return construction:         . :: expr $
+
+. // <>
+
+$ --    expr is of the type indicated at the start of the function in
+        which the return statement is. $
+    $ types.ding $
+. # ret_int() < . :: 0 >
+. ? ret_bool() < . :: / >
+. * ret_char() < . :: 'c' >
+
+$ --    expr can be empty if the function has no return type. $
+. ret_void() < . :: >
+
+$ --    After a return statement the program will finish the
+        execution of this function. So any code after a return
+        statement will not be executed. $
+    $ return.dinkie $
