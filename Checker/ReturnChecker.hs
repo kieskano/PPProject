@@ -74,7 +74,7 @@ statToString (ReturnT a)                = ". :: " ++ (exprToString a)
 exprToString :: AST -> String
 exprToString (IntConstT s)      = s
 exprToString (BoolConstT s)     = s
-exprToString (CharConstT s)     = '\'':s:'\'':""
+exprToString (CharConstT s)     = show s
 exprToString (ArrayExprT s i)   = s++"["++(exprToString i)++"]"
 exprToString (FuncExprT s [])   = s++"()"
 exprToString (FuncExprT s (a:as)) = s++"("++(exprToString a)++ (concat $ map ((","++) . exprToString) as) ++")"
