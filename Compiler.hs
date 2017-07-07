@@ -171,7 +171,7 @@ showAddrImmDI (IndAddr r) = showReg r regMap
 testFiles :: [String]
 testFiles = [   "test/semantics/errors/arrayIndexOutOfBounds.ding",
                 "test/semantics/errors/divideByZero.ding",
-                {-"test/semantics/errors/returns.ding",-}
+                "test/semantics/errors/returns.ding",
                 "test/semantics/errors/scopes.ding",
                 "test/semantics/errors/types.ding",
                 "test/semantics/statements/arrayStatements.ding",
