@@ -1,0 +1,46 @@
+$ Tests the warnings for dead code $
+
+$
+    WARNING: dead code in function 'func_b'.
+    This code will never be executed:
+        . [*] string = {'T','h','i','s',' ','i','s',' ','n','e','v','e','r',' ','p','r','i','n','t','e','d','.','\n'}
+        . [*]< string
+
+    WARNING: dead code in function 'func_c'.
+    This code will never be executed:
+        . [*] string = {'T','h','i','s',' ','i','s',' ','n','e','v','e','r',' ','p','r','i','n','t','e','d','.','\n'}
+        . [*]< string
+$
+
+. // <
+    . func_a()
+    . func_b()
+    . func_c()
+>
+
+. func_a() <
+    . # a = 999
+    . # < a
+    . * < '\n'
+    . ::
+>
+
+. func_b() <
+    . # a = 999
+    . # < a
+    . * < '\n'
+    . ::
+    . [*] string = "This is never printed.\n"
+    . [*] < string
+>
+
+. func_c() <
+    . # a = 999
+    . # < a
+    . * < '\n'
+    . ?- | / | <
+        . ::
+        . [*] string = "This is never printed.\n"
+        . [*] < string
+    >
+>
