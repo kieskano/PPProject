@@ -1,6 +1,6 @@
 module Parser.AST.AST where
 
-import FPPrac.Trees
+-- import FPPrac.Trees
 import Parser.ParseBasis
 import Data.Char
 import Debug.Trace
@@ -122,38 +122,38 @@ stringToCharConstArray s  = (CharConstT char) : (stringToCharConstArray rest)
 -- Arguments:
 --  - AST           the AST that is to be converted
 -- Returns:         the converted AST as a rose tree
-asttorose :: AST -> RoseTree
-asttorose (ProgT main funcs)        = RoseNode "ProgT" ((asttorose main):(map asttorose funcs))
-asttorose (MainT asts)              = RoseNode "MainT" (map asttorose asts)
-asttorose (FunctionT t n args sts)  = RoseNode ("FunctionT "++t++" "++n) ((map asttorose args)++(map asttorose sts))
-asttorose (ArgumentT t n)           = RoseNode ("ArgumentT "++t++" "++n) []
---
-asttorose (DeclT SGlob s1 s2 ast)   = RoseNode ("DeclT _" ++ s1 ++ " " ++ s2) [asttorose ast]
-asttorose (DeclT SPriv s1 s2 ast)   = RoseNode ("DeclT " ++ s1 ++ " " ++ s2) [asttorose ast]
-asttorose (AssignT s ast)           = RoseNode ("AssignT " ++ s) [asttorose ast]
-asttorose (ArrayAssignT s ast1 ast2)= RoseNode ("ArrayAssignT " ++ s) [asttorose ast1, asttorose ast2]
-asttorose (WhileT ast asts)         = RoseNode "WhileT" ((asttorose ast):(map asttorose asts))
-asttorose (IfOneT ast asts)         = RoseNode "IfOneT" ((asttorose ast):(map asttorose asts))
-asttorose (IfTwoT ast asts1 asts2)  = RoseNode "IfTwoT" (((asttorose ast):(map asttorose asts1)) ++ (map asttorose asts2))
-asttorose (ParallelT s asts)        = RoseNode ("ParallelT "++s) (map asttorose asts)
-asttorose (SyncT s asts)            = RoseNode ("SyncT "++s) (map asttorose asts)
-asttorose (ReadStatT t s)           = RoseNode ("ReadStatT " ++ t ++ " " ++ s) []
-asttorose (WriteStatT t ast)        = RoseNode ("WriteStatT s" ++ t) [asttorose ast]
-asttorose (ReturnT ast)             = RoseNode "ReturnT" [asttorose ast]
--- Expressions
-asttorose EmptyT                    = RoseNode "EmptyT" []
-asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []
-asttorose (BoolConstT b)            = RoseNode ("BoolConstT " ++ b) []
-asttorose (CharConstT c)            = RoseNode ("CharConstT '" ++ [c] ++ "'") []
-asttorose (VarT s)                  = RoseNode ("VarT " ++ s) []
-asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
-asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
-asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
-asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
-asttorose (ArrayExprT s ast)        = RoseNode ("ArrayExprT "++s) [asttorose ast]
-asttorose (FuncExprT s args)        = RoseNode ("FuncExprT "++s) (map asttorose args)
-asttorose (EmptyArrayT s)           = RoseNode ("EmptyArrayT ["++s++"]") []
-asttorose (FillArrayT asts)         = RoseNode ("FillArrayT") (map asttorose asts)
+-- asttorose :: AST -> RoseTree
+-- asttorose (ProgT main funcs)        = RoseNode "ProgT" ((asttorose main):(map asttorose funcs))
+-- asttorose (MainT asts)              = RoseNode "MainT" (map asttorose asts)
+-- asttorose (FunctionT t n args sts)  = RoseNode ("FunctionT "++t++" "++n) ((map asttorose args)++(map asttorose sts))
+-- asttorose (ArgumentT t n)           = RoseNode ("ArgumentT "++t++" "++n) []
+-- --
+-- asttorose (DeclT SGlob s1 s2 ast)   = RoseNode ("DeclT _" ++ s1 ++ " " ++ s2) [asttorose ast]
+-- asttorose (DeclT SPriv s1 s2 ast)   = RoseNode ("DeclT " ++ s1 ++ " " ++ s2) [asttorose ast]
+-- asttorose (AssignT s ast)           = RoseNode ("AssignT " ++ s) [asttorose ast]
+-- asttorose (ArrayAssignT s ast1 ast2)= RoseNode ("ArrayAssignT " ++ s) [asttorose ast1, asttorose ast2]
+-- asttorose (WhileT ast asts)         = RoseNode "WhileT" ((asttorose ast):(map asttorose asts))
+-- asttorose (IfOneT ast asts)         = RoseNode "IfOneT" ((asttorose ast):(map asttorose asts))
+-- asttorose (IfTwoT ast asts1 asts2)  = RoseNode "IfTwoT" (((asttorose ast):(map asttorose asts1)) ++ (map asttorose asts2))
+-- asttorose (ParallelT s asts)        = RoseNode ("ParallelT "++s) (map asttorose asts)
+-- asttorose (SyncT s asts)            = RoseNode ("SyncT "++s) (map asttorose asts)
+-- asttorose (ReadStatT t s)           = RoseNode ("ReadStatT " ++ t ++ " " ++ s) []
+-- asttorose (WriteStatT t ast)        = RoseNode ("WriteStatT s" ++ t) [asttorose ast]
+-- asttorose (ReturnT ast)             = RoseNode "ReturnT" [asttorose ast]
+-- -- Expressions
+-- asttorose EmptyT                    = RoseNode "EmptyT" []
+-- asttorose (IntConstT x)             = RoseNode ("IntConstT " ++ x) []
+-- asttorose (BoolConstT b)            = RoseNode ("BoolConstT " ++ b) []
+-- asttorose (CharConstT c)            = RoseNode ("CharConstT '" ++ [c] ++ "'") []
+-- asttorose (VarT s)                  = RoseNode ("VarT " ++ s) []
+-- asttorose ThreadIDT                 = RoseNode ("ThreadIDT") []
+-- asttorose (OneOpT s ast)            = RoseNode ("OneOpT " ++ s) [asttorose ast]
+-- asttorose (TwoOpT ast1 s ast2)      = RoseNode ("TwoOpT " ++ s) ((asttorose ast1):[asttorose ast2])
+-- asttorose (BracketsT ast)           = RoseNode "BracketsT" [asttorose ast]
+-- asttorose (ArrayExprT s ast)        = RoseNode ("ArrayExprT "++s) [asttorose ast]
+-- asttorose (FuncExprT s args)        = RoseNode ("FuncExprT "++s) (map asttorose args)
+-- asttorose (EmptyArrayT s)           = RoseNode ("EmptyArrayT ["++s++"]") []
+-- asttorose (FillArrayT asts)         = RoseNode ("FillArrayT") (map asttorose asts)
 
 
 argsToString :: [String] -> String

@@ -4,7 +4,6 @@ import Parser.Tokenizer
 import Parser.Grammar
 import Parser.ParseBasis
 import Parser.ParserGen
-import FPPrac.Trees
 import Parser.AST.AST
 import Checker.ScopeChecker
 import Checker.TypeChecker

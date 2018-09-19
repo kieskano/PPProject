@@ -8,7 +8,7 @@ Contains basic types for Parsing - you'll have to extend several of the definiti
 module Parser.ParseBasis where
 
 import GHC.Generics
-import FPPrac.Trees
+-- import FPPrac.Trees
 
 -- ===================================================================
 
@@ -59,7 +59,7 @@ data Alphabet = Terminal String               -- Terminal: WILL be included in p
               | Name
               | Number
               | Sym
-              deriving (Eq,Ord,Show,Generic,ToRoseTree)
+              deriving (Eq,Ord,Show,Generic)--,ToRoseTree)
 
 -- ===================================================================
 -- Symbolic notation for EBNF constructors
@@ -79,13 +79,13 @@ type Token   = (Alphabet,String)  -- Alphabet: indicates the "syntactic category
                                   -- String: the token itself,
                                   -- NOTE: a token is a TWO-tuple, the number is added automaticallyy
 
-instance ToRoseTree Token where
-  toRoseTree t = RoseNode (show t) []
+-- instance ToRoseTree Token where
+--   toRoseTree t = RoseNode (show t) []
 
 data ParseTree  = PLeaf Token
                 | PNode Alphabet [ParseTree]
                 | PError ParseTree [Alphabet] Alphabet String Int
-                deriving (Eq,Show,Generic,ToRoseTree)
+                deriving (Eq,Show,Generic)--,ToRoseTree)
 
 instance Ord ParseTree where
   PError _ _ _ _ k <  PError _ _ _ _ k' = k <  k'
@@ -147,6 +147,6 @@ instance Prpr ParseTree where
                                 , "==========="
                                 ]
 
-instance Prpr RoseTree where
-  toStrings (RoseNode str [RoseNode str' []]) = [str ++ " " ++ str']
-  toStrings (RoseNode str ts)                 = str : (addSpace 4 $ concat $ map toStrings ts)
+-- instance Prpr RoseTree where
+--   toStrings (RoseNode str [RoseNode str' []]) = [str ++ " " ++ str']
+--   toStrings (RoseNode str ts)                 = str : (addSpace 4 $ concat $ map toStrings ts)
