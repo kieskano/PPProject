@@ -1,0 +1,130 @@
+.// <
+    $ INITIALISING $
+    . # var_lampon = 0
+    . # var_counter = 0
+
+    $ PROGRAM VARIABLES $
+    . # cur_node = 0
+    . # answer = 0
+    . ? asking = \
+    . [*] wrong_answer = "This is not a valid option. Please enter your answer again."
+    . * break = '\n'
+
+    $ MESSAGES AND OPTIONS $
+    . [*] mes_1 = "The lamp is off."
+    . [*] mes_2 = "Do you want to turn on the lamp?"
+    . [*] option_1 = "1. Yes, I want to turn on the lamp."
+    . [*] option_2 = "2. No, I don't want to turn on the lamp."
+    . [*] mes_3 = "The lamp is on."
+    . [*] mes_4 = "Do you want to turn off the lamp?"
+    . [*] option_3 = "1. Yes, I want to turn off the lamp."
+    . [*] option_4 = "2. No, I don't want to turn off the lamp."
+
+    . ?^ |cur_node < 7| <
+        . ?- |cur_node == 0| < $ INIT NODE $
+            . cur_node = 1
+        >
+        . ?- |cur_node == 1| < $ MESSAGE NODE $
+            $ MESSAGING $
+            . [*] < mes_1 . * < break
+            . cur_node = 2
+
+            $ FINAL BREAK $
+            . * < break
+
+            $ ASSIGNING $
+            . var_lampon = 0
+        >
+        . ?- |cur_node == 2| < $ OPTION NODE $
+            $ MESSAGING $
+            . [*] < mes_2 . * < break
+            . [*] < option_1 . * < break
+            . [*] < option_2 . * < break
+
+            $ ASKING $
+            . asking = /
+            . ?^ |asking| <
+                . # > answer
+                . ?- |answer == 1| <
+                    . cur_node = 3
+                    . asking = \
+                >
+                . ?- |answer == 2| <
+                    . cur_node = 1
+                    . asking = \
+                >
+                . ?- |answer > 2| <
+                    . [*] < wrong_answer . * < break
+                >
+            >
+            $ FINAL BREAK $
+            . * < break
+
+            $ ASSIGNING (empty) $
+        >
+        . ?- |cur_node == 3| < $ BOOLEAN EVALUATION $
+            $ EVALUATING $
+            . ?< |(var_counter % 2) * 2 == var_counter| <
+                $ IF TRUE $
+                . cur_node = 4
+            > <
+                $ IF FALSE $
+                . cur_node = 1
+            >
+
+            $ ASSIGNING $
+            . var_counter = var_counter + 1
+        >
+        . ?- |cur_node == 4| < $ MESSAGE NODE $
+            $ MESSAGING $
+            . [*] < mes_3 . * < break
+            . cur_node = 5
+
+            $ FINAL BREAK $
+            . * < break
+
+            $ ASSIGNING $
+            . var_lampon = 1
+        >
+        . ?- |cur_node == 5| < $ OPTION NODE $
+            $ MESSAGING $
+            . [*] < mes_4 . * < break
+            . [*] < option_3 . * < break
+            . [*] < option_4 . * < break
+
+            $ ASKING $
+            . asking = /
+            . ?^ |asking| <
+                . # > answer
+                . ?- |answer == 1| <
+                    . cur_node = 6
+                    . asking = \
+                >
+                . ?- |answer == 2| <
+                    . cur_node = 4
+                    . asking = \
+                >
+                . ?- |answer > 2| <
+                    . [*] < wrong_answer . * < break
+                >
+            >
+            $ FINAL BREAK $
+            . * < break
+
+            $ ASSIGNING (empty) $
+        >
+        . ?- |cur_node == 6| < $ BOOLEAN EVALUATION $
+            $ EVALUATING $
+            . ?< |(var_counter % 2) * 2 == var_counter| <
+                $ IF TRUE $
+                . cur_node = 1
+            > <
+                $ IF FALSE $
+                . cur_node = 4
+            >
+
+            $ ASSIGNING $
+            . var_counter = var_counter + 1
+        >
+    >
+>
