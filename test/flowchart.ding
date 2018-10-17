@@ -11,14 +11,14 @@
     . * break = '\n'
 
     $ MESSAGES AND OPTIONS $
-    . [*] mes_0 0= "The lamp is off."
-    . [*] mes_1 1= "The lamp is on."
-    . [*] ques_2 2= "Do you want to turn on the lamp?"
-    . [*] ques_3 3= "Do you want to turn off the lamp?"
-    . [*] option_4 4= "1. Yes, I want to turn on the lamp."
-    . [*] option_5 5= "2. No, I don't want to turn on the lamp."
-    . [*] option_6 6= "1. Yes, I want to turn off the lamp."
-    . [*] option_7 7= "2. No, I don't want to turn off the lamp."
+    . [*] mes_0 = "The lamp is off."
+    . [*] mes_1 = "The lamp is on."
+    . [*] ques_2 = "Do you want to turn on the lamp?"
+    . [*] ques_3 = "Do you want to turn off the lamp?"
+    . [*] option_4 = "1. Yes, I want to turn on the lamp."
+    . [*] option_5 = "2. No, I don't want to turn on the lamp."
+    . [*] option_6 = "1. Yes, I want to turn off the lamp."
+    . [*] option_7 = "2. No, I don't want to turn off the lamp."
 
     . ?^ |cur_node != -1| <
         . ?- |cur_node == 1| < $ MESSAGE NODE $
@@ -50,7 +50,7 @@
                     . cur_node = 1
                     . asking = \
                 >
-                . ?- |answer < 1 && answer > 2| <
+                . ?- |answer < 1 || answer > 2| <
                     . [*] < wrong_answer . * < break
                 >
             >
@@ -101,7 +101,7 @@
                     . cur_node = 4
                     . asking = \
                 >
-                . ?- |answer < 1 && answer > 2| <
+                . ?- |answer < 1 || answer > 2| <
                     . [*] < wrong_answer . * < break
                 >
             >
